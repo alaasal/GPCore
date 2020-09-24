@@ -3,7 +3,7 @@ module IF(
 	input logic PCSEL,		// pc select control signal
 	output logic [31:0] pc,		// program counter PIPE #1
 	output logic [31:0] pc_mem,	// pc at instruction mem pipe #2
-	output logic [31:0] inst  	// instruction output from memory 
+	output logic [31:0] inst  	// instruction output from memory inst memory (to decode stage)
 	);
 
 	// registers
@@ -12,7 +12,6 @@ module IF(
 
 	// wires
 	logic [31:0] npc;   	   // next pc wire
-	logic [31:0] ins;   	   // output wire of inst mem
 
 	// pipes
 	always_ff @(posedge clk, negedge nrst)
@@ -42,7 +41,7 @@ module IF(
 	// output
 	assign pc    = pc_reg;
 	assign pc_mem = pcinst;
-	
+
 	// dummy inst mem
 	inst_mem m1 (.a(pcinst), .inst(inst));  // output inst for decode stage
 
