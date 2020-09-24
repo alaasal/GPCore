@@ -24,7 +24,7 @@ module core(
 	logic [31:0] res;	   // result output from mem to commit stage
 	logic [31:0] wb_data;	   // data output from commit stage to regfile to be written
 
-	// instantiating stages (4 pipelines)
+	// instantiating stages (6 pipelines)
 	IF_stage s1 (.clk(clk), .nrst(nrst), .PCSEL(pcsel), .pc(pc), .pc_mem(pc_mem), .inst(ins));
 	issue_stage s2 (.clk(clk), .nrst(nrst), .we(we), .B_SEL(B_SEL), .wb_d(wb_data), .inst(ins), .op_a(op_a), .op_b(op_b));
 	exe_stage s3 (.clk(clk), .nrst(nrst), .op_a(op_a), .op_b(op_b), .alu_res(alu_result));
