@@ -3,7 +3,7 @@ module instr_mem (
 	input  logic [31:0] addr,                   // rom address
 	output logic [31:0] instr,                // rom content = rom[a]
 
-	input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
+	input logic DEBUG_SIG,
 	input logic [31:0] DEBUG_addr,
 	input logic [31:0] DEBUG_instr
 );
