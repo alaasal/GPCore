@@ -22,7 +22,7 @@ module frontend_stage(
 		if (!nrst)
 		  begin
 			pcReg <= 0;
-			pcReg2 <= 0;
+			pcinst <= 0;
 		  end
 		else
 		  begin
