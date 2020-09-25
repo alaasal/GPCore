@@ -1,4 +1,4 @@
-xmodule core(
+module core(
 		input logic clk, nrst,
 		// these outputs to observe the data flow in pipelines
 		output logic [31:0] pc,      	// program counter PIPE #1

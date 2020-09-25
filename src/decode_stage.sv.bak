@@ -24,7 +24,7 @@ module instdec_stage(
 		if (!nrst)
 			instrReg3 <= 0;
 		else
-			instrReg3 <= instr;
+			instrReg3 <= inst;
 	  end
 
 	// output
