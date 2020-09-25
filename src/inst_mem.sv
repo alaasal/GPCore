@@ -4,13 +4,13 @@ module inst_mem (a,inst);           // instruction memory, rom
     logic   [31:0] rom [0:63];          // rom cells: 64 words * 32 bits
     // rom[word_addr] = instruction    
     assign rom[6'h00] = 32'h00000000;    
-    assign rom[6'h01] = 32'h34240050;    
-    assign rom[6'h02] = 32'h0c00001b;        
-    assign rom[6'h03] = 32'h20050004;     
-    assign rom[6'h04] = 32'hac820000;      
-    assign rom[6'h05] = 32'h8c890000;       
-    assign rom[6'h06] = 32'h01244022;  
-    assign rom[6'h07] = 32'h20050003;      
+    assign rom[6'h01] = 32'h05601533;    
+    assign rom[6'h02] = 32'h0c005133;        
+    assign rom[6'h03] = 32'h40100033;     
+    assign rom[6'h04] = 32'hac820013;      
+    assign rom[6'h05] = 32'h0c890013;       
+    assign rom[6'h06] = 32'h01244413;  
+    assign rom[6'h07] = 32'h20056013;      
     assign rom[6'h08] = 32'h20a5ffff;     
     assign rom[6'h09] = 32'h34a8ffff;  
     assign rom[6'h0a] = 32'h39085555;
