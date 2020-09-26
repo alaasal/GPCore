@@ -16,7 +16,7 @@ module exe_stage(
 	logic we_e;
 	
 	//ALU
-	alu exe_alu (.operandA(opa_e), .operandB(opb_e), .result(alu_res));
+	alu exe_alu (.alu_fn(alu_fn_e), .operandA(opa_e), .operandB(opb_e), .result(alu_res));
 
 	// pipes
 	always_ff @(posedge clk, negedge nrst)
