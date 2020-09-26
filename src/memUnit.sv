@@ -7,29 +7,29 @@ module mem_stage(
 	);
 
 	// registers
-	logic [31:0] alu_result;
-	logic fn_m, we_m;
+	logic [31:0] aluresultReg6;
+	logic fnReg6, weReg6;
 	
 	// PIPE
 	always_ff @(posedge clk, negedge nrst)
 	  begin
 		if (!nrst)
 		  begin
-			alu_result <= 0;
-			fn_m 	   <= 0;
-			we_m 	   <= 0;
+			aluresultReg6 <= 0;
+			fnReg6 	      <= 0;
+			weReg6 	      <= 0;
 		  end
 		else
 		  begin
-			alu_result <= alu_res;
-			fn_m 	   <= fn_e;
-			we_m 	   <= we_e;
+			aluresultReg6 <= alu_res;
+			fnReg6 	      <= fn_e;
+			weReg6 	      <= we_e;
 		  end
 	  end
 	
-	// output (will be replaced by mux to select between data) and the selection signal is fn_m
-	assign result = alu_result;
+	// output (will be replaced by mux to select between data) and the selection signal is fnReg6
+	assign result = aluresultReg6;
 	
-	assign we = we_m;
+	assign we = weReg6;
 
 endmodule

@@ -1,6 +1,6 @@
 module instdec_stage(
 	input logic clk, nrst,
-	input logic  [31:0] instr,	  // input from IF stage (inst mem)
+	input logic  [31:0] instr,	  // input from frontend stage (inst mem)
 
 	output logic [4:0] rs1, rs2, rd,  // op and dest registers addresses
 	output logic [4:0] shamt,	  // shift amount imm

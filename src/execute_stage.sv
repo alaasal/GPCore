@@ -9,38 +9,38 @@ module exe_stage(
 	);
 	
 	// registers
-	logic [31:0] opa_e;	   // pipe #5 from decode to execute stage (operand A at execute stage)
-	logic [31:0] opb_e;	   // pipe #5 from decode to execute stage (operand B at execute stage)
-	logic [4:0] alu_fn_e;	   // alu control in exe stage will be input to alu block
-	logic fn_e;		   
-	logic we_e;
+	logic [31:0] opaReg5;	   // pipe #5 from decode to execute stage (operand A at execute stage)
+	logic [31:0] opbReg5;	   // pipe #5 from decode to execute stage (operand B at execute stage)
+	logic [4:0] alufnReg5;	   // alu control in exe stage will be input to alu block
+	logic fnReg5;		   
+	logic weReg5;
 	
 	//ALU
-	alu exe_alu (.alu_fn(alu_fn_e), .operandA(opa_e), .operandB(opb_e), .result(alu_res));
+	alu exe_alu (.alu_fn(alufnReg5), .operandA(opaReg5), .operandB(opbReg5), .result(alu_res));
 
 	// pipes
 	always_ff @(posedge clk, negedge nrst)
 	  begin
 		if (!nrst)
 		  begin
-			opa_e    <= 0;
-			opb_e    <= 0;
-			alu_fn_e <= 0;
-			fn_e	 <= 0;
-			we_e	 <= 0;
+			opaReg5   <= 0;
+			opbReg5   <= 0;
+			alufnReg5 <= 0;
+			fnReg5	  <= 0;
+			weReg5	  <= 0;
 		  end
 		else
 		  begin
-			opa_e    <= op_a;
-			opb_e    <= op_b;	
-			alu_fn_e <= alu_fn_i;
-			fn_e	 <= fn_i;
-			we_e	 <= we_i;
+			opaReg5   <= op_a;
+			opbReg5   <= op_b;	
+			alufnReg5 <= alu_fn_i;
+			fnReg5	  <= fn_i;
+			weReg5	  <= we_i;
 		  end
 	  end
 
 	// output
-	assign fn = fn_e;
-	assign we = we_e;
+	assign fn = fnReg5;
+	assign we = weReg5;
 
 endmodule
