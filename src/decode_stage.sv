@@ -7,7 +7,7 @@ module instdec_stage(
 	output logic [11:0] imm,	  // immediate
 	output logic we, pcselect, fn,	  // control signals
 	output logic [1:0] B_SEL,
-	output logic [4:0] alu_fn
+	output logic [3:0] alu_fn
 	);
 
 	// wires

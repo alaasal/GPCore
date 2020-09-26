@@ -22,8 +22,8 @@ module core(
 	logic we_m;
 	logic pcselect;
 	logic [1:0] B_SEL;
-	logic [4:0] alu_fn_d;
-	logic [4:0] alu_fn_i;
+	logic [3:0] alu_fn_d;
+	logic [3:0] alu_fn_i;
 	logic [31:0] alu_result;   // alu result output from exe to mem stage
 	logic [31:0] res;	   // result output from mem to commit stage
 	logic [31:0] wb;	   // data output from commit stage to regfile to be written

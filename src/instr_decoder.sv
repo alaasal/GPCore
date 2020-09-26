@@ -6,7 +6,7 @@ module instr_decoder(
 	output logic pcselect,		// select pc source
 	output logic we,		// regfile write enable
 	output logic [1:0] B_SEL,	// select op b
-	output logic [4:0] alu_fn,	// select alu operation
+	output logic [3:0] alu_fn,	// select alu operation
 	output logic fn			// select result to be written back in regfile
 	);
 
@@ -50,11 +50,10 @@ module instr_decoder(
 	assign B_SEL[1] = i_slli | i_srli | i_srai;
 	
 	// alu_fn value for each operation is defined in alu module
-	assign alu_fn[0] = i_sub | i_or  | i_sll | i_sra | i_sltu | i_slti | i_xori | i_andi | i_srli;
-	assign alu_fn[1] = i_and | i_or  | i_srl | i_sra | i_addi | i_slti | i_ori  | i_andi | i_srai;
-	assign alu_fn[2] = i_xor | i_sll | i_srl | i_sra | i_sltiu| i_xori | i_ori  | i_andi;
-	assign alu_fn[3] = i_slt | i_sltu| i_addi| i_slti| i_sltiu| i_xori | i_ori  | i_andi;
-	assign alu_fn[4] = i_slli| i_srli| i_srai;
+	assign alu_fn[0] = i_sub | i_or  | i_sll | i_sra | i_sltu | i_ori | i_slli | i_srai | i_sltiu;
+	assign alu_fn[1] = i_and | i_or  | i_srl | i_sra | i_andi | i_ori | i_srli | i_srai;
+	assign alu_fn[2] = i_xor | i_sll | i_srl | i_sra | i_xori | i_slli| i_srli | i_srai;
+	assign alu_fn[3] = i_slt | i_sltu| i_slti| i_sltiu;
 
 	assign fn = ~(rtype|itype);		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
 endmodule
