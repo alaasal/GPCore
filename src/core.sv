@@ -16,10 +16,10 @@ module core(
 	logic [4:0] rs1, rs2, rd;
 	logic [4:0] shamt;
 	logic [11:0] imm;
-	logic we_d, fn_d;
-	logic we_i, fn_i;
-	logic we_e, fn_e;
-	logic we_m;
+	logic we_d, fn_d, rd_d;
+	logic we_i, fn_i, rd_i;
+	logic we_e, fn_e, rd_e;
+	logic we_m, rd_m;
 	logic pcselect;
 	logic [1:0] B_SEL;
 	logic [3:0] alu_fn_d;
@@ -31,18 +31,19 @@ module core(
 	// instantiating stages (7 pipelines)
 	frontend_stage s1 (.clk(clk), .nrst(nrst), .PCSEL(pcselect), .pc(pc), .pc2(pc2), .instr(ins));
 
-	instdec_stage s2 (.clk(clk), .nrst(nrst), .instr(ins), .rs1(rs1), .rs2(rs2), .rd(rd), .shamt(shamt), .imm(imm),
+	instdec_stage s2 (.clk(clk), .nrst(nrst), .instr(ins), .rs1(rs1), .rs2(rs2), .rd(rd_d), .shamt(shamt), .imm(imm),
 				.we(we_d), .pcselect(pcselect), .fn(fn_d), .B_SEL(B_SEL), .alu_fn(alu_fn_d));
 
 
-	issue_stage s3 (.clk(clk), .nrst(nrst), .we_c(we_m), .we_d(we_d), .fn_d(fn_d), .B_SEL(B_SEL), .alu_fn_d(alu_fn_d), .wb_d(wb),
-			 .rs1(rs1), .rs2(rs2), .rd(rd), .shamt(shamt), .imm(imm), .op_a(opa), .op_b(opb), .alu_fn(alu_fn_i),
-			 .fn(fn_i), .we(we_i));
+	issue_stage s3 (.clk(clk), .nrst(nrst), .we_c(we_m), .we_d(we_d), .fn_d(fn_d), .rdaddr(rd_m), .B_SEL(B_SEL), .alu_fn_d(alu_fn_d),
+			 .wb_d(wb), .rs1(rs1), .rs2(rs2), .rd_d(rd_d), .shamt(shamt), .imm(imm), .op_a(opa), .op_b(opb), .alu_fn(alu_fn_i),
+			 .rd(rd_i), .fn(fn_i), .we(we_i));
 
-	exe_stage s4 (.clk(clk), .nrst(nrst), .fn_i(fn_i), .we_i(we_i), .alu_fn_i(alu_fn_i), .op_a(opa), .op_b(opb),
-			.alu_res(alu_result), .fn(fn_e), .we(we_e));
+	exe_stage s4 (.clk(clk), .nrst(nrst), .fn_i(fn_i), .we_i(we_i), .rd_i(rd_i), .alu_fn_i(alu_fn_i), .op_a(opa), .op_b(opb),
+			.alu_res(alu_result), .rd(rd_e), .fn(fn_e), .we(we_e));
 
-	mem_stage s5 (.clk(clk), .nrst(nrst), .fn_e(fn_e), .we_e(we_e), .alu_res(alu_result), .result(res), .we(we_m));
+	mem_stage s5 (.clk(clk), .nrst(nrst), .fn_e(fn_e), .we_e(we_e), .rd_e(rd_e), .alu_res(alu_result), .result(res), .rd(rd_m),
+			 .we(we_m));
 
 	
 	
