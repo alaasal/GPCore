@@ -44,7 +44,7 @@ module core(
 
 	mem_stage s5 (.clk(clk), .nrst(nrst), .fn_e(fn_e), .we_e(we_e), .alu_res(alu_result), .result(res), .we(we_m));
 
-	commit_stage s6 (.clk(clk), .nrst(nrst), .we_m(we_m), .result(res), .wb_data(wb));
+	
 	
 	// output
 	assign inst = ins;

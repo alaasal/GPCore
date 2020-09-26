@@ -31,7 +31,7 @@ module core(
 	// instantiating stages (7 pipelines)
 	frontend_stage s1 (.clk(clk), .nrst(nrst), .PCSEL(pcselect), .pc(pc), .pc2(pc2), .instr(ins));
 
-	instdec_stage s2 (.clk(clk), .nrst(nrst), .inst(ins), .rs1(rs1), .rs2(rs2), .rd(rd), .shamt(shamt), .imm(imm),
+	instdec_stage s2 (.clk(clk), .nrst(nrst), .instr(ins), .rs1(rs1), .rs2(rs2), .rd(rd), .shamt(shamt), .imm(imm),
 				.we(we_d), .pcselect(pcselect), .fn(fn_d), .B_SEL(B_SEL), .alu_fn(alu_fn_d));
 
 
