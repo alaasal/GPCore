@@ -5,7 +5,7 @@ module issue_stage (
 	input logic [4:0] rdaddr,		// destenation address from commit stage to regfile
 	input logic [1:0] B_SEL, 		// B_SEL for op_b or immediates
 	input logic [3:0] alu_fn_d,		// alu control from decode stage
-	input logic [31:0] wb_d,		// data to be written in regfile
+	input logic [31:0] wb,			// data to be written in regfile
 	input logic [4:0] rs1, rs2, rd_d, 	// addresses of operands (to regfile)
 	input logic [4:0] shamt,		
 	input logic [11:0] imm,			// immediate sign extended
@@ -58,7 +58,7 @@ module issue_stage (
 	  end
 	
 	// register file
-	regfile reg1 (.clk(clk), .clrn(nrst), .we(we_c), .write_addr(rdaddr), .source_a(srcaReg4), .source_b(srcbReg4), .result(wb_d),
+	regfile reg1 (.clk(clk), .clrn(nrst), .we(we_c), .write_addr(rdaddr), .source_a(srcaReg4), .source_b(srcbReg4), .result(wb),
 			.op_a(a), .op_b(b));
 
 	// assign op_a and op_b outputs

@@ -36,7 +36,7 @@ module core(
 
 
 	issue_stage s3 (.clk(clk), .nrst(nrst), .we_c(we_m), .we_d(we_d), .fn_d(fn_d), .rdaddr(rd_m), .B_SEL(B_SEL), .alu_fn_d(alu_fn_d),
-			 .wb_d(wb), .rs1(rs1), .rs2(rs2), .rd_d(rd_d), .shamt(shamt), .imm(imm), .op_a(opa), .op_b(opb), .alu_fn(alu_fn_i),
+			 .wb(res), .rs1(rs1), .rs2(rs2), .rd_d(rd_d), .shamt(shamt), .imm(imm), .op_a(opa), .op_b(opb), .alu_fn(alu_fn_i),
 			 .rd(rd_i), .fn(fn_i), .we(we_i));
 
 	exe_stage s4 (.clk(clk), .nrst(nrst), .fn_i(fn_i), .we_i(we_i), .rd_i(rd_i), .alu_fn_i(alu_fn_i), .op_a(opa), .op_b(opb),
