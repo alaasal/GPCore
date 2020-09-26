@@ -13,13 +13,14 @@ module core(
 	// wires
 	logic [31:0] ins;   	   // output wire of IF stage
 	logic [31:0] opa, opb;     // operands value output from issue stage
-	logic [4:0] rs1, rs2, rd;
+	logic [4:0] rs1, rs2;
+	logic [4:0] rd_d, rd_i, rd_e, rd_m;
 	logic [4:0] shamt;
 	logic [11:0] imm;
-	logic we_d, fn_d, rd_d;
-	logic we_i, fn_i, rd_i;
-	logic we_e, fn_e, rd_e;
-	logic we_m, rd_m;
+	logic we_d, fn_d;
+	logic we_i, fn_i;
+	logic we_e, fn_e;
+	logic we_m;
 	logic pcselect;
 	logic [1:0] B_SEL;
 	logic [3:0] alu_fn_d;
