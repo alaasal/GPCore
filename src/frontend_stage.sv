@@ -46,6 +46,6 @@ module frontend_stage(
 	assign pc2 = pcReg2;
 	
 	// dummy inst mem
-	inst_mem m1 (.clk(clk), .a(pc), .instr(instr))  // output inst for decode stage
+	inst_mem m1 (.clk(clk), .a(pc), .instr(instr));  // output inst for decode stage
 
 endmodule
