@@ -9,31 +9,9 @@ module commit_stage(
 	output logic we6
 	);
 
-	// registers
-	logic [31:0] wbReg6;
-	logic weReg6;
-	logic [4:0] rdReg6;
-	
-	// PIPE
-	always_ff @(posedge clk, negedge nrst)
-	  begin
-		if (!nrst)
-		  begin
-			wbReg6 <= 0;
-			weReg6 <= 0;
-			rdReg6 <= 0;
-		  end
-		else
-		  begin
-			wbReg6 <= result5;
-			weReg6 <= we5;
-			rdReg6 <= rd5;
-		  end
-	  end
-
 	// output
-	assign wb_data6 = wbReg6;
-	assign rd6 = rdReg6;
-	assign we6 = we6;
+	assign wb_data6 = result5;
+	assign rd6 = rd5;
+	assign we6 = we5;
 
 endmodule
