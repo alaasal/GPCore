@@ -14,7 +14,7 @@ module core(
 	logic [31:0] ins;   	   // output wire of IF stage
 	logic [31:0] opa, opb;     // operands value output from issue stage
 	logic [4:0] rs1, rs2;
-	logic [4:0] rd_d, rd_i, rd_e, rd_m;
+	logic [4:0] rd_d, rd_i, rd_e, rd_m, rd;
 	logic [4:0] shamt;
 	logic [11:0] imm;
 	logic we_d, fn_d;
@@ -36,8 +36,8 @@ module core(
 				.we(we_d), .pcselect(pcselect), .fn(fn_d), .B_SEL(B_SEL), .alu_fn(alu_fn_d));
 
 
-	issue_stage s3 (.clk(clk), .nrst(nrst), .we_c(we_m), .we_d(we_d), .fn_d(fn_d), .rdaddr(rd_m), .B_SEL(B_SEL), .alu_fn_d(alu_fn_d),
-			 .wb(res), .rs1(rs1), .rs2(rs2), .rd_d(rd_d), .shamt(shamt), .imm(imm), .op_a(opa), .op_b(opb), .alu_fn(alu_fn_i),
+	issue_stage s3 (.clk(clk), .nrst(nrst), .we_c(we_m), .we_d(we_d), .fn_d(fn_d), .rdaddr(rd), .B_SEL(B_SEL), .alu_fn_d(alu_fn_d),
+			 .wb(wb), .rs1(rs1), .rs2(rs2), .rd_d(rd_d), .shamt(shamt), .imm(imm), .op_a(opa), .op_b(opb), .alu_fn(alu_fn_i),
 			 .rd(rd_i), .fn(fn_i), .we(we_i));
 
 	exe_stage s4 (.clk(clk), .nrst(nrst), .fn_i(fn_i), .we_i(we_i), .rd_i(rd_i), .alu_fn_i(alu_fn_i), .op_a(opa), .op_b(opb),
@@ -45,8 +45,8 @@ module core(
 
 	mem_stage s5 (.clk(clk), .nrst(nrst), .fn_e(fn_e), .we_e(we_e), .rd_e(rd_e), .alu_res(alu_result), .result(res), .rd(rd_m),
 			 .we(we_m));
-
 	
+	commit_stage s6(.clk(clk), .nrst(nrst), .we_m(we_m), .rd_m(rd_m), .result(res), .rd(rd), .wb_data(wb));
 	
 	// output
 	assign inst = ins;
