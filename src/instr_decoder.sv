@@ -41,7 +41,7 @@ module instr_decoder(
 	assign i_andi  = itype & (&funct3);					  //	x	111
 	assign i_slli  = itype & ~instr_30  & ~funct3[2] & ~funct3[1] & funct3[0]; //	0	001
 	assign i_srli  = itype & ~instr_30  &  funct3[2] & ~funct3[1] & funct3[0]; //	0	101
-	assign i_srai  = itype &  instr_30  &  funct3[2] & ~funct3[1] & funct3[0]; //	0	101
+	assign i_srai  = itype &  instr_30  &  funct3[2] & ~funct3[1] & funct3[0]; //	1	101
 
 	// generate control signals
 	assign pcselect = ~(rtype|itype|noOp); // to set pcselect to 0 (will be edited when branch and jump operations added)

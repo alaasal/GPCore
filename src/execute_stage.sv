@@ -1,13 +1,13 @@
 module exe_stage(
 	input logic clk, nrst,
-	input logic fn_i, we_i,
-	input logic [4:0] rd_i,		// rd address from issue stage
-	input logic [3:0] alu_fn_i,
+	input logic fn4, we4,
+	input logic [4:0] rd4,		// rd address from issue stage
+	input logic [3:0] alu_fn4,
 	input logic [31:0] op_a, op_b,	// operands a and b from issue stage
 
-	output logic [31:0] alu_res,  	// alu result in PIPE #5
-	output logic [4:0] rd,
-	output logic fn, we
+	output logic [31:0] alu_res5,  	// alu result in PIPE #5
+	output logic [4:0] rd5,
+	output logic fn5, we5
 	);
 	
 	// registers
@@ -19,7 +19,7 @@ module exe_stage(
 	logic weReg5;
 	
 	//ALU
-	alu exe_alu (.alu_fn(alufnReg5), .operandA(opaReg5), .operandB(opbReg5), .result(alu_res));
+	alu exe_alu (.alu_fn(alufnReg5), .operandA(opaReg5), .operandB(opbReg5), .result(alu_res5));
 
 	// pipes
 	always_ff @(posedge clk, negedge nrst)
@@ -37,16 +37,16 @@ module exe_stage(
 		  begin
 			opaReg5   <= op_a;
 			opbReg5   <= op_b;	
-			alufnReg5 <= alu_fn_i;
-			rdReg5	  <= rd_i;
-			fnReg5	  <= fn_i;
-			weReg5	  <= we_i;
+			alufnReg5 <= alu_fn4;
+			rdReg5	  <= rd4;
+			fnReg5	  <= fn4;
+			weReg5	  <= we4;
 		  end
 	  end
 
 	// output
-	assign rd = rdReg5;
-	assign fn = fnReg5;
-	assign we = weReg5;
+	assign rd5 = rdReg5;
+	assign fn5 = fnReg5;
+	assign we5 = weReg5;
 
 endmodule

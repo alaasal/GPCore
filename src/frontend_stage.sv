@@ -3,7 +3,7 @@ module frontend_stage(
 	input logic PCSEL,		// pc select control signal
 
 	output logic [31:0] pc2,	// pc at instruction mem pipe #2
-	output logic [31:0] instr,  	// instruction output from inst memory (to decode stage)
+	output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
 	
 	//Just for testing not an actual output
 	output logic [31:0] pc		// program counter PIPE #1
@@ -43,9 +43,9 @@ module frontend_stage(
 
 	// output
 	assign pc  = pcReg;
-	assign pc2 = pcReg2;
+	assign pc2 = pcReg2; 	// pc + 4 will be piped to (EXE/MEM stage)
 	
 	// dummy inst mem
-	inst_mem m1 (.clk(clk), .a(pc2), .instr(instr));  // output inst for decode stage
+	inst_mem m1 (.clk(clk), .a(pc), .instr(instr));  // output inst for decode stage
 
 endmodule
