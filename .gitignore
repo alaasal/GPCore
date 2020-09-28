@@ -1,0 +1,7 @@
+
+src/regfile.sv.bak
+src/issue_stage.sv.bak
+src/frontend_stage.sv.bak
+*.bak
+*.bak
+*.bak
