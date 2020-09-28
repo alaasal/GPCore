@@ -7,7 +7,7 @@ module instdec_stage(
 	output logic [4:0] shamt,	  // shift amount imm
 	output logic [11:0] imm,	  // immediate
 	output logic we3, pcselect3, fn3, // control signals
-	output logic [1:0] B_SEL3,
+	output logic [1:0] B_SEL3,	 
 	output logic [3:0] alu_fn3
 	);
 

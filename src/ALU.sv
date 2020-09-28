@@ -8,22 +8,21 @@ module alu(
 
 	always_comb
 	  begin
-		// npc logic
 		unique case(alu_fn)
-			5'b00000: result = $signed(operandA) + $signed(operandB);
-			5'b00001: result = $signed(operandA) << $signed(operandB);
-			5'b00010: result = ($signed(operandA) < $signed(operandB));
-			5'b00011: result = (operandA < operandB); 
-			5'b00100: result = $signed(operandA) ^ $signed(operandB);
-			5'b00101: result = $signed(operandA) >> $signed(operandB);
-			5'b00110: result = $signed(operandA) | $signed(operandB);
-			5'b00111: result = $signed(operandA) & $signed(operandB);
-			5'b01000: result = $signed(operandA) - $signed(operandB);
+			4'b0000: result = $signed(operandA) + $signed(operandB);
+			4'b0001: result = $signed(operandA) << $signed(operandB);
+			4'b0010: result = ($signed(operandA) < $signed(operandB));
+			4'b0011: result = (operandA < operandB); 
+			4'b0100: result = $signed(operandA) ^ $signed(operandB);
+			4'b0101: result = $signed(operandA) >> $signed(operandB);
+			4'b0110: result = $signed(operandA) | $signed(operandB);
+			4'b0111: result = $signed(operandA) & $signed(operandB);
+			4'b1000: result = $signed(operandA) - $signed(operandB);
 			//5'b01001: result = 0;
 			//5'b01010: result = 0;
 			//5'b01011: result = 0;
 			//5'b01100: result = 0;
-			5'b01101: result = $signed(operandA) >>> $signed(operandB);
+			4'b1101: result = $signed(operandA) >>> $signed(operandB);
 			//5'b01110: result = 0;
 			//5'b01111: result = 0;
 			//5'b10000: result = 0;

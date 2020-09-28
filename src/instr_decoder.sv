@@ -49,11 +49,22 @@ module instr_decoder(
 	assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi;
 	assign B_SEL[1] = i_slli | i_srli | i_srai;
 	
-	// alu_fn value for each operation is defined in alu module
-	assign alu_fn[0] = i_sub | i_or  | i_sll | i_sra | i_sltu | i_ori | i_slli | i_srai | i_sltiu;
-	assign alu_fn[1] = i_and | i_or  | i_srl | i_sra | i_andi | i_ori | i_srli | i_srai;
-	assign alu_fn[2] = i_xor | i_sll | i_srl | i_sra | i_xori | i_slli| i_srli | i_srai;
-	assign alu_fn[3] = i_slt | i_sltu| i_slti| i_sltiu;
+	// inst signal controls the type of instruction done by the ALU {bit30, funct3}
+	// 0000 -> add | addi
+	// 0001 -> SLL | slli
+	// 0010 -> SLT | slti
+	// 0011 -> SLTU| sltiu
+	// 0100 -> xor | xori
+	// 0101 -> SRL | srli
+	// 0110 -> or  | ori
+	// 0111 -> and | andi
+	// 1000 -> sub
+	// 1101 -> sra | srai
+
+	assign alu_fn[0] = i_sll | i_slli| i_sltu | i_sltiu | i_srl | i_srli | i_and | i_andi| i_sra | i_srai;
+	assign alu_fn[1] = i_slt | i_slti| i_sltu | i_sltiu | i_or  | i_ori  | i_and | i_andi;
+	assign alu_fn[2] = i_xor | i_xori| i_srl  | i_srli  | i_or  | i_ori  | i_and | i_andi| i_sra | i_srai;
+	assign alu_fn[3] = i_sub | i_sra | i_srai;
 
 	assign fn = ~(rtype|itype);		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
 endmodule
