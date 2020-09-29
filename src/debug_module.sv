@@ -10,7 +10,7 @@ module debug(
 );
 
 parameter NUM_Of_INSTRS = 4;
-logic [31:0] instrs [3:0] = {32'h0 ,32'h0 ,32'h0, 32'h2081B3};
+logic [31:0] instrs [3:0] = {32'h0 ,32'h0 ,32'h0, 32'h628FE3};  // 32'h2081B3 , 0000000 00110 00101 001  11111110 0011 
 logic [2:0] instrs_index;
 
 
