@@ -1,5 +1,10 @@
 module core(
-		input logic clk, nrst
+	input logic clk, nrst,
+
+	input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
+	input logic [31:0] DEBUG_addr,
+	input logic [31:0] DEBUG_instr,
+	input logic clk_debug
 	);
 
 	// wires
@@ -18,7 +23,17 @@ module core(
 	logic [31:0] wb6;	   // data output from commit stage to regfile to be written
 	
 	// instantiating stages (7 pipelines)
-	frontend_stage frontend (.clk(clk), .nrst(nrst), .PCSEL(pcselect3), .pc(pc), .pc2(pc2), .instr2(instr2));
+	frontend_stage frontend (
+	.clk(clk),
+	.nrst(nrst),
+	.PCSEL(pcselect3),
+	.pc(pc),
+	.pc2(pc2),
+	.instr2(instr2),
+	.DEBUG_SIG(DEBUG_SIG),				//DEBUG Signals from debug module to load a program
+	.DEBUG_addr(DEBUG_addr),
+	.DEBUG_instr(DEBUG_instr),
+	.clk_debug(clk_debug)); 
 
 	instdec_stage instdec (.clk(clk), .nrst(nrst), .instr2(instr2), .rs1(rs1), .rs2(rs2), .rd3(rd3), .shamt(shamt), .imm(imm),
 				.we3(we3), .pcselect3(pcselect3), .fn3(fn3), .B_SEL3(B_SEL3), .alu_fn3(alu_fn3));

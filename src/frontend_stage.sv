@@ -6,7 +6,12 @@ module frontend_stage(
 	output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
 	
 	//Just for testing not an actual output
-	output logic [31:0] pc		// program counter PIPE #1
+	output logic [31:0] pc,		// program counter PIPE #1
+
+	input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
+	input logic [31:0] DEBUG_addr,
+	input logic [31:0] DEBUG_instr,
+	input logic clk_debug
 	);
 
 	// registers
@@ -46,6 +51,13 @@ module frontend_stage(
 	assign pc2 = pcReg2; 	// pc + 4 will be piped to (EXE/MEM stage)
 	
 	// dummy inst mem
-	instr_mem m1 (.clk(clk), .addr(pc), .instr(instr2));  // output inst for decode stage
+	instr_mem m1 (
+		.clk(clk),
+		.addr(pc),
+		.instr(instr2), 		
+		.DEBUG_SIG(DEBUG_SIG),				//DEBUG Signals from debug module to load a program
+		.DEBUG_addr(DEBUG_addr),
+		.DEBUG_instr(DEBUG_instr),
+		.clk_debug(clk_debug)); 
 
 endmodule

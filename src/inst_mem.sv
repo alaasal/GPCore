@@ -5,15 +5,16 @@ module instr_mem (
 
 	input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
 	input logic [31:0] DEBUG_addr,
-	input logic [31:0] DEBUG_instr
+	input logic [31:0] DEBUG_instr,
+	input logic clk_debug
 );
 
 
-	logic[31:0] rom [logic];		//mem defintion as associative array
+	logic[31:0] rom [3:0];		//mem defintion as associative array
  
-	always_ff @(posedge clk)
+	always_ff @(posedge clk or posedge clk_debug)
 	  begin
-		if (!DEBUG_SIG)
+		if (DEBUG_SIG)
 		  begin
 			rom[DEBUG_addr] = DEBUG_instr;
 		  end
