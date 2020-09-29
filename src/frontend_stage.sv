@@ -40,9 +40,9 @@ module frontend_stage(
 	  begin
 		// npc logic
 		unique case(PCSEL)
-			0: npc = pcReg + 4;
+			0: npc = pcReg + 1;
 			1: npc = 0;
-			default: npc = pcReg + 4;
+			default: npc = pcReg + 1;
 		endcase
 	  end
 

@@ -12,16 +12,15 @@ module instr_mem (
 
 	logic[31:0] rom [3:0];		//mem defintion as associative array
  
-	always_ff @(posedge clk or posedge clk_debug)
+	always_ff @(posedge clk_debug)
 	  begin
 		if (DEBUG_SIG)
 		  begin
 			rom[DEBUG_addr] = DEBUG_instr;
 		  end
-		else
-		  begin
-			instr = rom[addr];
-		  end
 	  end
-        
+        always_ff @(posedge clk)
+	  begin
+		instr = rom[addr];
+	  end
 endmodule
