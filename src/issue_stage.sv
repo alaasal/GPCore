@@ -9,7 +9,7 @@ module issue_stage (
 	input logic [4:0] rs1, rs2,		// addresses of operands (to regfile)	
 	input logic [4:0] rd3,			// rd address will be pipelined to commit stage
 	input logic [4:0] shamt,		
-	input logic [31:0] I_imm3, B_imm3, J_imm3	// immediates sign extended
+	input logic [31:0] I_imm3, B_imm3, J_imm3,	// immediates sign extended
 	input logic [31:0] pc3,
 	input logic [1:0] pcselect3,
 	input logic j3, jr3,

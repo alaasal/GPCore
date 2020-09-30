@@ -6,7 +6,6 @@ module instr_decoder(
 	output logic [1:0] pcselect,	// select pc source
 	output logic we,		// regfile write enable
 	output logic [1:0] B_SEL,	// select op b
-	output logic A_SEL,			// select op a (a = pc for jal)
 	output logic [3:0] alu_fn,	// select alu operation
 	output logic [2:0]fn,		// select result to be written back in regfile
 	output logic bneq, btype,		// to alu beq ~ bneq  
@@ -18,7 +17,7 @@ module instr_decoder(
 	logic i_addi, i_slti, i_sltiu, i_xori, i_ori, i_andi, i_slli, i_srli, i_srai;
 	logic BEQ, BNE, BLT, BGE, BLTU, BGEU;
 	logic noOp;
-	
+	logic jtype, jrtype, i_jal, i_jalr;
 
 	assign noOp = ~(|op); // if op code = 000000 then set opcode0 to 1
 	
@@ -27,8 +26,8 @@ module instr_decoder(
 	assign itype = ~op[6] & ~op[5] & op[4] & ~op[3] & ~op[2] & op[1] & op[0];  // 0010011
 	assign btype = op[6] & op[5] & (~op[4]) & (~op[3]) & (~op[2]) & op[1] & op[0];  // 1100011
 	//jump opcode decoding
-	assign jtype = op[6] & op[5] & (~op[4]) & op[3] & op[2] & op[1] & op[0];		//1101111 JAL
-	assign jr    = op[6] & op[5] & (~op[4]) & (~op[3]) & op[2] & op[1] & op[0];		//1100111 JALR
+	assign jtype  = op[6] & op[5] & (~op[4]) & op[3] & op[2] & op[1] & op[0];		//1101111 JAL
+	assign jrtype = op[6] & op[5] & (~op[4]) & (~op[3]) & op[2] & op[1] & op[0];		//1100111 JALR
 
 	// rtype op								  // instr[30] funct3
 	assign i_add  = rtype & ~instr_30 & (~&funct3);				  //   	0	000
@@ -63,11 +62,11 @@ module instr_decoder(
 
 	//jmp op
 	assign i_jal	= jtype;
-	assign i_jalr	= jr &  (~&funct3);
+	assign i_jalr	= jrtype &  (~&funct3);
 
 	// generate control signals
 	assign pcselect[0] = ~(rtype|itype|noOp) && ~btype; // to set pcselect to 0 (will be edited when branch and jump operations added)
-	assign pcselect[1] = btype;
+	assign pcselect[1] = btype | i_jal | i_jalr;
 
 	//00 rtype itype nop
 	//01 
@@ -97,8 +96,9 @@ module instr_decoder(
 	assign alu_fn[3] = i_sub | i_sra | i_srai | BEQ | BNE | BGE  | BGEU ;
 
 	assign bneq = BNE ; 
-	assign j = jtype;
-	assign fn[0] = ~(rtype|itype) | jtype | jr;
+	assign j = i_jal;
+	assign jr = i_jalr;
+	assign fn[0] = ~(rtype|itype) | i_jal | i_jalr;
 	assign fn[1] = ~(rtype|itype);
 	assign fn[2] = ~(rtype|itype);		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
 endmodule
