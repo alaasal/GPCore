@@ -10,11 +10,11 @@ module branch_unit(
 logic [31:0] b_target, j_target;
 
 assign b_target = btaken ? pc+B_imm : pc+1; // overflow check!
-assign j_target = (jr)? operandA + I_imm : pc + j_imm;
+assign j_target = (jr)? operandA + I_imm : pc + j_imm; 
 
 always_comb begin
-	if (j | jr) target = b_target;
-	else target = j_target;
+	if (j | jr) target = j_target;
+	else target = b_target;
 end
 	
 endmodule
