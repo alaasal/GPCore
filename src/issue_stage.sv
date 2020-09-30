@@ -106,7 +106,7 @@ module issue_stage (
     assign bneq4	= bneqReg4;
     assign btype4	= btypeReg4;
     assign B_imm4	= B_immdReg4;
-    assign J_imm4	= J_immReg4
+    assign J_imm4	= J_immReg4;
     assign pcselect4= pcselectReg4;
     assign j4 = jReg4;
     assign jr4 = jrReg4;

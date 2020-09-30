@@ -4,7 +4,7 @@ module exe_stage(
     input logic [4:0] rd4,			// rd address from issue stage
     input logic [3:0] alu_fn4,
     input logic [31:0] op_a, op_b,		// operands a and b from issue stage
-    input logic [31:0] pc4,B_imm4, J_imm4
+    input logic [31:0] pc4,B_imm4, J_imm4,
     input logic [1:0] pcselect4,
     input logic j4, jr4,
     
@@ -12,7 +12,7 @@ module exe_stage(
     output logic [31:0] alu_res5,  		// alu result in PIPE #5
     output logic [4:0] rd5,
     output logic [31:0] target,
-    output logic [1:0] pcselect5
+    output logic [1:0] pcselect5,
     output logic j5, jr5
     );
     
@@ -78,7 +78,7 @@ module exe_stage(
             bneqReg5  <= bneq4;
             btypeReg5 <= btype4;	
             B_immReg5 <= B_imm4;
-            j_immReg5 <= J_imm4;
+            J_immReg5 <= J_imm4;
             pcReg5	  <= pc4;
             pcselectReg5 <= pcselect4;
             jReg5 <= j4;
