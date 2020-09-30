@@ -2,6 +2,7 @@ module frontend_stage(
 	input logic clk, nrst,
 	input logic [1:0] PCSEL,		// pc select control signal
 	input logic [31:0] b_target,
+	input logic [31:0] jmp_target,
 
 	output logic [31:0] pc2,	// pc at instruction mem pipe #2
 	output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
@@ -44,6 +45,7 @@ module frontend_stage(
 			0: npc = pcReg + 1;
 			1: npc = 0;
 			2: npc = b_target;
+			3: npc = jmp_target;
 			default: npc = pcReg + 1 ;
 		endcase
 	  end

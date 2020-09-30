@@ -1,15 +1,21 @@
-
-
 module branch_unit(
 	input  logic [31:0]   pc,
-	input logic  [31:0]  B_imm,
-	input logic btaken,
+	input logic [31:0] operandA,
+	input logic  [31:0]  B_imm, J_imm, I_imm
+	input logic btaken, jr, j
 
-	output logic [31:0]  b_target
+	output logic [31:0]  target
 );
 
-assign b_target = btaken ? pc+B_imm : pc+1; // overflow check !
-	
+logic [31:0] b_target, j_target;
 
+assign b_target = btaken ? pc+B_imm : pc+1; // overflow check!
+assign j_target = (jr)? operandA + I_imm : pc + j_imm;
+
+always_comb begin
+	if (j | jr) target = b_target;
+	else target = j_target;
+end
+	
 endmodule
 
