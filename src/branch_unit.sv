@@ -7,10 +7,12 @@ module branch_unit(
 	output logic [31:0]  target
 );
 
+//TODO: add instruction-address-misaligned exception support
+
 logic [31:0] b_target, j_target;
 
 assign b_target = btaken ? pc+B_imm : pc+1; // overflow check!
-assign j_target = (jr)? operandA + I_imm : pc + j_imm; 
+assign j_target = (jr)? operandA + I_imm : pc + J_imm; 
 
 always_comb begin
 	if (j) target = j_target;

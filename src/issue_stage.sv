@@ -1,7 +1,8 @@
 module issue_stage (
     input logic clk, nrst,
     input logic we6,			// we from commit stage pipe #6
-    input logic we3, fn3 , bneq3,btype3,	// we enable for regfile & fn for result selection (from pipe #3)
+    input logic we3, bneq3, btype3,	// we enable for regfile & fn for result selection (from pipe #3)
+    input logic [2:0] fn3,
     input logic [4:0] rdaddr6,		// destenation address from commit stage to regfile
     input logic [1:0] B_SEL3, 		// B_SEL for op_b or I_immediates
     input logic [3:0] alu_fn3,		// alu control from decode stage
@@ -14,7 +15,8 @@ module issue_stage (
     input logic [1:0] pcselect3,
     input logic j3, jr3,
 
-    output logic fn4, we4,bneq4,btype4,	// function selection ctrl in issue stage and write enable
+    output logic we4,bneq4,btype4,	// function selection ctrl in issue stage and write enable
+    output logic [2:0] fn4,
     output logic [1:0] pcselect4,
     output logic [31:0] op_a, op_b,		// operands A & B output from regfile in PIPE #4 (to exe stage)
     output logic [4:0] rd4,
@@ -30,7 +32,8 @@ module issue_stage (
     logic [1:0] BSELReg4;
     logic [3:0] alufnReg4;	
     logic [31:0] pcReg4;	
-    logic fnReg4,weReg4,bneqReg4,btypeReg4;
+    logic weReg4,bneqReg4,btypeReg4;
+    logic [2:0] fnReg4;
     logic [1:0] pcselectReg4;
     logic jReg4, jrReg4;
 

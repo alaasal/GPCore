@@ -23,11 +23,11 @@ module instr_decoder(
     
     // decode instructions							  // opcode
     assign rtype = (~op[6]) & op[5] & op[4] & (~op[3]) & (~op[2]) & op[1] & op[0];  // 0110011
-    assign itype = ~op[6] & ~op[5] & op[4] & ~op[3] & ~op[2] & op[1] & op[0];  // 0010011
+    assign itype = ~op[6] & ~op[5] & op[4] & ~op[3] & ~op[2] & op[1] & op[0];       // 0010011
     assign btype = op[6] & op[5] & (~op[4]) & (~op[3]) & (~op[2]) & op[1] & op[0];  // 1100011
     //jump opcode decoding
     assign jtype  = op[6] & op[5] & (~op[4]) & op[3] & op[2] & op[1] & op[0];		//1101111 JAL
-    assign jrtype = op[6] & op[5] & (~op[4]) & (~op[3]) & op[2] & op[1] & op[0];		//1100111 JALR
+    assign jrtype = op[6] & op[5] & (~op[4]) & (~op[3]) & op[2] & op[1] & op[0];	//1100111 JALR
 
     // rtype op								  // instr[30] funct3
     assign i_add  = rtype & ~instr_30 & (~&funct3);				  //   	0	000
@@ -98,6 +98,7 @@ module instr_decoder(
     assign bneq = BNE ; 
     assign j = i_jal;
     assign jr = i_jalr;
+
     assign fn[0] = ~(rtype|itype) | i_jal | i_jalr;
     assign fn[1] = ~(rtype|itype);
     assign fn[2] = ~(rtype|itype);		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)

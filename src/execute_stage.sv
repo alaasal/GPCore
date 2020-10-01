@@ -1,6 +1,7 @@
 module exe_stage(
     input logic clk, nrst,
-    input logic fn4, we4 ,bneq4 ,btype4,
+    input logic we4 ,bneq4 ,btype4,
+    input logic [2:0] fn4,
     input logic [4:0] rd4,			// rd address from issue stage
     input logic [3:0] alu_fn4,
     input logic [31:0] op_a, op_b,		// operands a and b from issue stage
@@ -8,7 +9,8 @@ module exe_stage(
     input logic [1:0] pcselect4,
     input logic j4, jr4,
     
-    output logic fn5, we5,
+    output logic we5,
+    output logic [2:0] fn5,
     output logic [31:0] alu_res5,  		// alu result in PIPE #5
     output logic [4:0] rd5,
     output logic [31:0] target,
@@ -19,7 +21,8 @@ module exe_stage(
     // wires 
     logic btaken;
     // registers
-    logic fnReg5,weReg5,bneqReg5,btypeReg5;	
+    logic weReg5,bneqReg5,btypeReg5;
+    logic [2:0] fnReg5;
     logic [31:0] opaReg5;	   // pipe #5 from decode to execute stage (operand A at execute stage)
     logic [31:0] opbReg5;	   // pipe #5 from decode to execute stage (operand B at execute stage)
     logic [3:0] alufnReg5;	   // alu control in exe stage will be input to alu block
