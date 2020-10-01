@@ -7,7 +7,6 @@
 #### uProcessor Required Design
 - Inorder Superscalar RV32IM
 - Use scoreboard to stall on every hazards (Most simple fix) 
-- Compressed Instructions 
 - Integrate uProcessor + OpenPiton (To leverage Caches and Atomic Operations) 
 - Privileged ISA (User Mode) 
 - Integration with OpenPiton
@@ -15,6 +14,7 @@
 #### uProcessor Enhancements
 These are enhancements to the uProcessor performance, they will be implemented based on the time available and priorities.
 - Data bypassing
+- Compressed Instructions 
 - Branch Predictions
 - Register Renaming
 - Virtual Memory
