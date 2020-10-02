@@ -47,6 +47,15 @@ module exe_stage(
     .target      (target)
     );
 
+    data_mem d_mem (
+    .clk         (clk),
+    .we          (we),
+    .rd          (rd),
+    .addr        (addr),
+    .data_in     (data_in),
+    .data_out    (data_out)
+    );
+
     // pipes
     always_ff @(posedge clk, negedge nrst)
       begin
