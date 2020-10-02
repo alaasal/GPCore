@@ -3,13 +3,14 @@ module instr_decoder(
     input logic [2:0] funct3,
     input logic instr_30,		// bit 30 in the instruction
 
-    output logic [1:0] pcselect,	// select pc source
-    output logic we,		// regfile write enable
+    output logic [1:0] pcselect,// select pc source
+    output logic we,		    // regfile write enable
     output logic [1:0] B_SEL,	// select op b
     output logic [3:0] alu_fn,	// select alu operation
     output logic [2:0]fn,		// select result to be written back in regfile
-    output logic bneq, btype,		// to alu beq ~ bneq  
-    output logic j, jr
+    output logic bneq, btype,	// to alu beq ~ bneq  
+    output logic j, jr,         //JAL, JALR instructions
+    output logic [4:0] mem_op  //mem operation type
     );
 
     // wires
@@ -18,7 +19,6 @@ module instr_decoder(
     logic BEQ, BNE, BLT, BGE, BLTU, BGEU;
     logic noOp;
     logic jtype, jrtype, i_jal, i_jalr;
-    logic mem_rd, mem_we;   //memory read and memory wrtie enable
 
     //noOp
     assign noOp = ~(|op); // if op code = 000000 then set opcode0 to 1
@@ -67,7 +67,7 @@ module instr_decoder(
 
     //jmp op
     assign i_jal	= jtype;
-    assign i_jalr	= jrtype &  (~&funct3);
+    assign i_jalr	= jrtype & (~&funct3);
 
     //load/store op
     assign i_lb  = ltype & ~funct3[2] & ~funct3[1] & ~funct3[0];    //000
@@ -79,7 +79,22 @@ module instr_decoder(
     assign i_sb = stype & ~funct3[2] & ~funct3[1] & ~funct3[0];     //000
     assign i_sh = stype & ~funct3[2] & ~funct3[1] & funct3[0];      //001
     assign i_sw = stype & ~funct3[2] & funct3[1] & ~funct3[0];      //010
-
+    
+    //mem_op
+    //4'b0000	//no memory operation
+    //4'b0001   //i_lb
+    //4'b0010	//i_lh
+    //4'b0011	//i_lw
+    //4'b0100	//i_lbu
+    //4'b0101	//i_lhu
+    //4'b1110	//i_sb
+    //4'b1111	//i_sh
+    //4'b1000   //i_sw
+    assign mem_op[0] = i_lb  | i_lw  | i_lhu | i_sh; 
+    assign mem_op[1] = i_lh  | i_lw  | i_sb  | i_sh;
+    assign mem_op[2] = i_lbu | i_lhu | i_sb  | i_sh;
+    assign mem_op[3] = i_sw  | i_sb  | i_sh;
+         
     // generate control signals
     assign pcselect[0] = ~(rtype|itype|noOp) && ~btype; // to set pcselect to 0 (will be edited when branch and jump operations added)
     assign pcselect[1] = btype | i_jal | i_jalr;
@@ -89,9 +104,7 @@ module instr_decoder(
     //10 branch 
     //11
     assign we 	    = rtype | itype | jtype | jr | ltype;		  // set we to 1 if instr is rtype or itype (1 for all alu op)
-    assign mem_we   = stype;
-    assign mem_rd   = ltype;
-    assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr;
+    assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr | ltype;
     assign B_SEL[1] = i_slli | i_srli | i_srai;
     
     // inst signal controls the type of instruction done by the ALU {bit30, funct3}
@@ -119,5 +132,5 @@ module instr_decoder(
 
     assign fn[0] = ~(rtype|itype) | i_jal | i_jalr;
     assign fn[1] = ~(rtype|itype);
-    assign fn[2] = ~(rtype|itype);		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
+    assign fn[2] = ltype;		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
 endmodule

@@ -11,10 +11,12 @@ module instdec_stage(
     output logic [31:0] I_imm3,		  // I_immediate
     output logic [31:0] B_imm3,		  // B_immediate
     output logic [31:0] J_imm3,
+    output logic [31:0] S_imm3,
     output logic [1:0] B_SEL3,	 
     output logic [3:0] alu_fn3,
     output logic [31:0] pc3,
-    output logic [1:0] pcselect3
+    output logic [1:0] pcselect3,
+    output logic [3:0] mem_op3
     );
 
     // wires
@@ -69,7 +71,8 @@ module instdec_stage(
     .bneq        (bneq3),
     .btype       (btype3),		// to alu beq ~ bneq  
     .j           (j3),
-    .jr          (jr3)
+    .jr          (jr3),
+    .mem_op      (mem_op3)
     );
     
 endmodule
