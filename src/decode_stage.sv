@@ -3,7 +3,8 @@ module instdec_stage(
     input logic  [31:0] instr2,		  // input from frontend stage (inst mem)
     input logic  [31:0] pc2,		  // input from frontend stage (pc)
 
-    output logic we3 , fn3 , bneq3 , btype3, jr3, j3,  // control signals
+    output logic we3 , bneq3 , btype3, jr3, j3,  // control signals
+    output logic [2:0] fn3,
     output logic [4:0] rs1, rs2,		  // op registers addresses
     output logic [4:0] rd3,  		  // dest address
     output logic [4:0] shamt,		  // shift amount I_imm
@@ -57,14 +58,14 @@ module instdec_stage(
     
     // instantiate controller
     instr_decoder c1 (
-    .op          (op),
+    .op          (opcode),
     .funct3      (funct3),
     .instr_30    (instr_30),	// bit 30 in the instruction
     .pcselect    (pcselect3),	// select pc source
-    .we          (we3),			// regfile write enable
+    .we          (we3),			  // regfile write enable
     .B_SEL       (B_SEL3),		// select op b
     .alu_fn      (alu_fn3),		// select alu operation
-    .fn     (fn3),				// select result to be written back in regfile
+    .fn          (fn3),				// select result to be written back in regfile
     .bneq        (bneq3),
     .btype       (btype3),		// to alu beq ~ bneq  
     .j           (j3),

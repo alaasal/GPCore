@@ -116,6 +116,7 @@ module instr_decoder(
     assign bneq = BNE ; 
     assign j = i_jal;
     assign jr = i_jalr;
+
     assign fn[0] = ~(rtype|itype) | i_jal | i_jalr;
     assign fn[1] = ~(rtype|itype);
     assign fn[2] = ~(rtype|itype);		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
