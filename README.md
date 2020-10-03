@@ -24,5 +24,5 @@ These are enhancements to the uProcessor performance, they will be implemented b
 - Vector instrs extension
 
 #### Contribution
-We really encourage anyone to contribute to our core. The RTL will be kind of solid by the end of November will al required features being implemnted and hopefully we will be able to run some linux batches. You can fork it, play with it, optimized it based on your interests, or contribute with an enhancement. We will always be active with all PRs!. 
+We really encourage anyone to contribute to our core. The RTL will be kind of solid by the end of November will al required features being implemnted and hopefully we will be able to run some linux batches. You can fork it, play with it, optimize it based on your interests, or contribute with an enhancement. We will always be active with all PRs!. 
 
