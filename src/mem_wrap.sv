@@ -4,7 +4,7 @@
 
 module mem_wrap(
     input logic clk, nrst,
-    input logic mem_op4,             //memory operation type
+    input logic [3:0] mem_op4,             //memory operation type
     input logic [31:0] op_a4,        //base address
     input logic [31:0] op_b4,        //src for store ops, I_imm offset for load ops
     input logic [31:0] S_imm4,       //S_imm offset
@@ -13,7 +13,7 @@ module mem_wrap(
     output logic addr_misaligned6
 );
     //pipe5 registers
-    logic mem_opReg5; 
+    logic [3:0] mem_opReg5; 
     logic [31:0] op_aReg5, op_bReg5, S_immReg5;
 
     //pipe5 outputs
