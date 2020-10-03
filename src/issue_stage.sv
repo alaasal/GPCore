@@ -81,9 +81,9 @@ module issue_stage (
 	always_comb
 	  begin
 		unique case(BSELReg4)
-			00: op_b = operand_b;
-			01: op_b = I_immdReg4;
-			10: op_b = shamtReg4; //here
+			2'b00: op_b = operand_b;
+			2'b01: op_b = I_immdReg4;
+			2'b10: op_b = shamtReg4; //here
 			default: op_b = operand_b;
 		endcase
 	  end
