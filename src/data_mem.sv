@@ -31,12 +31,13 @@ module data_mem #(
                     if (bw0) MEM[waddr][0] <= data_in[7:0];
                     if (bw1) MEM[waddr][1] <= data_in[15:8];
                 end 2'b01: begin //byte only
-                    if (bw1) MEM[waddr][1] <= data_in[7:0;
+                    if (bw1) MEM[waddr][1] <= data_in[7:0];
                 end 2'b10: begin
                     if (bw2) MEM[waddr][2] <= data_in[7:0];
                     if (bw3) MEM[waddr][3] <= data_in[15:8];
                 end 2'b11: begin
-                    if (bw3) MEM[waddr][3] <= data_in[7:0];
+                	if (bw3) MEM[waddr][3] <= data_in[7:0];
+                end	
             endcase
         end
     end
@@ -47,6 +48,7 @@ module data_mem #(
 endmodule
 
 //TODO: adjust testbench for half and byte writes
+/*
 module mem_test;
     timeunit 1ns;
 
@@ -91,3 +93,4 @@ module mem_test;
         addr    <= addr + 4;
     end
 endmodule
+*/

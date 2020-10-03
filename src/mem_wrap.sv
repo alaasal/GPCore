@@ -17,7 +17,7 @@ module mem_wrap(
     logic [31:0] op_aReg5, op_bReg5, S_immReg5;
 
     //pipe5 outputs
-    logic mem_op5;
+    logic [3:0]mem_op5;
     logic [31:0] op_a5, op_b5, S_imm5;
 
     //pipe5 memory controls
@@ -38,7 +38,6 @@ module mem_wrap(
     logic gwe6, rd6;
     logic [3:0] mem_op6; 
     logic [31:0] addr6, data_in6, data_out6;
-    logic addr_misaligned6;
     logic bw06, bw16, bw26, bw36;
 
     //pipe5
@@ -70,7 +69,7 @@ module mem_wrap(
             bw2Reg6             <= 0; 
             bw3Reg6             <= 0;
         end else begin
-            gweReg6             <= we5;
+            gweReg6             <= gwe5;
             rdReg6              <= rd5;
             mem_opReg6          <= mem_op5;
             addrReg6            <= addr5;
@@ -107,15 +106,15 @@ module mem_wrap(
     assign i_lh  = (mem_op5 == 2);
     assign i_lw  = (mem_op5 == 3);
     assign i_lbu = (mem_op5 == 4);
-    assign i_lhu = (mem_op5 == 5) 
+    assign i_lhu = (mem_op5 == 5);
     assign i_sb  = (mem_op5 == 14);
     assign i_sh  = (mem_op5 == 15);
     assign i_sw  = (mem_op5 == 8);
     
     //generate address misaligned exception
-    addr_mis5[0] = i_lh | i_lbu | i_lhu | i_sh | i_sh | i_sh | i_sw & addr5[0];
-    addr_mis5[1] = i_lw | i_sw & add5[1];
-    addr_misaligned5 = add_mis5[0] | addr_mis5[1];
+    assign addr_mis5[0] = i_lh | i_lbu | i_lhu | i_sh | i_sh | i_sh | i_sw & addr5[0];
+    assign addr_mis5[1] = i_lw | i_sw & addr5[1];
+    assign addr_misaligned5 = addr_mis5[0] | addr_mis5[1];
 
     assign gwe5 = (mem_op5[0]) & ~addr_misaligned5;
     assign rd5  = !mem_op5[3] & !(!mem_op5[0] & !mem_op5[1] & !mem_op5[2]) & ~addr_misaligned5;
@@ -144,9 +143,9 @@ module mem_wrap(
     .gwe        (gwe6),
     .rd         (rd6),
     .bw0        (bw06),         
-    .bw1        (bw16)
-    .bw2        (bw26)
-    .bw3        (bw36)
+    .bw1        (bw16),
+    .bw2        (bw26),
+    .bw3        (bw36),
     .addr       (addr6),
     .data_in    (data_in6),
     .data_out   (data_out6)
@@ -156,10 +155,10 @@ module mem_wrap(
         case(mem_op6)
             4'b0001: mem_out6 = 32'(signed'(data_out6[7:0]));    //i_lb
             4'b0010: mem_out6 = 32'(signed'(data_out6[15:0]));	//i_lh
-            4'b0011: mem_out6 = data_out;	                    //i_lw
+            4'b0011: mem_out6 = data_out6;	                    //i_lw
             4'b0100: mem_out6 = {24'b0, data_out6[7:0]};     	//i_lbu
             4'b0101: mem_out6 = {16'b0, data_out6[15:0]};	    //i_lhu
-            default: mem-out6 = 0;
+            default: mem_out6 = 0;
         endcase
     end
 endmodule
