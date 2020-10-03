@@ -36,7 +36,7 @@ module data_mem #(
                     if (bw2) MEM[waddr][2] <= data_in[7:0];
                     if (bw3) MEM[waddr][3] <= data_in[15:8];
                 end 2'b11: begin
-                    if (bw3) MEM[waddr][3] <= data_in[7:0]
+                    if (bw3) MEM[waddr][3] <= data_in[7:0];
             endcase
         end
     end
