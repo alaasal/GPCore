@@ -5,7 +5,7 @@ module exe_stage(
     input logic [4:0] rd4,			// rd address from issue stage
     input logic [3:0] alu_fn4,
     input logic [31:0] op_a, op_b,		// operands a and b from issue stage
-    input logic [31:0] pc4,B_imm4, J_imm4,
+    input logic [31:0] pc4, B_imm4, J_imm4, S_imm4,
     input logic [1:0] pcselect4,
     input logic j4, jr4,
     
@@ -15,7 +15,9 @@ module exe_stage(
     output logic [4:0] rd5,
     output logic [31:0] target,
     output logic [1:0] pcselect5,
-    output logic j5, jr5
+    output logic j5, jr5,
+    output logic [31:0] mem_out6,
+    output logic addr_misaligned6
     );
     
     // wires 
@@ -50,14 +52,16 @@ module exe_stage(
     .target      (target)
     );
 
-    data_mem d_mem (
-    .clk         (clk),
-    .we          (we),
-    .rd          (rd),
-    .addr        (addr),
-    .data_in     (data_in),
-    .data_out    (data_out)
-    );
+    mem_wrap dmem_wrap (
+    .clk                 (clk),
+    .nrst                (nrst),
+    .mem_op4             (mem_op4), //memory operation type
+    .op_a4               (op_a),   //base address
+    .op_b4               (op_b),   //src for store ops, I_imm offset for load ops
+    .S_imm4              (S_imm4),  //S_imm offset
+    .mem_out6            (mem_out6),
+    .addr_misaligned6    (addr_misaligned6)
+  );
 
     // pipes
     always_ff @(posedge clk, negedge nrst)
