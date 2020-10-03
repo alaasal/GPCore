@@ -12,7 +12,7 @@ module core(
     logic [31:0] instr2;   	   // output wire of IF stage
     logic [31:0] opa, opb;     // operands value output from issue stage
     logic [4:0] rs1, rs2;
-    logic [31:0] I_imm3, B_imm3, J_imm3 S_imm3;
+    logic [31:0] I_imm3, B_imm3, J_imm3, S_imm3;
     logic [31:0] B_imm4, J_imm4, S_imm4;
     logic btype3,btype4,bneq3,bneq4;
     logic [31:0] target;
