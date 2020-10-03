@@ -12,12 +12,15 @@ module core(
     logic [31:0] instr2;   	   // output wire of IF stage
     logic [31:0] opa, opb;     // operands value output from issue stage
     logic [4:0] rs1, rs2;
-    logic [31:0] I_imm3, B_imm3, J_imm3;
-    logic [31:0] B_imm4, J_imm4;
+    logic [31:0] I_imm3, B_imm3, J_imm3, S_imm3;
+    logic [31:0] B_imm4, J_imm4, S_imm4;
     logic btype3,btype4,bneq3,bneq4;
     logic [31:0] target;
     logic [4:0] rd3, rd4, rd5, rd6;  //(rd3 connect between output of pipe #3 and and input of pipe #4)
     logic [4:0] shamt;
+    logic [3:0] mem_op3, mem_op4;
+    logic [31:0] mem_out6;
+    logic addr_misaligned6;
     //logic we3, we4, we5, we6;
     logic [2:0] fn3, fn4, fn5;
     logic [1:0] pcselect3, pcselect4, pcselect5;	// pcselect output from pipe 3 to pipe 1
@@ -59,10 +62,12 @@ module core(
     .I_imm3       (I_imm3),	// I_immediate
     .B_imm3       (B_imm3),	// B_immediate
     .J_imm3       (J_imm3),
+    .S_imm3       (S_imm3),
     .B_SEL3       (B_SEL3),
     .alu_fn3      (alu_fn3),
     .pc3          (pc3),
-    .pcselect3    (pcselect3)
+    .pcselect3    (pcselect3),
+    .mem_op3      (mem_op3)
     );
 
     issue_stage issue (
@@ -84,10 +89,12 @@ module core(
     .I_imm3       (I_imm3),
     .B_imm3       (B_imm3),
     .J_imm3       (J_imm3),		// immediates sign extended
+    .S_imm3       (S_imm3),
     .pc3          (pc3),
     .pcselect3    (pcselect3),
     .j3           (j3),
     .jr3          (jr3),
+    .mem_op3      (mem_op3),
     .fn4          (fn4),
     .we4          (we4),
     .bneq4        (bneq4),
@@ -100,8 +107,10 @@ module core(
     .pc4          (pc4),
     .B_imm4       (B_imm4),
     .J_imm4       (J_imm4),
+    .S_imm4       (S_imm4),
     .j4           (j4),
-    .jr4          (jr4)
+    .jr4          (jr4),
+    .mem_op4      (mem_op4)
     );
 
     exe_stage execute (
@@ -118,6 +127,7 @@ module core(
     .pc4          (pc4),
     .B_imm4       (B_imm4),
     .J_imm4       (J_imm4),
+    .S_imm4       (S_imm4),
     .pcselect4    (pcselect4),
     .j4           (j4),
     .jr4          (jr4),
@@ -128,7 +138,9 @@ module core(
     .target       (target),
     .pcselect5    (pcselect5),
     .j5           (j5),
-    .jr5          (jr5)
+    .jr5          (jr5),
+    .mem_out6     (mem_out6),
+    .addr_misaligned6 (addr_misaligned6)
     );
 
     commit_stage commit(

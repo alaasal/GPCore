@@ -11,10 +11,12 @@ module instdec_stage(
     output logic [31:0] I_imm3,		  // I_immediate
     output logic [31:0] B_imm3,		  // B_immediate
     output logic [31:0] J_imm3,
+    output logic [31:0] S_imm3,
     output logic [1:0] B_SEL3,	 
     output logic [3:0] alu_fn3,
     output logic [31:0] pc3,
-    output logic [1:0] pcselect3
+    output logic [1:0] pcselect3,
+    output logic [3:0] mem_op3
     );
 
     // wires
@@ -53,6 +55,7 @@ module instdec_stage(
     assign I_imm3   = 32'(signed'(instrReg3[31:20]));  // sign extended I_immediate to 32-bit
     assign B_imm3	  = 32'(signed'({instrReg3[31], instrReg3[7], instrReg3[30:25], instrReg3[11:8], 1'b0 })); //sign extending b_immediate to 32-bit
     assign J_imm3	  = 32'(signed'({instrReg3[31], instrReg3[19:12], instrReg3[20], instrReg3[30:21], 1'b0}));
+    assign S_imm3   = 32'(signed'({instrReg3[31:25], instrReg3[11:7]}));
     assign pc3 	= pcReg3;
     
     // instantiate controller
@@ -68,7 +71,8 @@ module instdec_stage(
     .bneq        (bneq3),
     .btype       (btype3),		// to alu beq ~ bneq  
     .j           (j3),
-    .jr          (jr3)
+    .jr          (jr3),
+    .mem_op      (mem_op3)
     );
     
 endmodule
