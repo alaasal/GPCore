@@ -1,4 +1,4 @@
-# GPCore
+# Design, Verification, and Tapping out OpenPition + OurCore
 ## This is the base repo for our graduation project in AlexU 21 building Linux-capble RISCV SoC
 ### uProcessor Action Plan
 
