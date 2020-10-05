@@ -114,11 +114,11 @@ module mem_wrap(
     assign i_sw  = (mem_op5 == 8);
     
     //generate address misaligned exception
-    assign addr_mis5[0] = i_lh | i_lbu | i_lhu | i_sh | i_sh | i_sh | i_sw & addr5[0];
+    assign addr_mis5[0] = i_lh | i_lhu | i_sh | i_sh | i_sw & addr5[0];
     assign addr_mis5[1] = i_lw | i_sw & addr5[1];
     assign addr_misaligned5 = addr_mis5[0] | addr_mis5[1];
 
-    assign gwe5 = (mem_op5[0]) & ~addr_misaligned5;
+    assign gwe5 = (mem_op5[3]) & ~addr_misaligned5;
     assign rd5  = !mem_op5[3] & !(!mem_op5[0] & !mem_op5[1] & !mem_op5[2]) & ~addr_misaligned5;
 
     //byte write enable
