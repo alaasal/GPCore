@@ -2,10 +2,10 @@ module issue_stage (
     input logic clk, nrst,
     input logic we6,			// we from commit stage pipe #6
     input logic we3, bneq3, btype3,	// we enable for regfile & fn for result selection (from pipe #3)
-    input logic [3:0] fn3,
+    input logic [4:0] fn3,
     input logic [4:0] rdaddr6,		// destenation address from commit stage to regfile
     input logic [1:0] B_SEL3, 		// B_SEL for op_b or I_immediates
-    input logic [3:0] alu_fn3,		// alu control from decode stage
+    input logic [3:0] alu_fn3,mul_fn3,		// alu_mu_div control from decode stage
     input logic [31:0] wb6,			// data to be written in regfile
     input logic [4:0] rs1, rs2,		// addresses of operands (to regfile)	
     input logic [4:0] rd3,			// rd address will be pipelined to commit stage
@@ -17,11 +17,11 @@ module issue_stage (
     input logic [3:0] mem_op3,
 
     output logic we4,bneq4,btype4,	// function selection ctrl in issue stage and write enable
-    output logic [3:0] fn4,
+    output logic [4:0] fn4,
     output logic [1:0] pcselect4,
     output logic [31:0] op_a, op_b,		// operands A & B output from regfile in PIPE #4 (to exe stage)
     output logic [4:0] rd4,
-    output logic [3:0] alu_fn4,		// alu control in issue stage
+    output logic [3:0] alu_fn4,	mul_fn4,	// alu_mul_div control in issue stage
     output logic [31:0] pc4,B_imm4, J_imm4, S_imm4,U_imm4,
     output logic j4, jr4,LUI4,auipc4,
     output logic [3:0] mem_op4
@@ -32,10 +32,10 @@ module issue_stage (
     logic [4:0] shamtReg4;
     logic [31:0] I_immdReg4, B_immdReg4, J_immReg4, S_immReg4,U_immReg4;
     logic [1:0] BSELReg4;
-    logic [3:0] alufnReg4;	
+    logic [3:0] alufnReg4,mul_fnReg4;
     logic [31:0] pcReg4;	
     logic weReg4,bneqReg4,btypeReg4;
-    logic [2:0] fnReg4;
+    logic [4:0] fnReg4;
     logic [1:0] pcselectReg4;
     logic jReg4, jrReg4,LUIReg4,auipcReg4;
     logic [3:0] mem_opReg4;
@@ -58,6 +58,7 @@ module issue_stage (
             S_immReg4  <= 0;
             BSELReg4	<= 0;
             alufnReg4	<= 0;
+            mul_fnReg4   <=0;
             fnReg4		<= 0;
             weReg4		<= 0;
             pcReg4		<= 0;
@@ -81,8 +82,9 @@ module issue_stage (
             U_immReg4   <= U_imm3;
             S_immReg4   <= S_imm3;
             BSELReg4	<= B_SEL3;
-            // pass alu, fn & we control signals through the pipe form decode to issue stage
+            // pass alu_mul, fn & we control signals through the pipe form decode to issue stage
             alufnReg4	<= alu_fn3;
+            mul_fnReg4  <= mul_fn3;
             fnReg4		<= fn3;
             weReg4		<= we3;
             pcReg4		<= pc3;		// passing pc to exe 
@@ -118,6 +120,7 @@ module issue_stage (
 
     // output
     assign alu_fn4	= alufnReg4;
+    assifn mul_fn4      = mul_fnReg4;
     assign rd4	= rdReg4;
     assign fn4 	= fnReg4;
     assign we4 	= weReg4;

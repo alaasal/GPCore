@@ -1,13 +1,16 @@
 module instr_decoder(
     input logic [6:0] op,
     input logic [2:0] funct3,
+
     input logic instr_30,		// bit 30 in the instruction
+    input logic instr_25,		// bit 25 in the instruction
+
 
     output logic [1:0] pcselect,// select pc source
     output logic we,		    // regfile write enable
     output logic [1:0] B_SEL,	// select op b
-    output logic [3:0] alu_fn,	// select alu operation
-    output logic [3:0]fn,		// select result to be written back in regfile
+    output logic [3:0] alu_fn,mul_fn,	// select alu,mul_div operation
+    output logic [4:0]fn,		// select result to be written back in regfile
     output logic bneq, btype,	// to alu beq ~ bneq  
     output logic j, jr, LUI,auipc,       //JAL, JALR instructions
     output logic [4:0] mem_op  //mem operation type
@@ -19,6 +22,7 @@ module instr_decoder(
     logic BEQ, BNE, BLT, BGE, BLTU, BGEU;
     logic noOp;
     logic jtype, jrtype, i_jal, i_jalr,utype,autype,lui,aupc ;
+    logic i_mul , i_mulH , i_mulHSU , i_mulHU , i_div ,i_divU, i_rem , i_remU ; 
 
     //noOp
     assign noOp = ~(|op); // if op code = 000000 then set opcode0 to 1
@@ -48,6 +52,7 @@ module instr_decoder(
     assign i_sra  = rtype &  instr_30 &  funct3[2] & ~funct3[1] &  funct3[0];  //   1	101
     assign i_or   = rtype & ~instr_30 &  funct3[2] &  funct3[1] & ~funct3[0];  //   0	110
     assign i_and  = rtype & ~instr_30 & (&funct3); 				  //   	0	111
+
     
     // itype op
     assign i_addi  = itype & (~&funct3);					  //   	x	000
@@ -59,6 +64,19 @@ module instr_decoder(
     assign i_slli  = itype & ~instr_30  & ~funct3[2] & ~funct3[1] & funct3[0]; //	0	001
     assign i_srli  = itype & ~instr_30  &  funct3[2] & ~funct3[1] & funct3[0]; //	0	101
     assign i_srai  = itype &  instr_30  &  funct3[2] & ~funct3[1] & funct3[0]; //	1	101 
+
+   // rtype mul div                                                                  instr[25]  funct3
+    assign i_mul  = rtype & instr_25 & (~&funct3);                             //        0      000
+    assign i_mulH = rtype & instr_25 & ~funct3[2] & ~funct3[1] &  funct3[0];   //        0      001
+    assign i_mulHSU = rtype & instr_25 & ~funct3[2] & funct3[1] & ~funct3[0];  //        0      010
+    assign i_mulHU  = rtype & instr_25 & ~funct3[2] & funct3[1] & funct3[0];   //        0      011
+    assign i_div    = rtype & instr_25 & funct3[2] & ~funct3[1] & ~funct3[0];  //        0      100
+    assign i_divU  = rtype & instr_25 &  funct3[2] & ~funct3[1] &  funct3[0];  //        0      101
+    assign i_rem  =  rtype & instr_25 & funct3[2] & funct3[1] & ~funct3[0];    //        0      110
+    assign i_remU = rtype & instr_25 & (&funct3);                              //        0      111
+    
+    
+    
 
     // btype op
     assign BEQ  = btype & (~&funct3);					  //   	x	000
@@ -130,12 +148,36 @@ module instr_decoder(
     // 1010 -> bgeu
     // 1101 -> sra | srai
 
-    assign alu_fn[0] = i_sll | i_slli| i_sltu | i_sltiu | i_srl | i_srli | i_and | i_andi | i_sra | i_srai | BLTU | BGE ;
+
+
+ assign alu_fn[0] = i_sll | i_slli| i_sltu | i_sltiu | i_srl | i_srli | i_and | i_andi | i_sra | i_srai | BLTU | BGE ;
     assign alu_fn[1] = i_slt | i_slti| i_sltu | i_sltiu | i_or  | i_ori  | i_and | i_andi | BLTU | BLT | BGEU ;
     assign alu_fn[2] = i_xor | i_xori| i_srl  | i_srli  | i_or  | i_ori  | i_and | i_andi| i_sra | i_srai;
     assign alu_fn[3] = i_sub | i_sra | i_srai | BEQ | BNE | BGE  | BGEU ;
+    
 
-    assign bneq = BNE ; 
+// inst signal controls the type of instruction done by the mul_div{bit25, funct3}
+    // 1000 -> mul 	
+    // 1001 -> mulH
+    // 1010 -> mulHSU
+    // 1011 -> mulHU
+    // 1100 -> div 
+    // 1101 -> divU
+    // 1110 ->rem
+    // 1111 -> 	remU
+     
+
+   
+    assign mul_fn[0] =  i_mulH | i_mulHU |i_divU | i_remU ;
+    assign mul_fn[1] =  i_mulHSU | i_mulHU | i_rem | i_remU ;
+    assign mul_fn[2] =  i_div |i_divU | i_rem | i_remU; 
+    assign mul_fn[3] =  i_mul | i_mulH | i_mulHSU | i_mulHU | i_div |i_divU | i_rem | i_remU ;
+    
+
+
+
+
+    assign bneq = BNE;
     assign j = i_jal;
     assign jr = i_jalr;
     assign LUI = lui;
@@ -144,5 +186,9 @@ module instr_decoder(
     assign fn[0] = ~(rtype|itype) | i_jal | i_jalr ;
     assign fn[1] = ~(rtype|itype);
     assign fn[2] = ltype;		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
-    assign fn[3] = |lui | aupc;
+    assign fn[3] = lui | aupc;
+    assign fn[4] = i_mul | i_mulH | i_mulHSU | i_mulHU | i_div |i_divU | i_rem | i_remU ; 
+
+   assign mul_div_e = i_mul | i_mulH | i_mulHSU | i_mulHU | i_div |i_divU | i_rem | i_remU ; 
+
  endmodule

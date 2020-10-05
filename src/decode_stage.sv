@@ -4,7 +4,7 @@ module instdec_stage(
     input logic  [31:0] pc2,		  // input from frontend stage (pc)
 
     output logic we3 , bneq3 , btype3, jr3, j3,LUI3,auipc3, // control signals
-    output logic [3:0] fn3,
+    output logic [4:0] fn3,
     output logic [4:0] rs1, rs2,		  // op registers addresses
     output logic [4:0] rd3,  		  // dest address
     output logic [4:0] shamt,		  // shift amount I_imm
@@ -14,7 +14,7 @@ module instdec_stage(
     output logic [31:0] U_imm3,               // LUI_auipc
     output logic [31:0] S_imm3,
     output logic [1:0] B_SEL3,	 
-    output logic [3:0] alu_fn3,
+    output logic [3:0] alu_fn3,mul_fn3,
     output logic [31:0] pc3,
     output logic [1:0] pcselect3,
     output logic [3:0] mem_op3
@@ -49,6 +49,7 @@ module instdec_stage(
     assign opcode   = instrReg3[6:0];
     assign funct3   = instrReg3[14:12];
     assign instr_30 = instrReg3[30];
+    assign instr_25 = instrReg3[25];
     assign rs1      = instrReg3[19:15];
     assign rs2      = instrReg3[24:20];
     assign rd3      = instrReg3[11:7];
@@ -56,7 +57,7 @@ module instdec_stage(
     assign I_imm3   = 32'(signed'(instrReg3[31:20]));  // sign extended I_immediate to 32-bit
     assign B_imm3	  = 32'(signed'({instrReg3[31], instrReg3[7], instrReg3[30:25], instrReg3[11:8], 1'b0 })); //sign extending b_immediate to 32-bit
     assign J_imm3	  = 32'(signed'({instrReg3[31], instrReg3[19:12], instrReg3[20], instrReg3[30:21], 1'b0}));
-    assign U_imm3   = 32'(signed'({instrReg3[31:12] , {12'b0}}));
+    assign U_imm3   = 32'(signed'({instrReg3[31:12] ,{12'b0}}));
     assign S_imm3   = 32'(signed'({instrReg3[31:25], instrReg3[11:7]}));
     assign pc3 	= pcReg3;
     
@@ -65,10 +66,12 @@ module instdec_stage(
     .op          (opcode),
     .funct3      (funct3),
     .instr_30    (instr_30),	// bit 30 in the instruction
+    .instr_25   (instr_25),	// bit 25 in the instruction
     .pcselect    (pcselect3),	// select pc source
     .we          (we3),			  // regfile write enable
     .B_SEL       (B_SEL3),		// select op b
     .alu_fn      (alu_fn3),		// select alu operation
+    .mul_fn      (mul_fn3),
     .fn          (fn3),				// select result to be written back in regfile
     .bneq        (bneq3),
     .btype       (btype3),		// to alu beq ~ bneq  
