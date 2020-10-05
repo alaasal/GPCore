@@ -158,10 +158,10 @@ module mem_wrap(
     always_comb begin
         unique case(mem_op6)
             4'b0001: mem_out6 = 32'(signed'(data_out6[baddr6]));             //i_lb
-            4'b0010: mem_out6 = 32'(signed'(data_out6[baddr6 + 1 : baddr6]));	//i_lh
+            4'b0010: mem_out6 = 32'(signed'({data_out6[baddr6 + 1], data_out6[baddr6]}));	//i_lh
             4'b0011: mem_out6 = data_out6;	                                //i_lw
             4'b0100: mem_out6 = {24'b0, data_out6[baddr6]};     	            //i_lbu
-            4'b0101: mem_out6 = {16'b0, data_out6[baddr6 + 1 : baddr6]};	    //i_lhu
+            4'b0101: mem_out6 = {16'b0, data_out6[baddr6 + 1], data_out6[baddr6]};	    //i_lhu
             default: mem_out6 = 0;
         endcase
     end
