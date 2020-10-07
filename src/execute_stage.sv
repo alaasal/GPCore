@@ -8,6 +8,8 @@ module exe_stage(
     input logic [31:0] pc4, B_imm4, J_imm4, S_imm4,
     input logic [1:0] pcselect4,
     input logic j4, jr4,
+	input logic [3:0] mem_op4,
+	input logic [2:0] m_op4,
     
     output logic we5,
     output logic [2:0] fn5,
@@ -17,7 +19,8 @@ module exe_stage(
     output logic [1:0] pcselect5,
     output logic j5, jr5,
     output logic [31:0] mem_out6,
-    output logic addr_misaligned6
+    output logic addr_misaligned6,
+	output logic [31:0] mul_div5
     );
     
     // wires 
@@ -33,6 +36,7 @@ module exe_stage(
     logic [31:0] pcReg5;	
     logic [1:0] pcselectReg5;
     logic jReg5, jrReg5;
+	logic [2:0] m_opReg5;
            
     
     
@@ -63,6 +67,13 @@ module exe_stage(
     .addr_misaligned6    (addr_misaligned6)
   );
 
+	mul_div mul1(
+    .a		(opaReg5),
+    .b		(opbReg5),
+    .m_op	(m_opReg5),
+    .res	(mul_div5)
+	);
+	
     // pipes
     always_ff @(posedge clk, negedge nrst)
       begin
@@ -82,6 +93,7 @@ module exe_stage(
             pcselectReg5<=0;
             jReg5 <= 0;
             jrReg5 <= 0;
+			m_opReg5 <= 0;
           end
         else
           begin
@@ -99,6 +111,7 @@ module exe_stage(
             pcselectReg5 <= pcselect4;
             jReg5 <= j4;
             jrReg5 <= jr4;
+			m_opReg5 <= m_op4;
           end
       end
 

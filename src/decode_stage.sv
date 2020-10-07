@@ -16,12 +16,14 @@ module instdec_stage(
     output logic [3:0] alu_fn3,
     output logic [31:0] pc3,
     output logic [1:0] pcselect3,
-    output logic [3:0] mem_op3
+    output logic [3:0] mem_op3,
+    output logic [2:0] m_op3
     );
 
     // wires
     logic [6:0] opcode;
     logic [2:0] funct3;
+    logic [6:0] funct7;
     logic instr_30;
     
     // registers
@@ -47,6 +49,7 @@ module instdec_stage(
     // decoding instructions
     assign opcode   = instrReg3[6:0];
     assign funct3   = instrReg3[14:12];
+    assign funct7   = instrReg3[31:25];
     assign instr_30 = instrReg3[30];
     assign rs1      = instrReg3[19:15];
     assign rs2      = instrReg3[24:20];
@@ -62,6 +65,7 @@ module instdec_stage(
     instr_decoder c1 (
     .op          (opcode),
     .funct3      (funct3),
+    .funct7      (funct7),
     .instr_30    (instr_30),	// bit 30 in the instruction
     .pcselect    (pcselect3),	// select pc source
     .we          (we3),			  // regfile write enable
@@ -72,7 +76,8 @@ module instdec_stage(
     .btype       (btype3),		// to alu beq ~ bneq  
     .j           (j3),
     .jr          (jr3),
-    .mem_op      (mem_op3)
+    .mem_op      (mem_op3),
+    .m_op        (m_op3)      //m extension opcode
     );
     
 endmodule

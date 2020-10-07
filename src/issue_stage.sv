@@ -15,6 +15,7 @@ module issue_stage (
     input logic [1:0] pcselect3,
     input logic j3, jr3,
     input logic [3:0] mem_op3,
+	input logic [2:0] m_op3,
 
     output logic we4,bneq4,btype4,	// function selection ctrl in issue stage and write enable
     output logic [2:0] fn4,
@@ -24,7 +25,8 @@ module issue_stage (
     output logic [3:0] alu_fn4,		// alu control in issue stage
     output logic [31:0] pc4,B_imm4, J_imm4, S_imm4,
     output logic j4, jr4,
-    output logic [3:0] mem_op4
+    output logic [3:0] mem_op4,
+	output logic [2:0] m_op4
     );
 
     // registers pipe #4
@@ -39,6 +41,7 @@ module issue_stage (
     logic [1:0] pcselectReg4;
     logic jReg4, jrReg4;
     logic [3:0] mem_opReg4;
+	logic [2:0] m_opReg4;
 
     // wires
     logic [31:0] operand_a, operand_b;   	   // operands value output from the register file
@@ -65,6 +68,7 @@ module issue_stage (
             jReg4 <= 0;
             jrReg4 <= 0;
             mem_opReg4 <= 0;
+			m_opReg4 <= 0; 
           end
         else
           begin
@@ -86,6 +90,7 @@ module issue_stage (
             jReg4 <= j3;
             jrReg4 <= jr3;
             mem_opReg4 <= mem_op3;
+			mem_opReg <= m_op3;
           end
       end
     
@@ -124,6 +129,6 @@ module issue_stage (
     assign j4 = jReg4;
     assign jr4 = jrReg4;
     assign mem_op4 = mem_opReg4;
- 
+	assign m_op4 = m_opReg4;
 endmodule
 
