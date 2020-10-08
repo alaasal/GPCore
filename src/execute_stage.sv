@@ -17,7 +17,8 @@ module exe_stage(
     output logic [1:0] pcselect5,
     output logic j5, jr5,
     output logic [31:0] mem_out6,
-    output logic addr_misaligned6
+    output logic addr_misaligned6,
+    output logic [31:0] pc5
     );
     
     // wires 
@@ -33,6 +34,7 @@ module exe_stage(
     logic [31:0] pcReg5;	
     logic [1:0] pcselectReg5;
     logic jReg5, jrReg5;
+    logic [31:0] pcReg5;
            
     
     
@@ -82,6 +84,7 @@ module exe_stage(
             pcselectReg5<=0;
             jReg5 <= 0;
             jrReg5 <= 0;
+            pcReg5 <= 0;
           end
         else
           begin
@@ -99,6 +102,7 @@ module exe_stage(
             pcselectReg5 <= pcselect4;
             jReg5 <= j4;
             jrReg5 <= jr4;
+            pcReg5 <= pc4;
           end
       end
 
@@ -107,6 +111,7 @@ module exe_stage(
     assign fn5 = fnReg5;
     assign we5 = weReg5;
     assign pcselect5=pcselectReg5;
+    assign pc5 = pcReg5;
 
 endmodule
 
