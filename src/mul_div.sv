@@ -5,18 +5,35 @@ module mul_div (
 
     output logic [31:0] res
 );
+
     logic [63:0] mul;
     logic [31:0] div, rem;
+    logic sign_a, sign_b;
+
+    always_comb begin
+        unique case(m_op[1:0])
+            1: begin
+                sign_a = 1;
+                sign_a = 1;
+            end 2: begin
+                sign_a = 1;
+                sign_b = 0;
+            end 3, 0: begin
+                sign_a = 0;
+                sign_b = 0;
+            end
+        endcase
+    end
+
     always_comb begin
         if (m_op[2] == 0) begin
-            mul = a * b;
+            mul = $signed({a[31] & sign_a, a}) * $signed({b[31] & sign_b, b});
             
-            case(m_op[1:0])
-                0:  res = mul[31:0];
-                1:  res = mul[63:32];
-                2:  res = $signed(mul[63:32]);
-                3:  res = mul[63:32];
+            unique case(m_op[1:0])
+                0:  res = mul[31:0];        //mul
+                1, 2, 3:  res = mul[63:32]; //mulh[s][u]
             endcase
+
         end else begin
             if (a == 0) begin   //division by zero
                 rem = a;
