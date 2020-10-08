@@ -8,7 +8,7 @@ module core(
     );
 
     // wires
-    logic [31:0] pc,pc2,pc3,pc4;         // wires conneting pc to exe  
+    logic [31:0] pc, pc2, pc3, pc4, pc5;         // wires conneting pc to exe  
     logic [31:0] instr2;   	   // output wire of IF stage
     logic [31:0] opa, opb;     // operands value output from issue stage
     logic [4:0] rs1, rs2;
@@ -131,8 +131,8 @@ module core(
     .pcselect4    (pcselect4),
     .j4           (j4),
     .jr4          (jr4),
-    .fn5          (fn5),
     .we5          (we5),
+    .fn5          (fn5),
     .alu_res5     (alu_result5),    // alu result in PIPE #5
     .rd5          (rd5),
     .target       (target),
@@ -140,7 +140,8 @@ module core(
     .j5           (j5),
     .jr5          (jr5),
     .mem_out6     (mem_out6),
-    .addr_misaligned6 (addr_misaligned6)
+    .addr_misaligned6 (addr_misaligned6),
+    .pc5              (pc5)
     );
 
     commit_stage commit(
@@ -149,6 +150,9 @@ module core(
     .we5         (we5),
     .rd5         (rd5),
     .result5     (alu_result5),	// input result from mem to commit stage
+    .pc5         (pc5),
+    .fn5         (fn5),
+    .mem_out6    (mem_out6),
     .rd6         (rd6),
     .wb_data6    (wb6),	        // final output that will be written back in register file PIPE #6
     .we6         (we6)
