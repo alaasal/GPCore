@@ -148,7 +148,7 @@ module core(
     .jr5          (jr5),
     .mem_out6     (mem_out6),
     .addr_misaligned6 (addr_misaligned6),
-    .mul_div5         (mul_div5)
+    .mul_div5         (mul_div5),
     .pc5              (pc5)
     );
 
