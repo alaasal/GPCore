@@ -19,7 +19,9 @@ module core(
     logic [4:0] rd3, rd4, rd5, rd6;  //(rd3 connect between output of pipe #3 and and input of pipe #4)
     logic [4:0] shamt;
     logic [3:0] mem_op3, mem_op4;
+    logic [2:0] m_op4, m_op3;
     logic [31:0] mem_out6;
+    logic [31:0] mul_div5;
     logic addr_misaligned6;
     //logic we3, we4, we5, we6;
     logic [2:0] fn3, fn4, fn5;
@@ -67,7 +69,8 @@ module core(
     .alu_fn3      (alu_fn3),
     .pc3          (pc3),
     .pcselect3    (pcselect3),
-    .mem_op3      (mem_op3)
+    .mem_op3      (mem_op3),
+    .m_op3        (m_op3)
     );
 
     issue_stage issue (
@@ -95,6 +98,7 @@ module core(
     .j3           (j3),
     .jr3          (jr3),
     .mem_op3      (mem_op3),
+    .m_op3        (m_op3), 
     .fn4          (fn4),
     .we4          (we4),
     .bneq4        (bneq4),
@@ -110,7 +114,8 @@ module core(
     .S_imm4       (S_imm4),
     .j4           (j4),
     .jr4          (jr4),
-    .mem_op4      (mem_op4)
+    .mem_op4      (mem_op4),
+    .m_op4        (m_op4)
     );
 
     exe_stage execute (
@@ -131,6 +136,8 @@ module core(
     .pcselect4    (pcselect4),
     .j4           (j4),
     .jr4          (jr4),
+    .mem_op4      (mem_op4),
+    .m_op4      (m_op4),
     .we5          (we5),
     .fn5          (fn5),
     .alu_res5     (alu_result5),    // alu result in PIPE #5
@@ -141,6 +148,7 @@ module core(
     .jr5          (jr5),
     .mem_out6     (mem_out6),
     .addr_misaligned6 (addr_misaligned6),
+    .mul_div5         (mul_div5)
     .pc5              (pc5)
     );
 
@@ -153,6 +161,7 @@ module core(
     .pc5         (pc5),
     .fn5         (fn5),
     .mem_out6    (mem_out6),
+    .mul_div5    (mul_div5),
     .rd6         (rd6),
     .wb_data6    (wb6),	        // final output that will be written back in register file PIPE #6
     .we6         (we6)
