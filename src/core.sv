@@ -148,7 +148,6 @@ module core(
     .jr4          (jr4),
     .LUI4         (LUI4),
     .auipc4       (auipc4),
-    .fn5          (fn5),
     .mem_op4      (mem_op4),
     .m_op4      (m_op4),
     .we5          (we5),
