@@ -110,7 +110,7 @@ module instr_decoder(
     assign mem_op[3] = i_sw  | i_sb  | i_sh;
          
     // generate control signals
-    assign pcselect[0] = ~(rtype|itype|noOp) && ~btype; // to set pcselect to 0 (will be edited when branch and jump operations added)
+    assign pcselect[0] = 0; // to set pcselect to 0 (will be edited when branch and jump operations added)
     assign pcselect[1] = btype | i_jal | i_jalr;
 
     //00 rtype itype nop
@@ -164,7 +164,7 @@ module instr_decoder(
     // 010 -> m output
     // 011 -> immediate
     // 111 -> load
-    assign fn[0] = ~(rtype|itype) | i_jal | i_jalr;
+    assign fn[0] = i_jal | i_jalr;
     assign fn[1] = i_mul | i_mulh | i_mulhsu | i_mulhu | i_rem | i_remu | i_div | i_divu;
     assign fn[2] = ltype;		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
 endmodule
