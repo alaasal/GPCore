@@ -1,6 +1,7 @@
 module instr_decoder(
     input logic [6:0] op,
     input logic [2:0] funct3,
+    input logic [6:0] funct7,
     input logic instr_30,		// bit 30 in the instruction
 
     output logic [1:0] pcselect,// select pc source
@@ -10,7 +11,8 @@ module instr_decoder(
     output logic [2:0]fn,		// select result to be written back in regfile
     output logic bneq, btype,	// to alu beq ~ bneq  
     output logic j, jr, LUI,auipc,         //JAL, JALR,lui,auipc instructions
-    output logic [4:0] mem_op  //mem operation type
+    output logic [3:0] mem_op,  //mem operation type
+    output logic [2:0] m_op
     );
 
     // wires
@@ -19,7 +21,9 @@ module instr_decoder(
     logic BEQ, BNE, BLT, BGE, BLTU, BGEU;
     logic noOp;
     logic jtype, jrtype, i_jal, i_jalr,utype,autype,lui,aupc;
+    logic i_mul , i_mulh , i_mulhsu , i_mulhu , i_div ,i_divu, i_rem , i_remu, instr_25; 
 
+    assign instr_25 = (~& funct7[6:1]) & funct7[0];     //funct7 == 0000_001
     //noOp
     assign noOp = ~(|op); // if op code = 000000 then set opcode0 to 1
     // decode instructions							                                // opcode
@@ -47,6 +51,16 @@ module instr_decoder(
     assign i_sra  = rtype &  instr_30 &  funct3[2] & ~funct3[1] &  funct3[0];  //   1	101
     assign i_or   = rtype & ~instr_30 &  funct3[2] &  funct3[1] & ~funct3[0];  //   0	110
     assign i_and  = rtype & ~instr_30 & (&funct3); 				  //   	0	111
+
+    // rtype mul div                                                                  instr[25]  funct3
+    assign i_mul    = rtype & instr_25 & (~&funct3);                            //        0      000
+    assign i_mulh   = rtype & instr_25 & ~funct3[2] & ~funct3[1] &  funct3[0];  //        0      001
+    assign i_mulhsu = rtype & instr_25 & ~funct3[2] & funct3[1]  & ~funct3[0];  //        0      010
+    assign i_mulhu  = rtype & instr_25 & ~funct3[2] & funct3[1]  & funct3[0];   //        0      011
+    assign i_div    = rtype & instr_25 & funct3[2]  & ~funct3[1] & ~funct3[0];  //        0      100
+    assign i_divu   = rtype & instr_25 &  funct3[2] & ~funct3[1] &  funct3[0];  //        0      101
+    assign i_rem    = rtype & instr_25 & funct3[2]  & funct3[1]  & ~funct3[0];  //        0      110
+    assign i_remu   = rtype & instr_25 & (&funct3);                             //        0      111
     
     // itype op
     assign i_addi  = itype & (~&funct3);					  //   	x	000
@@ -106,7 +120,7 @@ module instr_decoder(
     assign mem_op[3] = i_sw  | i_sb  | i_sh;
          
     // generate control signals
-    assign pcselect[0] = ~(rtype|itype|noOp) && ~btype; // to set pcselect to 0 (will be edited when branch and jump operations added)
+    assign pcselect[0] = 0; // to set pcselect to 0 (will be edited when branch and jump operations added)
     assign pcselect[1] = btype | i_jal | i_jalr;
 
     //00 rtype itype nop
@@ -136,14 +150,33 @@ module instr_decoder(
     assign alu_fn[2] = i_xor | i_xori| i_srl  | i_srli  | i_or  | i_ori  | i_and | i_andi| i_sra | i_srai;
     assign alu_fn[3] = i_sub | i_sra | i_srai | BEQ | BNE | BGE  | BGEU ;
 
+    
+    // inst signal controls the type of instruction done by the mul_div
+    // 000 -> mul 	
+    // 001 -> mulh
+    // 010 -> mulhsu
+    // 011 -> mulhu
+    // 101 -> div 
+    // 100 -> divu
+    // 111 -> rem
+    // 111 -> remu
+        
+    assign m_op[0] =  i_div  | i_rem  | i_mulh   | i_mulhu;
+    assign m_op[1] =  i_remu | i_rem  | i_mulhsu | i_mulhu;
+    assign m_op[2] =  i_div  | i_divu | i_rem    | i_remu; 
+
     assign bneq = BNE ; 
     assign j = i_jal;
     assign jr = i_jalr;
     assign LUI = lui;
     assign auipc = aupc;
 
-
-    assign fn[0] = ~(rtype|itype) | i_jal | i_jalr |lui | aupc;
-    assign fn[1] = ~(rtype|itype)|lui | aupc ;
+    // 000 -> alu
+    // 001 -> pc + 4
+    // 010 -> m output
+    // 011 -> immediate
+    // 111 -> load
+    assign fn[0] = i_jal | i_jalr | lui | aupc;
+    assign fn[1] = i_mul | i_mulh | i_mulhsu | i_mulhu | i_rem | i_remu | i_div | i_divu | lui | aupc;
     assign fn[2] = ltype;		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
 endmodule

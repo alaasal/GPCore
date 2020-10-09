@@ -8,7 +8,7 @@ module core(
     );
 
     // wires
-    logic [31:0] pc,pc2,pc3,pc4;         // wires conneting pc to exe  
+    logic [31:0] pc, pc2, pc3, pc4, pc5;         // wires conneting pc to exe  
     logic [31:0] instr2;   	   // output wire of IF stage
     logic [31:0] opa, opb;     // operands value output from issue stage
     logic [4:0] rs1, rs2;
@@ -19,7 +19,9 @@ module core(
     logic [4:0] rd3, rd4, rd5, rd6;  //(rd3 connect between output of pipe #3 and and input of pipe #4)
     logic [4:0] shamt;
     logic [3:0] mem_op3, mem_op4;
+    logic [2:0] m_op4, m_op3;
     logic [31:0] mem_out6;
+    logic [31:0] mul_div5;
     logic addr_misaligned6;
     //logic we3, we4, we5, we6;
     logic [2:0] fn3, fn4, fn5;
@@ -70,7 +72,8 @@ module core(
     .alu_fn3      (alu_fn3),
     .pc3          (pc3),
     .pcselect3    (pcselect3),
-    .mem_op3      (mem_op3)
+    .mem_op3      (mem_op3),
+    .m_op3        (m_op3)
     );
 
     issue_stage issue (
@@ -101,6 +104,7 @@ module core(
     .LUI3         (LUI3),
     .auipc3       (auipc3),
     .mem_op3      (mem_op3),
+    .m_op3        (m_op3), 
     .fn4          (fn4),
     .we4          (we4),
     .bneq4        (bneq4),
@@ -119,7 +123,8 @@ module core(
     .jr4          (jr4),
     .LUI4         (LUI4),
     .auipc4       (auipc4),
-    .mem_op4      (mem_op4)
+    .mem_op4      (mem_op4),
+    .m_op4        (m_op4)
     );
 
     exe_stage execute (
@@ -144,7 +149,10 @@ module core(
     .LUI4         (LUI4),
     .auipc4       (auipc4),
     .fn5          (fn5),
+    .mem_op4      (mem_op4),
+    .m_op4      (m_op4),
     .we5          (we5),
+    .fn5          (fn5),
     .alu_res5     (alu_result5),    // alu result in PIPE #5
     .rd5          (rd5),
     .target       (target),
@@ -152,7 +160,9 @@ module core(
     .j5           (j5),
     .jr5          (jr5),
     .mem_out6     (mem_out6),
-    .addr_misaligned6 (addr_misaligned6)
+    .addr_misaligned6 (addr_misaligned6),
+    .mul_div5         (mul_div5),
+    .pc5              (pc5)
     );
 
     commit_stage commit(
@@ -162,6 +172,10 @@ module core(
     .rd5         (rd5),
     .U_imm5      (U_imm5),
     .result5     (alu_result5),	// input result from mem to commit stage
+    .pc5         (pc5),
+    .fn5         (fn5),
+    .mem_out6    (mem_out6),
+    .mul_div5    (mul_div5),
     .rd6         (rd6),
     .wb_data6    (wb6),	        // final output that will be written back in register file PIPE #6
     .U_imm6      (U_imm6),
