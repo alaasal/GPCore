@@ -12,9 +12,9 @@ module core(
     logic [31:0] instr2;   	   // output wire of IF stage
     logic [31:0] opa, opb;     // operands value output from issue stage
     logic [4:0] rs1, rs2;
-    logic [31:0] I_imm3, B_imm3, J_imm3, S_imm3;
-    logic [31:0] B_imm4, J_imm4, S_imm4;
-    logic btype3,btype4,bneq3,bneq4;
+    logic [31:0] I_imm3, B_imm3, J_imm3, S_imm3,U_imm3;
+    logic [31:0] B_imm4, J_imm4, S_imm4,U_imm4;
+    logic btype3,btype4,bneq3,bneq4,LUI3,LUI4,auipc3,auipc4;
     logic [31:0] target;
     logic [4:0] rd3, rd4, rd5, rd6;  //(rd3 connect between output of pipe #3 and and input of pipe #4)
     logic [4:0] shamt;
@@ -55,6 +55,8 @@ module core(
     .btype3       (btype3),
     .jr3          (jr3),
     .j3           (j3),		// control signals
+    .LUI3         (LUI3),
+    .auipc3       (auipc3),
     .rs1          (rs1),
     .rs2          (rs2),	// op registers addresses
     .rd3          (rd3),	// dest address
@@ -62,6 +64,7 @@ module core(
     .I_imm3       (I_imm3),	// I_immediate
     .B_imm3       (B_imm3),	// B_immediate
     .J_imm3       (J_imm3),
+    .U_imm3       (U_imm3),
     .S_imm3       (S_imm3),
     .B_SEL3       (B_SEL3),
     .alu_fn3      (alu_fn3),
@@ -89,11 +92,14 @@ module core(
     .I_imm3       (I_imm3),
     .B_imm3       (B_imm3),
     .J_imm3       (J_imm3),		// immediates sign extended
+    .U_imm3       (U_imm3),
     .S_imm3       (S_imm3),
     .pc3          (pc3),
     .pcselect3    (pcselect3),
     .j3           (j3),
     .jr3          (jr3),
+    .LUI3         (LUI3),
+    .auipc3       (auipc3),
     .mem_op3      (mem_op3),
     .fn4          (fn4),
     .we4          (we4),
@@ -108,8 +114,11 @@ module core(
     .B_imm4       (B_imm4),
     .J_imm4       (J_imm4),
     .S_imm4       (S_imm4),
+    .U_imm4       (U_imm4),
     .j4           (j4),
     .jr4          (jr4),
+    .LUI4         (LUI4),
+    .auipc4       (auipc4),
     .mem_op4      (mem_op4)
     );
 
@@ -128,9 +137,12 @@ module core(
     .B_imm4       (B_imm4),
     .J_imm4       (J_imm4),
     .S_imm4       (S_imm4),
+    .U_imm4       (U_imm4),
     .pcselect4    (pcselect4),
     .j4           (j4),
     .jr4          (jr4),
+    .LUI4         (LUI4),
+    .auipc4       (auipc4),
     .fn5          (fn5),
     .we5          (we5),
     .alu_res5     (alu_result5),    // alu result in PIPE #5
@@ -148,9 +160,11 @@ module core(
     .nrst        (nrst),
     .we5         (we5),
     .rd5         (rd5),
+    .U_imm5      (U_imm5),
     .result5     (alu_result5),	// input result from mem to commit stage
     .rd6         (rd6),
     .wb_data6    (wb6),	        // final output that will be written back in register file PIPE #6
+    .U_imm6      (U_imm6),
     .we6         (we6)
     );
     

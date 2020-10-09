@@ -9,7 +9,7 @@ module instr_decoder(
     output logic [3:0] alu_fn,	// select alu operation
     output logic [2:0]fn,		// select result to be written back in regfile
     output logic bneq, btype,	// to alu beq ~ bneq  
-    output logic j, jr,         //JAL, JALR instructions
+    output logic j, jr, LUI,auipc,         //JAL, JALR,lui,auipc instructions
     output logic [4:0] mem_op  //mem operation type
     );
 
@@ -18,7 +18,7 @@ module instr_decoder(
     logic i_addi, i_slti, i_sltiu, i_xori, i_ori, i_andi, i_slli, i_srli, i_srai;
     logic BEQ, BNE, BLT, BGE, BLTU, BGEU;
     logic noOp;
-    logic jtype, jrtype, i_jal, i_jalr;
+    logic jtype, jrtype, i_jal, i_jalr,utype,autype,lui,aupc;
 
     //noOp
     assign noOp = ~(|op); // if op code = 000000 then set opcode0 to 1
@@ -33,6 +33,8 @@ module instr_decoder(
     assign ltype  = ~op[6] & ~op[5] & ~op[4] & ~op[3] & ~op[2] & op[1] & op[0];     //0000011
     //store
     assign stype  = ~op[6] & op[5] & ~op[4] & ~op[3] & ~op[2] & op[1] & op[0];      //0100011
+    assign utype = ~op[6] & ~op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];     //0010111 LUI
+    assign autype = ~op[6] & op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];    //0110111 auipc
 
     // rtype op								  // instr[30] funct3
     assign i_add  = rtype & ~instr_30 & (~&funct3);				  //   	0	000
@@ -69,6 +71,14 @@ module instr_decoder(
     assign i_jal	= jtype;
     assign i_jalr	= jrtype & (~&funct3);
 
+
+    //utype op
+     assign lui         = utype;
+
+   //autype op
+     assign aupc        = autype;
+
+
     //load/store op
     assign i_lb  = ltype & ~funct3[2] & ~funct3[1] & ~funct3[0];    //000
     assign i_lh  = ltype & ~funct3[2] & ~funct3[1] & funct3[0];     //001
@@ -103,7 +113,7 @@ module instr_decoder(
     //01 
     //10 branch 
     //11
-    assign we 	    = rtype | itype | jtype | jr | ltype;		  // set we to 1 if instr is rtype or itype (1 for all alu op)
+    assign we 	    = rtype | itype | jtype | jr | ltype| utype | autype;		  // set we to 1 if instr is rtype or itype (1 for all alu op)
     assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr | ltype;
     assign B_SEL[1] = i_slli | i_srli | i_srai;
     
@@ -129,8 +139,11 @@ module instr_decoder(
     assign bneq = BNE ; 
     assign j = i_jal;
     assign jr = i_jalr;
+    assign LUI = lui;
+    assign auipc = aupc;
 
-    assign fn[0] = ~(rtype|itype) | i_jal | i_jalr;
-    assign fn[1] = ~(rtype|itype);
+
+    assign fn[0] = ~(rtype|itype) | i_jal | i_jalr |lui | aupc;
+    assign fn[1] = ~(rtype|itype)|lui | aupc ;
     assign fn[2] = ltype;		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
 endmodule
