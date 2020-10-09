@@ -20,8 +20,11 @@ module data_mem #(
 
     logic [BC - 1 : 0][7 : 0] MEM [MEM_LEN - 1: 0];
 
-    logic [EADDR - 1: 0] waddr = addr [XLEN - 1 : BADDR];  
-    logic [BADDR - 1: 0] baddr = addr [BADDR - 1: 0];       //byte addr: specifies wich byte to read write
+    logic [EADDR - 1: 0] waddr;
+    logic [BADDR - 1: 0] baddr;       //byte addr: specifies wich byte to read write
+
+    assign waddr = addr [XLEN - 1 : BADDR];  
+    assign baddr = addr [BADDR - 1: 0];
     
     always_ff @(posedge clk) begin
         if (gwe) MEM[waddr] <= data_in;     //gwe: global write enable, write to all 32 bits
