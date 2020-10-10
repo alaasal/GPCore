@@ -12,7 +12,6 @@ module commit_stage(
 
     output logic [4:0] rd6,
     output logic [31:0] wb_data6, // final output that will be written back in register file PIPE #6
-     output logic [31:0] U_imm6,   // final imm out from lui & auipc to reg
     output logic we6
     );
 
@@ -22,7 +21,7 @@ module commit_stage(
             0: wb_data6  = result5;
             1: wb_data6  = pc5 + 1;
             2: wb_data6  = mul_div5;
-            3: wb_data6  = 0;   //to be adjusted with lui
+            3: wb_data6  = U_imm5;
             4: wb_data6  = mem_out6;
             default: wb_data6 = 0;
         endcase
@@ -30,6 +29,5 @@ module commit_stage(
 
     assign rd6 = rd5;
     assign we6 = we5;
-    assign U_imm6 = U_imm5;
 
 endmodule
