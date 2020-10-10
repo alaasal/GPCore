@@ -30,11 +30,31 @@ module core(
     logic [3:0] alu_fn3, alu_fn4;
     logic [31:0] alu_result5;   // alu result output from exe to commit
     logic [31:0] wb6;	   // data output from commit stage to regfile to be written
+    logic stall;
+    logic we3, we4, we5, we6;
+    
+   // scroboard
+   scoreboard_data_hazards scoreboard(
+   .clk             (clk),
+   .rs1             (instr2[19:15]), // instr[19:15]
+   .rs2             (instr2[24:20]), // instr[24:20]
+   .rd3             (rd3),
+   .rd4             (rd4),
+   .rd5             (rd5),
+   .rd6             (rd6),
+   .op_code         (instr2[6:0]),
+   .we3             (we3),
+   .we4             (we4),
+   .we5             (we5),
+   .we6             (we6),
+   .stall           (stall)
+   );
     
     // instantiating stages (7 pipelines)
     frontend_stage frontend(
     .clk            (clk),
     .nrst           (nrst),
+    .stall          (stall),
     .PCSEL          (pcselect5),	// pc select control signal
     .target         (target),
     .pc2            (pc2),		// pc at instruction mem pipe #2
@@ -51,6 +71,7 @@ module core(
     .nrst         (nrst),
     .instr2       (instr2),	// input from frontend stage (inst mem)
     .pc2          (pc2),	// input from frontend stage (pc)
+    .stall        (stall),
     .we3          (we3),
     .fn3          (fn3),
     .bneq3        (bneq3),
@@ -148,6 +169,7 @@ module core(
     .jr4          (jr4),
     .LUI4         (LUI4),
     .auipc4       (auipc4),
+    .fn5          (fn5),
     .mem_op4      (mem_op4),
     .m_op4      (m_op4),
     .we5          (we5),
@@ -182,3 +204,4 @@ module core(
     );
     
 endmodule
+

@@ -2,6 +2,7 @@ module instdec_stage(
     input logic clk, nrst,
     input logic  [31:0] instr2,		  // input from frontend stage (inst mem)
     input logic  [31:0] pc2,		  // input from frontend stage (pc)
+    input logic stall,
 
     output logic we3 , bneq3 , btype3, jr3, j3,LUI3,auipc3,  // control signals
     output logic [2:0] fn3,
@@ -50,6 +51,8 @@ module instdec_stage(
     // decoding instructions
     assign opcode   = instrReg3[6:0];
     assign funct3   = instrReg3[14:12];
+    always_comb begin
+      
     assign funct7   = instrReg3[31:25];
     assign instr_30 = instrReg3[30];
     assign rs1      = instrReg3[19:15];
@@ -63,6 +66,21 @@ module instdec_stage(
     assign S_imm3   = 32'(signed'({instrReg3[31:25], instrReg3[11:7]}));
     assign pc3 	= pcReg3;
     
+  if(stall)begin
+    assign opcode   = 7'b0010011;
+    assign funct3   = 3'b000;
+    assign rs1      = 5'b0;
+    assign I_imm3   = 32'(signed'(12'b0));  // sign extended I_immediate to 32-bit
+    assign rd3      = 5'b0;
+   end
+ else begin
+   assign opcode   = instrReg3[6:0];
+   assign funct3   = instrReg3[14:12];
+   assign rs1      = instrReg3[19:15];
+   assign I_imm3   = 32'(signed'(instrReg3[31:20]));  // sign extended I_immediate to 32-bit
+   assign rd3      = instrReg3[11:7];
+ end
+  end
     // instantiate controller
     instr_decoder c1 (
     .op          (opcode),
@@ -82,6 +100,7 @@ module instdec_stage(
     .LUI         (LUI3),
     .auipc       (auipc3),
     .m_op        (m_op3)      //m extension opcode
+    
     );
     
 endmodule
