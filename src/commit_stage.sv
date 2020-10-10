@@ -20,7 +20,7 @@ module commit_stage(
     always_comb begin
         unique case(fn5)
             0: wb_data6  = result5;
-            1: wb_data6  = pc5;
+            1: wb_data6  = pc5 + 1;
             2: wb_data6  = mul_div5;
             3: wb_data6  = 0;   //to be adjusted with lui
             4: wb_data6  = mem_out6;
