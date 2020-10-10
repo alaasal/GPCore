@@ -25,7 +25,7 @@ module data_mem #(
     
     assign waddr = addr [XLEN - 1 : BADDR];
     assign baddr = addr [BADDR - 1: 0];
-    always_ff @(posedge clk) begin
+    always_ff @(negedge clk) begin
         if (gwe) MEM[waddr] <= data_in;     //gwe: global write enable, write to all 32 bits
         else begin
             case (baddr)
@@ -44,7 +44,7 @@ module data_mem #(
         end
     end
 
-    always_ff @(posedge clk) begin
+    always_ff @(negedge clk) begin
         if (rd) data_out <= MEM[waddr]; //word align to multiples of 4
     end
 endmodule
