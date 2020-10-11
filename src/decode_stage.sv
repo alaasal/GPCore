@@ -49,8 +49,8 @@ module instdec_stage(
 
     // output
     // decoding instructions
-    assign opcode   = instrReg3[6:0];
-    assign funct3   = instrReg3[14:12];
+  //  assign opcode   = instrReg3[6:0];
+   // assign funct3   = instrReg3[14:12];
     always_comb begin
       
     assign funct7   = instrReg3[31:25];

@@ -173,7 +173,6 @@ module core(
     .mem_op4      (mem_op4),
     .m_op4      (m_op4),
     .we5          (we5),
-    .fn5          (fn5),
     .alu_res5     (alu_result5),    // alu result in PIPE #5
     .rd5          (rd5),
     .target       (target),
