@@ -14,6 +14,7 @@ module core(
     logic [4:0] rs1, rs2;
     logic [31:0] I_imm3, B_imm3, J_imm3, S_imm3,U_imm3;
     logic [31:0] B_imm4, J_imm4, S_imm4,U_imm4;
+    logic [31:0] U_imm5;
     logic btype3,btype4,bneq3,bneq4,LUI3,LUI4,auipc3,auipc4;
     logic [31:0] target;
     logic [4:0] rd3, rd4, rd5, rd6;  //(rd3 connect between output of pipe #3 and and input of pipe #4)
@@ -155,6 +156,7 @@ module core(
     .alu_res5     (alu_result5),    // alu result in PIPE #5
     .rd5          (rd5),
     .target       (target),
+    .U_imm5       (U_imm5),
     .pcselect5    (pcselect5),
     .j5           (j5),
     .jr5          (jr5),
@@ -177,7 +179,6 @@ module core(
     .mul_div5    (mul_div5),
     .rd6         (rd6),
     .wb_data6    (wb6),	        // final output that will be written back in register file PIPE #6
-    .U_imm6      (U_imm6),
     .we6         (we6)
     );
     
