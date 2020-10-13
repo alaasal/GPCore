@@ -13,7 +13,7 @@ module core(
     logic [31:0] opa, opb;     // operands value output from issue stage
     logic [4:0] rs1, rs2;
     logic [31:0] I_imm3, B_imm3, J_imm3, S_imm3,U_imm3;
-    logic [31:0] B_imm4, J_imm4, S_imm4,U_imm4;
+    logic [31:0] B_imm4, J_imm4, S_imm4,U_imm4,U_imm5;
     logic btype3,btype4,bneq3,bneq4,LUI3,LUI4,auipc3,auipc4;
     logic [31:0] target;
     logic [4:0] rd3, rd4, rd5, rd6;  //(rd3 connect between output of pipe #3 and and input of pipe #4)
@@ -32,24 +32,11 @@ module core(
     logic [31:0] wb6;	   // data output from commit stage to regfile to be written
     logic stall;
     logic we3, we4, we5, we6;
+    logic [6:0]opcode3;
+  
     
    // scroboard
-   scoreboard_data_hazards scoreboard(
-   .clk             (clk),
-   .rs1             (instr2[19:15]), // instr[19:15]
-   .rs2             (instr2[24:20]), // instr[24:20]
-   .rd3             (rd3),
-   .rd4             (rd4),
-   .rd5             (rd5),
-   .rd6             (rd6),
-   .op_code         (instr2[6:0]),
-   .we3             (we3),
-   .we4             (we4),
-   .we5             (we5),
-   .we6             (we6),
-   .stall           (stall)
-   );
-    
+
     // instantiating stages (7 pipelines)
     frontend_stage frontend(
     .clk            (clk),
@@ -94,7 +81,9 @@ module core(
     .pc3          (pc3),
     .pcselect3    (pcselect3),
     .mem_op3      (mem_op3),
-    .m_op3        (m_op3)
+    .m_op3        (m_op3),
+    .opcode3      (opcode3)
+    
     );
 
     issue_stage issue (
@@ -145,7 +134,10 @@ module core(
     .LUI4         (LUI4),
     .auipc4       (auipc4),
     .mem_op4      (mem_op4),
-    .m_op4        (m_op4)
+    .m_op4        (m_op4),
+    .opcode3	  (opcode3),
+    .stall	  (stall)
+	
     );
 
     exe_stage execute (
@@ -169,13 +161,14 @@ module core(
     .jr4          (jr4),
     .LUI4         (LUI4),
     .auipc4       (auipc4),
-    .fn5          (fn5),
     .mem_op4      (mem_op4),
     .m_op4      (m_op4),
     .we5          (we5),
+    .fn5          (fn5),
     .alu_res5     (alu_result5),    // alu result in PIPE #5
     .rd5          (rd5),
     .target       (target),
+    .U_imm5       (U_imm5),
     .pcselect5    (pcselect5),
     .j5           (j5),
     .jr5          (jr5),
@@ -185,7 +178,7 @@ module core(
     .pc5              (pc5)
     );
 
-    commit_stage commit(
+     commit_stage commit(
     .clk         (clk),
     .nrst        (nrst),
     .we5         (we5),
@@ -198,7 +191,6 @@ module core(
     .mul_div5    (mul_div5),
     .rd6         (rd6),
     .wb_data6    (wb6),	        // final output that will be written back in register file PIPE #6
-    .U_imm6      (U_imm6),
     .we6         (we6)
     );
     

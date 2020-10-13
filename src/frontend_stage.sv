@@ -2,7 +2,6 @@ module frontend_stage(
     input logic clk, nrst,stall,
     input logic [1:0] PCSEL,		// pc select control signal
     input logic [31:0] target,
-
     output logic [31:0] pc2,		// pc at instruction mem pipe #2
     output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
     
@@ -32,16 +31,16 @@ module frontend_stage(
             pcReg		<= 0;
             pcReg2 		<= 0;
           end
-        else if (!stall)
+	else if (!stall)
           begin
             pcReg		<= npc;		// PIPE1
             pcReg2		<= pcReg;	// PIPE2
           end
-        else 
-          begin
-            pcReg		<= pcReg;	// PIPE1
-            pcReg2		<= pcReg2;	// PIPE2
-          end
+else begin 
+            pcReg		<= pcReg;		
+            pcReg2		<= pcReg2;
+
+end 
       end
 
 
@@ -49,9 +48,10 @@ module frontend_stage(
       begin
         // npc logic
         unique case(PCSEL)
-            0: npc = pcReg + 1;
-            1: npc = 0;
-            2: npc = target;
+            1'b00: npc = pcReg + 1;
+            2'b01: npc = 0;
+            2'b10: npc = target;
+	    2'b11: npc = npc;
             default: npc = pcReg + 1 ;
         endcase
       end
