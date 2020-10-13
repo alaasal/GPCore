@@ -6,7 +6,7 @@ module frontend_stage(
     output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
     
     //Just for testing not an actual output
-    output logic [31:0] pc,		// program counter PIPE #1
+    output logic [31:0] pc,				// program counter PIPE #1
 
     input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
     input logic [31:0] DEBUG_addr,
@@ -19,9 +19,7 @@ module frontend_stage(
     logic [31:0] pcReg2;	   // pipe #2 from pc to inst mem
     // wires
     logic [31:0] npc;   	   // next pc wire
-  //  logic clk_front;
-    
- //   assign clk_front = clk & (~stall);
+
     
     // pipes
        always_ff @(posedge clk, negedge nrst)
@@ -48,7 +46,7 @@ end
       begin
         // npc logic
         unique case(PCSEL)
-            1'b00: npc = pcReg + 1;
+            2'b00: npc = pcReg + 1;
             2'b01: npc = 0;
             2'b10: npc = target;
 	    2'b11: npc = npc;

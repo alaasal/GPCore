@@ -54,11 +54,11 @@ logic stallReg;
 			end 
 		4'b0011: 
 			begin 
-				if (scoreboard[rd][6] || scoreboard[rs1][6] || scoreboard[rs2][6])  stallReg <= 1; //assign stallo=stallreg
+				if ( scoreboard[rs1][6] || scoreboard[rs2][6])  stallReg <= 1; //assign stallo=stallreg
 				else 
 					begin 
-					scoreboard[rd][6]<=1; scoreboard[rs1][6]<=1;scoreboard[rs2][6]<=1;
-					scoreboard[rd][4]<=1; scoreboard[rs1][4]<=1;scoreboard[rs2][4]<=1;
+					 scoreboard[rs1][6]<=1;scoreboard[rs2][6]<=1;
+					 scoreboard[rs1][4]<=1;scoreboard[rs2][4]<=1;
    					end 
 			end 
 		4'b0100: 

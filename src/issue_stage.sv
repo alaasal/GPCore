@@ -105,14 +105,14 @@ module issue_stage (
             mem_opReg4 <= mem_op3;
 	    m_opReg4 <= m_op3;
 if(stall)begin 
-	BSELReg4	<= 2'b0;   
+	//BSELReg4	<= 2'b0;   
 	fnReg4		<= 3'b0;  		
  	rdReg4		<= 5'b0;
  	alufnReg4	<= 4'b0; 
 	weReg4		<= 1'b0;
 	end 
 else begin 
-	BSELReg4	<= B_SEL3;
+	//BSELReg4	<= B_SEL3;
 	fnReg4		<= fn3;
 	rdReg4		<= rd3;
 	alufnReg4	<= alu_fn3;
@@ -163,5 +163,6 @@ else begin
     assign auipc4 	= auipcReg4;
     assign mem_op4	= mem_opReg4;
     assign m_op4	= m_opReg4;
+    assign alu_fn4	= alufnReg4;
 endmodule
 
