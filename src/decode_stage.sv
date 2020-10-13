@@ -19,7 +19,8 @@ module instdec_stage(
     output logic [31:0] pc3,
     output logic [1:0] pcselect3,
     output logic [3:0] mem_op3,
-    output logic [2:0] m_op3
+    output logic [2:0] m_op3,
+    output logic [6:0]opcode3
     );
 
     // wires
@@ -40,19 +41,23 @@ module instdec_stage(
             instrReg3 <= 0;
             pcReg3<=0;
             end
-        else
+        else if(!stall)
             begin
             instrReg3 <= instr2;
             pcReg3<=pc2;
             end
+else begin 
+instrReg3<=instrReg3;
+pcReg3<=pcReg3;
+end 
       end
 
     // output
     // decoding instructions
-    assign opcode   = instrReg3[6:0];
-    assign funct3   = instrReg3[14:12];
+  //  assign opcode   = instrReg3[6:0];
+   // assign funct3   = instrReg3[14:12];
     always_comb begin
-      
+    assign funct3   = instrReg3[14:12];
     assign funct7   = instrReg3[31:25];
     assign instr_30 = instrReg3[30];
     assign rs1      = instrReg3[19:15];
@@ -60,11 +65,17 @@ module instdec_stage(
     assign rd3      = instrReg3[11:7];
     assign shamt    = instrReg3[24:20];
     assign I_imm3   = 32'(signed'(instrReg3[31:20]));  // sign extended I_immediate to 32-bit
-    assign B_imm3	  = 32'(signed'({instrReg3[31], instrReg3[7], instrReg3[30:25], instrReg3[11:8], 1'b0 })); //sign extending b_immediate to 32-bit
-    assign J_imm3	  = 32'(signed'({instrReg3[31], instrReg3[19:12], instrReg3[20], instrReg3[30:21], 1'b0}));
+    assign B_imm3   = 32'(signed'({instrReg3[31], instrReg3[7], instrReg3[30:25], instrReg3[11:8], 1'b0 })); //sign extending b_immediate to 32-bit
+    assign J_imm3   = 32'(signed'({instrReg3[31], instrReg3[19:12], instrReg3[20], instrReg3[30:21], 1'b0}));
     assign U_imm3   = 32'(signed'({instrReg3[31:12] , {12'b0}}));
     assign S_imm3   = 32'(signed'({instrReg3[31:25], instrReg3[11:7]}));
     assign pc3 	= pcReg3;
+
+   assign opcode   = instrReg3[6:0];
+  
+ assign opcode3 = opcode;
+  
+/*
     
   if(stall)begin
     assign opcode   = 7'b0010011;
@@ -72,6 +83,7 @@ module instdec_stage(
     assign rs1      = 5'b0;
     assign I_imm3   = 32'(signed'(12'b0));  // sign extended I_immediate to 32-bit
     assign rd3      = 5'b0;
+
    end
  else begin
    assign opcode   = instrReg3[6:0];
@@ -80,6 +92,7 @@ module instdec_stage(
    assign I_imm3   = 32'(signed'(instrReg3[31:20]));  // sign extended I_immediate to 32-bit
    assign rd3      = instrReg3[11:7];
  end
+*/
   end
     // instantiate controller
     instr_decoder c1 (
@@ -99,7 +112,8 @@ module instdec_stage(
     .mem_op      (mem_op3),
     .LUI         (LUI3),
     .auipc       (auipc3),
-    .m_op        (m_op3)      //m extension opcode
+    .m_op        (m_op3),      //m extension opcode
+    .stall       (stall)
     
     );
     

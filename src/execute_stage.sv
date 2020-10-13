@@ -17,7 +17,7 @@ module exe_stage(
     output logic [4:0] rd5,
     output logic [31:0] target,U_imm5,
     output logic [1:0] pcselect5,
-    output logic j5, jr5,LUI5,auipc5,
+    output logic j5, jr5,
     output logic [31:0] mem_out6,
     output logic addr_misaligned6,
 	  output logic [31:0] mul_div5,
@@ -118,7 +118,7 @@ module exe_stage(
             jrReg5 <= jr4;
             LUIReg5 <= LUI4;
             auipcReg5 <= auipc4;
-			      m_opReg5 <= m_op4;
+	    m_opReg5 <= m_op4;
           end
       end
 

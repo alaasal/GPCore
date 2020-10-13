@@ -14,9 +14,22 @@ module commit_stage(
     output logic [31:0] wb_data6, // final output that will be written back in register file PIPE #6
     output logic we6
     );
-
+//logic weReg6,rdReg6;
     // output
-    always_comb begin
+       // always_ff @(posedge clk, negedge nrst)
+     // begin
+    //if (!nrst) begin
+	//weReg6<=0;
+	//rdReg6<=0;
+	//wb_dataReg6<=0;
+	//end
+//else begin 
+	//weReg6<=we5;
+	//rdReg6<=rd5;
+	//end 
+      //end
+
+   always_comb begin
         unique case(fn5)
             0: wb_data6  = result5;
             1: wb_data6  = pc5 + 1;
@@ -26,8 +39,6 @@ module commit_stage(
             default: wb_data6 = 0;
         endcase
     end
-
-    assign rd6 = rd5;
-    assign we6 = we5;
-
+    assign rd6 = rd5;//rdReg6;
+    assign we6 = we5;//weReg6;
 endmodule
