@@ -15,7 +15,7 @@ module issue_stage (
     input logic [1:0] pcselect3,
     input logic j3, jr3,LUI3,auipc3,
     input logic [3:0] mem_op3,
-	  input logic [2:0] m_op3,
+    input logic [2:0] m_op3,
 
     output logic we4,bneq4,btype4,	// function selection ctrl in issue stage and write enable
     output logic [2:0] fn4,
@@ -26,7 +26,7 @@ module issue_stage (
     output logic [31:0] pc4,B_imm4, J_imm4, S_imm4,U_imm4,
     output logic j4, jr4,LUI4,auipc4,
     output logic [3:0] mem_op4,
-  	output logic [2:0] m_op4
+    output logic [2:0] m_op4
     );
 
     // registers pipe #4
