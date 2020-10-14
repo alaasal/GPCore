@@ -13,7 +13,8 @@ module regfile (
 	  begin
 		if (!clrn)
 		  begin	// iterate on reg array indices to clear registers
-			for (int i = 0; i < 32; i = i + 1)
+		  	register[0] <= 32'h0;
+			for (int i = 1; i < 32; i = i + 1)
 				register[i] <= 32'h1;      // clear register file
 		  end
 		else

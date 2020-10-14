@@ -8,20 +8,25 @@ module exe_stage(
     input logic [31:0] pc4, B_imm4, J_imm4, U_imm4 , S_imm4,
     input logic [1:0] pcselect4,
     input logic j4, jr4,LUI4,auipc4,
+    input logic [3:0] mem_op4,
+    input logic [2:0] m_op4,
     
-    output logic we5,
-    output logic [2:0] fn5,
-    output logic [31:0] alu_res5,  		// alu result in PIPE #5
-    output logic [4:0] rd5,
-    output logic [31:0] target,U_imm5,
+    output logic we6,
+    output logic [2:0] fn6,
+    output logic [31:0] alu_resReg6,  		// alu result in PIPE #5
+    output logic [4:0] rd6,
+    output logic [31:0] target,U_imm6,AU_imm6 ,
     output logic [1:0] pcselect5,
-    output logic j5, jr5,LUI5,auipc5,
     output logic [31:0] mem_out6,
-    output logic addr_misaligned6
+    output logic addr_misaligned6,
+    output logic [31:0] mul_divReg6,
+    output logic [31:0] pc6Reg,
+    output logic [31:0] wb_data6
     );
     
     // wires 
     logic btaken;
+    logic j5, jr5;
     // registers
     logic weReg5,bneqReg5,btypeReg5;
     logic [2:0] fnReg5;
@@ -33,6 +38,9 @@ module exe_stage(
     logic [31:0] pcReg5;	
     logic [1:0] pcselectReg5;
     logic jReg5, jrReg5,LUIReg5,auipcReg5;
+    logic [2:0] m_opReg5;
+    logic [31:0] alu_res5;
+    logic [31:0] mul_div5;
            
     
     
@@ -61,8 +69,15 @@ module exe_stage(
     .S_imm4              (S_imm4),  //S_imm offset
     .mem_out6            (mem_out6),
     .addr_misaligned6    (addr_misaligned6)
-  );
+   );
 
+    mul_div mul1(
+    .a		(opaReg5),
+    .b		(opbReg5),
+    .m_op	(m_opReg5),
+    .res	(mul_div5)
+   );
+	
     // pipes
     always_ff @(posedge clk, negedge nrst)
       begin
@@ -79,12 +94,14 @@ module exe_stage(
             B_immReg5 <= 0;
             J_immReg5 <= 0;
             U_immReg5 <= 0;
+           
             pcReg5	  <= 0;
-            pcselectReg5<=0;
+            pcselectReg5<=2'b0;
             jReg5 <= 0;
             jrReg5 <= 0;
             LUIReg5   <=0;
             auipcReg5   <=0;
+			      m_opReg5 <= 0;
           end
         else
           begin
@@ -99,21 +116,77 @@ module exe_stage(
             B_immReg5 <= B_imm4;
             J_immReg5 <= J_imm4;
             U_immReg5 <= U_imm4;
+            
             pcReg5	  <= pc4;
             pcselectReg5 <= pcselect4;
             jReg5 <= j4;
             jrReg5 <= jr4;
             LUIReg5 <= LUI4;
             auipcReg5 <= auipc4;
+	    m_opReg5 <= m_op4;
           end
       end
 
+logic [4:0] rdReg6;
+logic [2:0] fnReg6;
+logic weReg6;
+logic [1:0] pcselectReg6;
+logic [31:0] U_immReg6 ,AU_immReg6;
+logic [31:0] pcReg6;
+
+ 
+always @(posedge clk)
+begin
+	if (!nrst)
+		begin
+			rdReg6 <= 5'b0;
+			fnReg6 <= 3'b0;
+			weReg6 <= 0;
+			pcselectReg6 <= 2'b0;
+			U_immReg6 <= 32'b0;
+                        AU_immReg6 <= 32'b0;
+			pcReg6 <= 32'b0;
+			alu_resReg6 <= 32'b0;
+			mul_divReg6 <= 32'b0;
+		end
+	else
+		begin
+			rdReg6 <= rdReg5;
+			fnReg6 <= fnReg5;
+			weReg6 <= weReg5;
+			pcselectReg6 <= pcselectReg5;
+			U_immReg6 <= U_immReg5;
+                       	pcReg6 <= pcReg5;
+			alu_resReg6 <= alu_res5;
+			mul_divReg6 <= mul_div5;
+		end
+
+end
+
+
+
     // output
-    assign rd5 = rdReg5;
-    assign fn5 = fnReg5;
-    assign we5 = weReg5;
-    assign pcselect5=pcselectReg5;
-    assign U_imm5 = U_immReg5;
+    assign rd6 = rdReg6;
+    assign fn6 = fnReg6;
+    assign we6 = weReg6;
+    assign pcselect6=pcselectReg6;
+    assign pcselect5=pcselectReg5;	
+    assign U_imm6 = U_immReg6;
+   assign AU_imm6 = (U_immReg6 +pcReg5);
+
+
+    always_comb begin
+        unique case(fn6)
+            0: wb_data6  = alu_resReg6;
+            1: wb_data6  = pcReg6 + 1;
+            2: wb_data6  = mul_divReg6;
+            3: wb_data6  = U_imm6 ;
+            4: wb_data6  = mem_out6;
+            5: wb_data6  = AU_imm6 ;
+            default: wb_data6 = 0;
+        endcase
+    end
+
 
 endmodule
 

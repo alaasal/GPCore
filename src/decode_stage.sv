@@ -17,12 +17,14 @@ module instdec_stage(
     output logic [3:0] alu_fn3,
     output logic [31:0] pc3,
     output logic [1:0] pcselect3,
-    output logic [3:0] mem_op3
+    output logic [3:0] mem_op3,
+    output logic [2:0] m_op3
     );
 
     // wires
     logic [6:0] opcode;
     logic [2:0] funct3;
+    logic [6:0] funct7;
     logic instr_30;
     
     // registers
@@ -48,6 +50,7 @@ module instdec_stage(
     // decoding instructions
     assign opcode   = instrReg3[6:0];
     assign funct3   = instrReg3[14:12];
+    assign funct7   = instrReg3[31:25];
     assign instr_30 = instrReg3[30];
     assign rs1      = instrReg3[19:15];
     assign rs2      = instrReg3[24:20];
@@ -57,6 +60,7 @@ module instdec_stage(
     assign B_imm3	  = 32'(signed'({instrReg3[31], instrReg3[7], instrReg3[30:25], instrReg3[11:8], 1'b0 })); //sign extending b_immediate to 32-bit
     assign J_imm3	  = 32'(signed'({instrReg3[31], instrReg3[19:12], instrReg3[20], instrReg3[30:21], 1'b0}));
     assign U_imm3   = 32'(signed'({instrReg3[31:12] , {12'b0}}));
+   
     assign S_imm3   = 32'(signed'({instrReg3[31:25], instrReg3[11:7]}));
     assign pc3 	= pcReg3;
     
@@ -64,6 +68,7 @@ module instdec_stage(
     instr_decoder c1 (
     .op          (opcode),
     .funct3      (funct3),
+    .funct7      (funct7),
     .instr_30    (instr_30),	// bit 30 in the instruction
     .pcselect    (pcselect3),	// select pc source
     .we          (we3),			  // regfile write enable
@@ -76,7 +81,8 @@ module instdec_stage(
     .jr          (jr3),
     .mem_op      (mem_op3),
     .LUI         (LUI3),
-    .auipc       (auipc3)
+    .auipc       (auipc3),
+    .m_op        (m_op3)      //m extension opcode
     );
     
 endmodule

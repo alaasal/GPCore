@@ -20,7 +20,7 @@ logic [31:0] jal0  = {imm, dest, JAL}; //JAL x0, 1 (unconditional jump)
 //logic [31:0] jal1  = {,};
 
 parameter NUM_Of_INSTRS = 4;
-logic [31:0] instrs [3:0] = {32'h0 ,32'h0 ,32'h0, jal0};  // 32'h2081B3 , 0000000 00110 00101 001  11111110 0011 
+logic [31:0] instrs [3:0] = {32'h0 ,32'h0 ,32'h0, {7'h4,5'h2,5'h1, 3'h0,5'h8 , 7'b0110111 }};
 logic [2:0] instrs_index;
 
 

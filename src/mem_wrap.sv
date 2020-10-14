@@ -37,8 +37,10 @@ module mem_wrap(
     //pipe5 memory controls
     logic gwe6, rd6;
     logic [3:0] mem_op6; 
-    logic [31:0] addr6, data_in6, data_out6;
+    logic [31:0] addr6, data_in6;
+    logic [3:0][7:0] data_out6;
     logic bw06, bw16, bw26, bw36;
+    logic [1:0] baddr6;
 
     //pipe5
     always_ff @(posedge clk, negedge nrst) begin
@@ -112,12 +114,12 @@ module mem_wrap(
     assign i_sw  = (mem_op5 == 8);
     
     //generate address misaligned exception
-    assign addr_mis5[0] = i_lh | i_lbu | i_lhu | i_sh | i_sh | i_sh | i_sw & addr5[0];
-    assign addr_mis5[1] = i_lw | i_sw & addr5[1];
+    assign addr_mis5[0] = (i_lh | i_lhu | i_sh | i_sw) & addr5[0];
+    assign addr_mis5[1] = (i_lw | i_sw) & addr5[1];
     assign addr_misaligned5 = addr_mis5[0] | addr_mis5[1];
 
-    assign gwe5 = (mem_op5[0]) & ~addr_misaligned5;
-    assign rd5  = !mem_op5[3] & !(!mem_op5[0] & !mem_op5[1] & !mem_op5[2]) & ~addr_misaligned5;
+    assign gwe5 = (mem_op5[3]) & ~addr_misaligned5;
+    assign rd5  = !mem_op5[3] & (mem_op5[0] | mem_op5[1] | mem_op5[2]) & ~addr_misaligned5;
 
     //byte write enable
     assign bw05 = (~addr5[1] & ~addr5[0]) & ~addr_misaligned5 & (i_sb | i_sh | i_sw); 
@@ -151,13 +153,15 @@ module mem_wrap(
     .data_out   (data_out6)
     );
 
+    assign baddr6 = addr6[1:0];
+
     always_comb begin
-        case(mem_op6)
-            4'b0001: mem_out6 = 32'(signed'(data_out6[7:0]));    //i_lb
-            4'b0010: mem_out6 = 32'(signed'(data_out6[15:0]));	//i_lh
-            4'b0011: mem_out6 = data_out6;	                    //i_lw
-            4'b0100: mem_out6 = {24'b0, data_out6[7:0]};     	//i_lbu
-            4'b0101: mem_out6 = {16'b0, data_out6[15:0]};	    //i_lhu
+        unique case(mem_op6)
+            4'b0001: mem_out6 = 32'(signed'(data_out6[baddr6]));             //i_lb
+            4'b0010: mem_out6 = 32'(signed'({data_out6[baddr6 + 1], data_out6[baddr6]}));	//i_lh
+            4'b0011: mem_out6 = data_out6;	                                //i_lw
+            4'b0100: mem_out6 = {24'b0, data_out6[baddr6]};     	            //i_lbu
+            4'b0101: mem_out6 = {16'b0, data_out6[baddr6 + 1], data_out6[baddr6]};	    //i_lhu
             default: mem_out6 = 0;
         endcase
     end
