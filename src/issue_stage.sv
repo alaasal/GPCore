@@ -15,8 +15,8 @@ module issue_stage (
     input logic [1:0] pcselect3,
     input logic j3, jr3,LUI3,auipc3,
     input logic [3:0] mem_op3,
-	  input logic [2:0] m_op3,
-	  input logic [6:0] opcode3,
+    input logic [2:0] m_op3,
+    input logic [6:0] opcode3,
 
     output logic we4,bneq4,btype4,	// function selection ctrl in issue stage and write enable
     output logic [2:0] fn4,
@@ -27,10 +27,9 @@ module issue_stage (
     output logic [31:0] pc4,B_imm4, J_imm4, S_imm4,U_imm4,
     output logic j4, jr4,LUI4,auipc4,
     output logic [3:0] mem_op4,
-  	 output logic [2:0] m_op4,
-  	 output logic stall
+    output logic [2:0] m_op4,
+    output logic stall
     );
-    
 
     // registers pipe #4
     logic [4:0] rdReg4;
@@ -45,10 +44,11 @@ module issue_stage (
     logic jReg4, jrReg4,LUIReg4,auipcReg4;
     logic [3:0] mem_opReg4;
 	  logic [2:0] m_opReg4;
+	  logic [6:0] opcodeReg4;
 
     // wires
     logic [31:0] operand_a, operand_b;   	   // operands value output from the register file
-    logic [4:0] rs1_regfile;                // rs1 input to regester file
+    logic [4:0] rs1_regfile;
     
     // PIPE
     always_ff @(posedge clk, negedge nrst)
@@ -78,6 +78,7 @@ module issue_stage (
 
             mem_opReg4 <= 0;
 			      m_opReg4 <= 0; 
+			      opcodeReg4 <= 0;
           end
         else
           begin
@@ -96,6 +97,7 @@ module issue_stage (
             auipcReg4   <= auipc3;
             mem_opReg4 <= mem_op3;
 			      m_opReg4 <= m_op3;
+			      opcodeReg4<= opcode3;
 			  
 			      
 			  if(stall )begin
@@ -118,18 +120,17 @@ module issue_stage (
            rdReg4		<= rd3;
            
           end
-
-        end
+          end
       end
     
     // register file
     regfile reg1 (.clk(clk), .clrn(nrst), .we(we6), .write_addr(rdaddr6), .source_a(rs1_regfile), .source_b(rs2), .result(wb6),
             .op_a(operand_a), .op_b(operand_b));
-     scoreboard_data_hazards scoreboard (.clk(clk),.nrst(nrst),.btaken(btaken),.rs1(rs1_regfile), .rs2(rs2), .rd(rd3),.op_code(opcode3),.stall(stall)); 
-
+    scoreboard_data_hazards scoreboard (.clk(clk),.nrst(nrst),.btaken(btaken),.rs1(rs1_regfile), .rs2(rs2), .rd(rd3),.op_code(opcode3),.stall(stall));
 
     // assign op_a and op_b outputs
     assign op_a = operand_a;
+    assign rs1_regfile = stall ? 5'b0:rs1;
 
 
     // mux to select between operand b from regfile or sign extended 32-bit I_immediate (I_imm) or shamt I_imm
@@ -141,16 +142,10 @@ module issue_stage (
             2'b10: op_b = shamtReg4;
             default: op_b = operand_b;
         endcase
-        if(stall )begin
-          rs1_regfile = 5'b0;
-        end
-       else begin
-         rs1_regfile = rs1;
-       end
-        
       end
+
+
     // output
-   
     assign alu_fn4	= alufnReg4;
     assign rd4	= rdReg4;
     assign fn4 	= fnReg4;
@@ -169,7 +164,5 @@ module issue_stage (
     assign auipc4 = auipcReg4;
     assign mem_op4 = mem_opReg4;
 	assign m_op4 = m_opReg4;
-	
-	
 endmodule
 

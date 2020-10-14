@@ -7,34 +7,41 @@ module core(
     input logic clk_debug
     );
 
+    logic [31:0] wb_data6;	
+    logic we6Issue;
+    logic [4:0] rd6Issue;
     // wires
-    logic [31:0] pc, pc2, pc3, pc4, pc5;         // wires conneting pc to exe  
+    logic [31:0] pc, pc2, pc3, pc4, pc5, pc6;         // wires conneting pc to exe  
     logic [31:0] instr2;   	   // output wire of IF stage
     logic [31:0] opa, opb;     // operands value output from issue stage
     logic [4:0] rs1, rs2;
     logic [31:0] I_imm3, B_imm3, J_imm3, S_imm3,U_imm3;
     logic [31:0] B_imm4, J_imm4, S_imm4,U_imm4;
+    logic [31:0] U_imm6;
     logic btype3,btype4,bneq3,bneq4,LUI3,LUI4,auipc3,auipc4;
     logic [31:0] target;
-    logic [4:0] rd3, rd4, rd5, rd6;  //(rd3 connect between output of pipe #3 and and input of pipe #4)
+    logic [4:0] rd3, rd4, rd5, rd6, rd7;  //(rd3 connect between output of pipe #3 and and input of pipe #4)
     logic [4:0] shamt;
     logic [3:0] mem_op3, mem_op4;
     logic [2:0] m_op4, m_op3;
     logic [31:0] mem_out6;
-    logic [31:0] mul_div5;
+    logic [31:0] mul_div6;
     logic addr_misaligned6;
-    //logic we3, we4, we5, we6;
-    logic [2:0] fn3, fn4, fn5;
+    logic we3, we4, we5, we6;
+    logic [2:0] fn3, fn4, fn5, fn6;
     logic [1:0] pcselect3, pcselect4, pcselect5;	// pcselect output from pipe 3 to pipe 1
     logic [1:0] B_SEL3;
     logic [3:0] alu_fn3, alu_fn4;
-    logic [31:0] alu_result5;   // alu result output from exe to commit
+    logic [31:0] alu_result6;   // alu result output from exe to commit
     logic [31:0] wb6;	   // data output from commit stage to regfile to be written
+    logic stall;
+    logic [6:0] opcode3;
     
     // instantiating stages (7 pipelines)
     frontend_stage frontend(
     .clk            (clk),
     .nrst           (nrst),
+    .stall          (stall),
     .PCSEL          (pcselect5),	// pc select control signal
     .target         (target),
     .pc2            (pc2),		// pc at instruction mem pipe #2
@@ -49,6 +56,7 @@ module core(
     instdec_stage instdec (
     .clk          (clk),
     .nrst         (nrst),
+    .stall        (stall),
     .instr2       (instr2),	// input from frontend stage (inst mem)
     .pc2          (pc2),	// input from frontend stage (pc)
     .we3          (we3),
@@ -73,18 +81,19 @@ module core(
     .pc3          (pc3),
     .pcselect3    (pcselect3),
     .mem_op3      (mem_op3),
-    .m_op3        (m_op3)
+    .m_op3        (m_op3),
+    .opcode3      (opcode3)
     );
 
     issue_stage issue (
     .clk          (clk),
     .nrst         (nrst),
-    .we6          (we6),		// we from commit stage pipe #6
+    .we6          (we6Issue),		// we from commit stage pipe #6
     .we3          (we3),
     .fn3          (fn3),
     .bneq3        (bneq3),
     .btype3       (btype3),		// we enable for regfile & fn for result selection (from pipe #3)
-    .rdaddr6      (rd6),	    // destenation address from commit stage to regfile
+    .rdaddr6      (rd6Issue),	    // destenation address from commit stage to regfile
     .B_SEL3       (B_SEL3),		// B_SEL for op_b or I_immediates
     .alu_fn3      (alu_fn3),	// alu control from decode stage
     .wb6          (wb6),		// data to be written in regfile
@@ -105,6 +114,7 @@ module core(
     .auipc3       (auipc3),
     .mem_op3      (mem_op3),
     .m_op3        (m_op3), 
+    .opcode3      (opcode3),
     .fn4          (fn4),
     .we4          (we4),
     .bneq4        (bneq4),
@@ -124,7 +134,8 @@ module core(
     .LUI4         (LUI4),
     .auipc4       (auipc4),
     .mem_op4      (mem_op4),
-    .m_op4        (m_op4)
+    .m_op4        (m_op4),
+    .stall        (stall)
     );
 
     exe_stage execute (
@@ -150,35 +161,34 @@ module core(
     .auipc4       (auipc4),
     .mem_op4      (mem_op4),
     .m_op4      (m_op4),
-    .we5          (we5),
-    .fn5          (fn5),
-    .alu_res5     (alu_result5),    // alu result in PIPE #5
-    .rd5          (rd5),
+    .we6          (we6),
+    .fn6          (fn6),
+    .alu_resReg6   (alu_result6),    // alu result in PIPE #5
+    .rd6          (rd6),
     .target       (target),
+    .U_imm6       (U_imm6),
     .pcselect5    (pcselect5),
-    .j5           (j5),
-    .jr5          (jr5),
     .mem_out6     (mem_out6),
     .addr_misaligned6 (addr_misaligned6),
-    .mul_div5         (mul_div5),
-    .pc5              (pc5)
+    .mul_divReg6         (mul_div6),
+    .pc6Reg              (pc6),
+    .wb_data6	(wb_data6)
     );
 
     commit_stage commit(
     .clk         (clk),
     .nrst        (nrst),
-    .we5         (we5),
-    .rd5         (rd5),
-    .U_imm5      (U_imm5),
-    .result5     (alu_result5),	// input result from mem to commit stage
-    .pc5         (pc5),
-    .fn5         (fn5),
-    .mem_out6    (mem_out6),
-    .mul_div5    (mul_div5),
-    .rd6         (rd6),
-    .wb_data6    (wb6),	        // final output that will be written back in register file PIPE #6
     .U_imm6      (U_imm6),
-    .we6         (we6)
+    .pc6         (pc6),
+    .fn6         (fn6),
+    .mem_out6    (mem_out6),
+    .mul_div6    (mul_div6),
+    .rd6         (rd6),
+    .we6          (we6),	  
+    .wb_data6    (wb6),	        // final output that will be written back in register file PIPE #6
+    .we6Issue        (we6Issue),
+    .rd6Issue   (rd6Issue),
+    .result6(wb_data6)
     );
     
 endmodule

@@ -2,7 +2,7 @@ module instr_decoder(
     input logic [6:0] op,
     input logic [2:0] funct3,
     input logic [6:0] funct7,
-    input logic instr_30,		// bit 30 in the instruction
+    input logic instr_30,stall,	// bit 30 in the instruction
 
     output logic [1:0] pcselect,// select pc source
     output logic we,		    // regfile write enable
@@ -120,8 +120,8 @@ module instr_decoder(
     assign mem_op[3] = i_sw  | i_sb  | i_sh;
          
     // generate control signals
-    assign pcselect[0] = 0; // to set pcselect to 0 (will be edited when branch and jump operations added)
-    assign pcselect[1] = btype | i_jal | i_jalr;
+    assign pcselect[0] = 0 |stall; // to set pcselect to 0 (will be edited when branch and jump operations added)
+    assign pcselect[1] = btype | i_jal | i_jalr |stall;
 
     //00 rtype itype nop
     //01 

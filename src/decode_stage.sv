@@ -27,27 +27,29 @@ module instdec_stage(
     logic [2:0] funct3;
     logic [6:0] funct7;
     logic instr_30;
-    logic clk_decoder;
     
     // registers
     logic [31:0] instrReg3;	// pipe #3 from inst mem to decode stage
     logic [31:0] pcReg3;	// pipe #3 from inst mem to decode stage
-    
-    assign clk_decoder = clk &(~stall);
+  
     
     // PIPE
-    always_ff @(posedge clk_decoder, negedge nrst)
+    always_ff @(posedge clk, negedge nrst)
       begin
         if (!nrst)
             begin
             instrReg3 <= 0;
             pcReg3<=0;
             end
-        else
+        else if(!stall)
             begin
             instrReg3 <= instr2;
             pcReg3<=pc2;
             end
+         else begin 
+            instrReg3<=instrReg3;
+            pcReg3<=pcReg3;
+       end 
       end
 
     // output
@@ -74,6 +76,7 @@ module instdec_stage(
     .funct3      (funct3),
     .funct7      (funct7),
     .instr_30    (instr_30),	// bit 30 in the instruction
+    .stall       (stall),
     .pcselect    (pcselect3),	// select pc source
     .we          (we3),			  // regfile write enable
     .B_SEL       (B_SEL3),		// select op b

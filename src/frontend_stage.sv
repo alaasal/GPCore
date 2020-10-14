@@ -21,23 +21,27 @@ module frontend_stage(
 
     // wires
     logic [31:0] npc;   	   // next pc wire
-    logic clk_frontend;
     
-    assign clk_frontend = clk &(~stall);
+    
 
     // pipes
-    always_ff @(posedge clk_frontend, negedge nrst)
+    always_ff @(posedge clk , negedge nrst)
       begin
         if (!nrst)
           begin
             pcReg		<= 0;
             pcReg2 		<= 0;
           end
-        else
+         else if (!stall)
           begin
             pcReg		<= npc;		// PIPE1
             pcReg2		<= pcReg;	// PIPE2
           end
+  else begin 
+            pcReg		<= pcReg;		
+            pcReg2		<= pcReg;
+
+end 
       end
 
     always_comb
@@ -47,17 +51,20 @@ module frontend_stage(
             0: npc = pcReg + 1;
             1: npc = 0;
             2: npc = target;
+            3: npc = npc;
             default: npc = pcReg + 1 ;
         endcase
+        
       end
 
     // output
     assign pc  = pcReg;
     assign pc2 = pcReg2; 	// pc + 4 will be piped to (EXE/MEM stage)
     
+    
     // dummy inst mem
     instr_mem m1 (
-        .clk(clk_frontend),
+        .clk(clk),
         .addr(pc),
         .instr(instr2), 		
         .DEBUG_SIG(DEBUG_SIG),				//DEBUG Signals from debug module to load a program
