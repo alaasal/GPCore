@@ -76,11 +76,11 @@ module mem_wrap(
             mem_opReg6          <= mem_op5;
             addrReg6            <= addr5;
             data_inReg6         <= data_in5;
-            addr_misalignedReg6 <= addr_misaligned6;
-            bw0Reg6             <= bw06; 
-            bw1Reg6             <= bw16; 
-            bw2Reg6             <= bw26; 
-            bw3Reg6             <= bw36;
+            addr_misalignedReg6 <= addr_misaligned5;
+            bw0Reg6             <= bw05; 
+            bw1Reg6             <= bw15; 
+            bw2Reg6             <= bw25; 
+            bw3Reg6             <= bw35;
         end
     end
 
@@ -118,14 +118,29 @@ module mem_wrap(
     assign addr_mis5[1] = (i_lw | i_sw) & addr5[1];
     assign addr_misaligned5 = addr_mis5[0] | addr_mis5[1];
 
-    assign gwe5 = (mem_op5[3]) & ~addr_misaligned5;
+    assign gwe5 = (mem_op5[3] & ~(mem_op5[2] | mem_op5[1] | mem_op5[0])) & ~addr_misaligned5;
     assign rd5  = !mem_op5[3] & (mem_op5[0] | mem_op5[1] | mem_op5[2]) & ~addr_misaligned5;
 
+/*
+--------------------------------------------------------------
+| i_sh | i_sb | addr5[1] | addr5[0] || BW0 | BW1 | BW2 | BW3 |
+-------------------------------------------------------------
+|   0  |   1  |    0     |    0     ||  1  |  0  |  0  |  0  |
+|   0  |   1  |    0     |    1     ||  0  |  1  |  0  |  0  |
+|   0  |   1  |    1     |    0     ||  0  |  0  |  1  |  0  |
+|   0  |   1  |    1     |    1     ||  0  |  0  |  0  |  1  |
+--------------------------------------------------------------
+|   1  |   0  |    0     |    0     ||  1  |  1  |  0  |  0  |
+|   1  |   0  |    0     |    1     ||        ILLEGAL        |
+|   1  |   0  |    1     |    0     ||  0  |  0  |  1  |  1  |
+|   1  |   0  |    1     |    1     ||        ILLEGAL        |
+--------------------------------------------------------------
+*/
     //byte write enable
-    assign bw05 = (~addr5[1] & ~addr5[0]) & ~addr_misaligned5 & (i_sb | i_sh | i_sw); 
-    assign bw15 = (~addr5[1]) & ~addr_misaligned5 & (i_sb | i_sh);
-    assign bw25 = (addr5[1] & ~addr5[0]) & ~addr_misaligned5 & (i_sb | i_sh);
-    assign bw35 = addr5[1] & ~addr_misaligned5 & (i_sb | i_sh); 
+    assign bw05 = (~addr5[1]  & ~addr5[0]) & (i_sb | i_sh) & ~addr_misaligned5;
+    assign bw25 = (addr5[1]   & ~addr5[0]) & (i_sb | i_sh) & ~addr_misaligned5;
+    assign bw15 = ~addr5[1]   & ((addr5[0] & i_sb)  | (~addr5[0] & i_sh)) & ~addr_misaligned5; 
+    assign bw35 = addr5[1]    & ((addr5[0] & i_sb)  | (~addr5[0] & i_sh)) & ~addr_misaligned5;
     
     assign data_in5 = op_b5; 
 
