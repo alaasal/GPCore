@@ -2,7 +2,8 @@ module frontend_stage(
     input logic clk, nrst,stall,
     input logic [1:0] PCSEL,		// pc select control signal
     input logic [31:0] target,
-    output logic [31:0] pc2,		// pc at instruction mem pipe #2
+
+    output logic [31:0] pc2,	// pc at instruction mem pipe #2
     output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
     
     //Just for testing not an actual output
@@ -17,41 +18,35 @@ module frontend_stage(
     // registers
     logic [31:0] pcReg; 	   // pipe #1 pc
     logic [31:0] pcReg2;	   // pipe #2 from pc to inst mem
+
     // wires
     logic [31:0] npc;   	   // next pc wire
-   //logic clk_front;
+    logic clk_frontend;
     
-  //assign clk_front = clk & (~stall);
-    
+    assign clk_frontend = clk &(~stall);
+
     // pipes
-       always_ff @(posedge clk, negedge nrst)
+    always_ff @(posedge clk_frontend, negedge nrst)
       begin
         if (!nrst)
           begin
             pcReg		<= 0;
             pcReg2 		<= 0;
           end
- 	else if (!stall)
-         begin
+        else
+          begin
             pcReg		<= npc;		// PIPE1
-           pcReg2		<= pcReg;	// PIPE2
-        end
-else begin 
-            pcReg		<= pcReg;		
-            pcReg2		<= pcReg2;
-
-end 
+            pcReg2		<= pcReg;	// PIPE2
+          end
       end
-
 
     always_comb
       begin
         // npc logic
         unique case(PCSEL)
-            2'b00: npc = pcReg + 1;
-            2'b01: npc = 0;
-            2'b10: npc = target;
-	          2'b11: npc = npc;
+            0: npc = pcReg + 1;
+            1: npc = 0;
+            2: npc = target;
             default: npc = pcReg + 1 ;
         endcase
       end
@@ -59,11 +54,10 @@ end
     // output
     assign pc  = pcReg;
     assign pc2 = pcReg2; 	// pc + 4 will be piped to (EXE/MEM stage)
-
     
     // dummy inst mem
     instr_mem m1 (
-        .clk(clk),
+        .clk(clk_frontend),
         .addr(pc),
         .instr(instr2), 		
         .DEBUG_SIG(DEBUG_SIG),				//DEBUG Signals from debug module to load a program

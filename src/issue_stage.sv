@@ -15,8 +15,8 @@ module issue_stage (
     input logic [1:0] pcselect3,
     input logic j3, jr3,LUI3,auipc3,
     input logic [3:0] mem_op3,
-    input logic [2:0] m_op3,
-    input logic [6:0] opcode3,
+	  input logic [2:0] m_op3,
+	  input logic [6:0] opcode3,
 
     output logic we4,bneq4,btype4,	// function selection ctrl in issue stage and write enable
     output logic [2:0] fn4,
@@ -27,29 +27,28 @@ module issue_stage (
     output logic [31:0] pc4,B_imm4, J_imm4, S_imm4,U_imm4,
     output logic j4, jr4,LUI4,auipc4,
     output logic [3:0] mem_op4,
-  	output logic [2:0] m_op4,
-	output logic stall
+  	 output logic [2:0] m_op4,
+  	 output logic stall
     );
+    
 
     // registers pipe #4
-	logic [4:0] rdReg4;
-	logic [4:0] shamtReg4;
-	logic [31:0] I_immdReg4, B_immdReg4, J_immReg4, S_immReg4,U_immReg4;
-	logic [1:0] BSELReg4;
-	logic [3:0] alufnReg4;	
-	logic [31:0] pcReg4;	
-	logic weReg4,bneqReg4,btypeReg4;
-	logic [2:0] fnReg4;
-	logic [1:0] pcselectReg4;
-	logic jReg4, jrReg4,LUIReg4,auipcReg4;
-	logic [3:0] mem_opReg4;
-	logic [2:0] m_opReg4;
-	logic [6:0] opcodeReg4;
-	
+    logic [4:0] rdReg4;
+    logic [4:0] shamtReg4;
+    logic [31:0] I_immdReg4, B_immdReg4, J_immReg4, S_immReg4,U_immReg4;
+    logic [1:0] BSELReg4;
+    logic [3:0] alufnReg4;	
+    logic [31:0] pcReg4;	
+    logic weReg4,bneqReg4,btypeReg4;
+    logic [2:0] fnReg4;
+    logic [1:0] pcselectReg4;
+    logic jReg4, jrReg4,LUIReg4,auipcReg4;
+    logic [3:0] mem_opReg4;
+	  logic [2:0] m_opReg4;
 
     // wires
     logic [31:0] operand_a, operand_b;   	   // operands value output from the register file
-    
+    logic [4:0] rs1_regfile;                // rs1 input to regester file
     
     // PIPE
     always_ff @(posedge clk, negedge nrst)
@@ -78,56 +77,59 @@ module issue_stage (
             auipcReg4   <= 0;
 
             mem_opReg4 <= 0;
-	    m_opReg4 <= 0; 
-	  opcodeReg4 <= 0;
+			      m_opReg4 <= 0; 
           end
         else
           begin
             shamtReg4	<= shamt;
-            I_immdReg4	<= I_imm3;
             B_immdReg4	<= B_imm3;
             J_immReg4	<= J_imm3;
             U_immReg4   <= U_imm3;
             S_immReg4 <= S_imm3;
-	    opcodeReg4<= opcode3;
             // pass alu, fn & we control signals through the pipe form decode to issue stage
-
-
-            weReg4		<= we3;
             pcReg4		<= pc3;		// passing pc to exe 
             bneqReg4	<= bneq3;
             btypeReg4	<= btype3;
-            pcselectReg4	<= pcselect3;
             jReg4 <= j3;
             jrReg4 <= jr3;
             LUIReg4     <= LUI3;
             auipcReg4   <= auipc3;
             mem_opReg4 <= mem_op3;
-	    m_opReg4 <= m_op3;
-if(stall)begin 
-	//BSELReg4	<= 2'b0;   
-	fnReg4		<= 3'b0;  		
- 	rdReg4		<= 5'b0;
- 	alufnReg4	<= 4'b0; 
-	weReg4		<= 1'b0;
-	end 
-else begin 
-	//BSELReg4	<= B_SEL3;
-	fnReg4		<= fn3;
-	rdReg4		<= rd3;
-	alufnReg4	<= alu_fn3;
- 	weReg4		<= we3;
-	end 
+			      m_opReg4 <= m_op3;
+			  
+			      
+			  if(stall )begin
+			      pcselectReg4	<= 2'b00;
+			      weReg4		<= 1'b1;
+			      BSELReg4	<= 2'b01;
+			      alufnReg4	<= 3'b000;
+			      fnReg4		<= 3'b000;
+			      I_immdReg4	<= 32'b0;
+			      rdReg4		<= 5'b0;
+			     
           end
+       else begin
+           pcselectReg4	<= pcselect3;
+           weReg4		<= we3;
+           BSELReg4	<= B_SEL3;
+           alufnReg4	<= alu_fn3;
+           fnReg4		<= fn3;
+           I_immdReg4	<= I_imm3;
+           rdReg4		<= rd3;
+           
+          end
+
+        end
       end
     
     // register file
-    regfile reg1 (.clk(clk), .clrn(nrst), .we(we6), .write_addr(rdaddr6), .source_a(rs1), .source_b(rs2), .result(wb6),
+    regfile reg1 (.clk(clk), .clrn(nrst), .we(we6), .write_addr(rdaddr6), .source_a(rs1_regfile), .source_b(rs2), .result(wb6),
             .op_a(operand_a), .op_b(operand_b));
-	scoreboard_data_hazards scoreboard (.clk(clk),.nrst(nrst),.btaken(btaken),.rs1(rs1), .rs2(rs2), .rd(rd3),.op_code(opcode3),.stall(stall)); 
+     scoreboard_data_hazards scoreboard (.clk(clk),.nrst(nrst),.btaken(btaken),.rs1(rs1_regfile), .rs2(rs2), .rd(rd3),.op_code(opcode3),.stall(stall)); 
+
 
     // assign op_a and op_b outputs
-	assign op_a = stall ? 32'b0: operand_a;
+    assign op_a = operand_a;
 
 
     // mux to select between operand b from regfile or sign extended 32-bit I_immediate (I_imm) or shamt I_imm
@@ -137,32 +139,37 @@ else begin
             2'b00: op_b = operand_b;
             2'b01: op_b = I_immdReg4;
             2'b10: op_b = shamtReg4;
-            2'b11: op_b = 32'b0;
             default: op_b = operand_b;
         endcase
-
+        if(stall )begin
+          rs1_regfile = 5'b0;
+        end
+       else begin
+         rs1_regfile = rs1;
+       end
+        
       end
-
-
     // output
-    
-
-    assign fn4	 	= fnReg4;
-    assign we4 		= weReg4;
-    assign pc4		= pcReg4;
+   
+    assign alu_fn4	= alufnReg4;
+    assign rd4	= rdReg4;
+    assign fn4 	= fnReg4;
+    assign we4 	= weReg4;
+    assign pc4	= pcReg4;
     assign bneq4	= bneqReg4;
     assign btype4	= btypeReg4;
     assign B_imm4	= B_immdReg4;
     assign J_imm4	= J_immReg4;
     assign U_imm4       = U_immReg4;
-    assign S_imm4 	= S_immReg4;
-    assign pcselect4	= pcselectReg4;
-    assign j4 		= jReg4;
-    assign jr4 		= jrReg4;
-    assign LUI4		= LUIReg4;
-    assign auipc4 	= auipcReg4;
-    assign mem_op4	= mem_opReg4;
-    assign m_op4	= m_opReg4;
-    assign alu_fn4	= alufnReg4;
+    assign S_imm4 = S_immReg4;
+    assign pcselect4= pcselectReg4;
+    assign j4 = jReg4;
+    assign jr4 = jrReg4;
+    assign LUI4 = LUIReg4;
+    assign auipc4 = auipcReg4;
+    assign mem_op4 = mem_opReg4;
+	assign m_op4 = m_opReg4;
+	
+	
 endmodule
 
