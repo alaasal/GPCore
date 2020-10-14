@@ -175,8 +175,9 @@ module instr_decoder(
     // 001 -> pc + 4
     // 010 -> m output
     // 011 -> immediate
+    // 100 -> auipcimm
     // 111 -> load
     assign fn[0] = i_jal | i_jalr | lui | aupc;
-    assign fn[1] = i_mul | i_mulh | i_mulhsu | i_mulhu | i_rem | i_remu | i_div | i_divu | lui | aupc;
-    assign fn[2] = ltype;		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
+    assign fn[1] = i_mul | i_mulh | i_mulhsu | i_mulhu | i_rem | i_remu | i_div | i_divu | lui;
+    assign fn[2] = ltype| aupc;		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
 endmodule

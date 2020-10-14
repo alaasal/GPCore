@@ -15,7 +15,7 @@ module exe_stage(
     output logic [2:0] fn6,
     output logic [31:0] alu_resReg6,  		// alu result in PIPE #5
     output logic [4:0] rd6,
-    output logic [31:0] target,U_imm6,
+    output logic [31:0] target,U_imm6,AU_imm6 ,
     output logic [1:0] pcselect5,
     output logic [31:0] mem_out6,
     output logic addr_misaligned6,
@@ -129,7 +129,7 @@ logic [4:0] rdReg6;
 logic [2:0] fnReg6;
 logic weReg6;
 logic [1:0] pcselectReg6;
-logic [31:0] U_immReg6;
+logic [31:0] U_immReg6,AU_immReg6;
 logic [31:0] pcReg6;
 
  
@@ -142,6 +142,7 @@ begin
 			weReg6 <= 0;
 			pcselectReg6 <= 2'b0;
 			U_immReg6 <= 32'b0;
+                       AU_immReg6 <= 32'b0;
 			pcReg6 <= 32'b0;
 			alu_resReg6 <= 32'b0;
 			mul_divReg6 <= 32'b0;
@@ -153,6 +154,7 @@ begin
 			weReg6 <= weReg5;
 			pcselectReg6 <= pcselectReg5;
 			U_immReg6 <= U_immReg5;
+                        AU_immReg6 <= U_immReg5+pcReg5 ;
 			pcReg6 <= pcReg5;
 			alu_resReg6 <= alu_res5;
 			mul_divReg6 <= mul_div5;
@@ -169,6 +171,7 @@ end
     assign pcselect6=pcselectReg6;
     assign pcselect5=pcselectReg5;	
     assign U_imm6 = U_immReg6;
+    assign AU_imm6 =  AU_immReg6;
 
     always_comb begin
         unique case(fn6)
@@ -177,6 +180,7 @@ end
             2: wb_data6  = mul_divReg6;
             3: wb_data6  = U_imm6;
             4: wb_data6  = mem_out6;
+            5: wb_data6  = AU_imm6 ;
             default: wb_data6 = 0;
         endcase
     end

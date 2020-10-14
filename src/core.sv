@@ -17,7 +17,7 @@ module core(
     logic [4:0] rs1, rs2;
     logic [31:0] I_imm3, B_imm3, J_imm3, S_imm3,U_imm3;
     logic [31:0] B_imm4, J_imm4, S_imm4,U_imm4;
-    logic [31:0] U_imm6;
+    logic [31:0] U_imm6,AU_imm6;
     logic btype3,btype4,bneq3,bneq4,LUI3,LUI4,auipc3,auipc4;
     logic [31:0] target;
     logic [4:0] rd3, rd4, rd5, rd6, rd7;  //(rd3 connect between output of pipe #3 and and input of pipe #4)
@@ -160,6 +160,7 @@ module core(
     .rd6          (rd6),
     .target       (target),
     .U_imm6       (U_imm6),
+    .AU_imm6       (AU_imm6),
     .pcselect5    (pcselect5),
     .mem_out6     (mem_out6),
     .addr_misaligned6 (addr_misaligned6),
@@ -172,6 +173,7 @@ module core(
     .clk         (clk),
     .nrst        (nrst),
     .U_imm6      (U_imm6),
+    .AU_imm6       (AU_imm6),
     .pc6         (pc6),
     .fn6         (fn6),
     .mem_out6    (mem_out6),

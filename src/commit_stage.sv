@@ -3,7 +3,7 @@ module commit_stage(
     input logic clk, nrst,
     input logic [4:0] rd6,
     input logic we6,
-    input logic [31:0] U_imm6,
+    input logic [31:0] U_imm6,AU_imm6,
     input logic [31:0] result6, 
     input logic [31:0] pc6,
     input logic [2:0] fn6,
