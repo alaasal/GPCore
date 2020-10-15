@@ -22,30 +22,11 @@ module frontend_stage(
 	logic [31:0] instr2Reg;
     // wires
     logic [31:0] npc;   	   // next pc wire
-     logic [31:0] instr;  
+    
     
 
     // pipes
-/*
-  always_ff @(posedge clk , negedge nrst)
-      begin
-        if (!nrst)
-          begin
-            pcReg		<= 0;
-            pcReg2 		<= 0;
-          end
-         else if (!stall)
-          begin
-            pcReg		<= npc;		// PIPE1
-            pcReg2		<= pcReg;	// PIPE2
-          end
-  else begin 
-            pcReg		<= pcReg;		
-            pcReg2		<= pcReg2;
 
-end 
-      end
-*/
 
     always_ff @(posedge clk , negedge nrst)
       begin
@@ -54,13 +35,13 @@ end
             pcReg		<= 0;
             pcReg2 		<= 0;
 	stallnum 		<= 0;
-	instr2Reg		<=0;
+	
           end
          else if (stall && !((stallnum[1]) &&(stallnum[0])))
           begin
 	pcReg		<= pcReg;		
 	pcReg2	<= pcReg2;
-	instr2Reg	<=instr2Reg;
+	
 
 		
           end
@@ -69,12 +50,12 @@ end
             pcReg		<= npc;		// PIPE1
             pcReg2		<= pcReg;	
 	stallnum <=0;
-	instr2Reg <=instr;
+
 end 
 else begin 
            pcReg		<= npc;		// PIPE1
             pcReg2		<= pcReg;	
-instr2Reg <=instr;
+
 end 
       end
 always_ff@(posedge clk)
@@ -108,7 +89,7 @@ end
     // output
     assign pc  = pcReg;
     assign pc2 = pcReg2;// pc + 4 will be piped to (EXE/MEM stage)
-  //  assign instr2 = instr2Reg;
+ 
     
     // dummy inst mem
     instr_mem m1 (
