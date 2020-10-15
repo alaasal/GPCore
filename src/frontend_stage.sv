@@ -94,7 +94,7 @@ end
     // dummy inst mem
     instr_mem m1 (
         .clk(clk ),
-        .addr(pc2),
+        .addr(pc),
         .instr(instr2), 		
         .DEBUG_SIG(DEBUG_SIG),				//DEBUG Signals from debug module to load a program
         .DEBUG_addr(DEBUG_addr),
