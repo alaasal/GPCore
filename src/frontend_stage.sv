@@ -32,25 +32,25 @@ module frontend_stage(
       begin
         if (!nrst)
           begin
-            pcReg		<= 0;
-            pcReg2 		<= 0;
-	stallnum 		<= 0;
+			pcReg		<= 0;
+			pcReg2 		<= 0;
+			stallnum 	<= 0;
 	
           end
          else if (stall && !((stallnum[1]) &&(stallnum[0])))
           begin
-	pcReg		<= pcReg;		
-	pcReg2	<= pcReg2;
+		pcReg		<= pcReg;		
+		pcReg2		<= pcReg2;
 	
 
 		
           end
   else if ((stallnum[1]) &&(stallnum[0]) )begin 
 
-            pcReg		<= npc;		// PIPE1
-            pcReg2		<= pcReg;	
-	stallnum <=0;
-
+				pcReg		<= npc;		// PIPE1
+				pcReg2		<= pcReg;	
+		stallnum <=0;
+		
 end 
 else begin 
            pcReg		<= npc;		// PIPE1
