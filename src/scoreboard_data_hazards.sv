@@ -1,8 +1,8 @@
 module scoreboard_data_hazards (
 input logic clk,nrst,btaken,
 //source registers
-input logic [4:0] rs1, // instr[16:15]
-input logic [4:0] rs2, // instr[24:20]
+input logic [4:0] rs1, // instr[15:15]
+input logic [4:0] rs2, // instr[23:20]
 
 input logic [4:0] rd,
 
@@ -14,12 +14,12 @@ output logic stall
 
 
 
-logic [6:0] scoreboard[0:31];
+logic [5:0] scoreboard[0:31];
 logic [3:0] function_unit;
 
 logic stallReg;
 
-//assign stall = scoreboard[rd][6] /*in commit stage */ ? 1'b1 : 1'b0;  // zeroing pending 
+//assign stall = scoreboard[rd][5] /*in commit stage */ ? 1'b1 : 1'b0;  // zeroing pending 
 
 	always_ff @(negedge clk, negedge nrst)
 	begin
@@ -36,66 +36,73 @@ logic stallReg;
 	 case(function_unit)
 		4'b0001: 
 			begin 	   // pending & write 
-				if (scoreboard[rd][6] )  stallReg <= 1; //assign stallo=stallreg
-				else 
+				if ((scoreboard[rd][5]) && !stallReg )  stallReg <= 1; //assign stallo=stallreg
+				else if (!stallReg) 
 					begin 
-					scoreboard[rd][6]<=1; 
-					scoreboard[rd][4]<=1; 
+					scoreboard[rd][5]<=1; 
+					scoreboard[rd][3]<=1; 
    					end 
+				else begin end 
 			end 
 		4'b0010: 
 			begin 
-				if (scoreboard[rd][6] || scoreboard[rs1][6])  stallReg <= 1; //assign stallo=stallreg
-				else 
+				if ((scoreboard[rd][5] || scoreboard[rs1][5]) && !stallReg)  stallReg <= 1; //assign stallo=stallreg
+				else if (!stallReg) 
 					begin 
-					scoreboard[rd][6]<=1; scoreboard[rs1][6]<=1;
-					scoreboard[rd][4]<=1; scoreboard[rs1][4]<=1;
+					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;
+					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;
    					end 
+				else begin end 
 			end 
 		4'b0011: 
 			begin 
-				if ( scoreboard[rs1][6] || scoreboard[rs2][6])  stallReg <= 1; //assign stallo=stallreg
-				else 
+				if (( scoreboard[rs1][5] || scoreboard[rs2][5]) && !stallReg)  stallReg <= 1; //assign stallo=stallreg
+				else if (!stallReg) 
 					begin 
-					 scoreboard[rs1][6]<=1;scoreboard[rs2][6]<=1;
-					 scoreboard[rs1][4]<=1;scoreboard[rs2][4]<=1;
+					 scoreboard[rs1][5]<=1;scoreboard[rs2][5]<=1;
+					 scoreboard[rs1][3]<=1;scoreboard[rs2][3]<=1;
    					end 
+				else begin end 
 			end 
 		4'b0100: 
 			begin 
-				if (scoreboard[rd][6] || scoreboard[rs1][6])  stallReg <= 1; //assign stallo=stallreg
-				else 
+				if ((scoreboard[rd][5] || scoreboard[rs1][5]) && !stallReg)  stallReg <= 1; //assign stallo=stallreg
+				else  if (!stallReg)
 					begin 
-					scoreboard[rd][6]<=1; scoreboard[rs1][6]<=1;
-					scoreboard[rd][4]<=1; scoreboard[rs1][4]<=1;
+					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;
+					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;
    					end 
+				else begin end 
 			end 
 		4'b0101: 
 			begin 
-				if (scoreboard[rd][6] || scoreboard[rs1][6] || scoreboard[rs2][6])  stallReg <= 1; //assign stallo=stallreg
-				else 
+				if ((scoreboard[rd][5] || scoreboard[rs1][5] || scoreboard[rs2][5]) && !stallReg)  stallReg <= 1; //assign stallo=stallreg
+				else if (!stallReg) 
 					begin 
-					scoreboard[rd][6]<=1; scoreboard[rs1][6]<=1;scoreboard[rs2][6]<=1;
-					scoreboard[rd][4]<=1; scoreboard[rs1][4]<=1;scoreboard[rs2][4]<=1;
+					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;scoreboard[rs2][5]<=1;
+					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;scoreboard[rs2][3]<=1;
    					end 
+				else begin end 
 			end 
 		4'b0110: 
 			begin 
-				if (scoreboard[rd][6] || scoreboard[rs1][6] || scoreboard[rs2][6])  stallReg <= 1; //assign stallo=stallreg
+				if ((scoreboard[rd][5] || scoreboard[rs1][5] || scoreboard[rs2][5])  )  stallReg <= 1; //assign stallo=stallreg
 				else 
 					begin 
-					scoreboard[rd][6]<=1; scoreboard[rs1][6]<=1;scoreboard[rs2][6]<=1;
-					scoreboard[rd][4]<=1; scoreboard[rs1][4]<=1;scoreboard[rs2][4]<=1;
+					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;scoreboard[rs2][5]<=1;
+					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;scoreboard[rs2][3]<=1;
    					end 
+				//else begin end 
 			end 
 		4'b0111: 
 			begin 
-				if (scoreboard[rd][6] || scoreboard[rs1][6])  stallReg <= 1; //assign stallo=stallreg
-				else 
+				if ((scoreboard[rd][5] || scoreboard[rs1][5]) && !stallReg)  stallReg <= 1; //assign stallo=stallreg
+				else if (!stallReg) 
 					begin 
-					scoreboard[rd][6]<=1; scoreboard[rs1][6]<=1;
-					scoreboard[rd][4]<=1; scoreboard[rs1][4]<=1;
+					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;
+					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;
    					end 
+				else begin end 
 			end 
             
         endcase
@@ -125,10 +132,10 @@ assign stall=stallReg;
       begin
         for(int j=0;j<32;j=j+1)
 	begin 
-      	scoreboard[j][4:0]<={1'b0,scoreboard[j][4:1]};
+      	scoreboard[j][3:0]<={1'b0,scoreboard[j][3:1]};
 	end
 	if (stallReg) begin 
-	if (!scoreboard[rd][6] && !scoreboard[rs1][6] && !scoreboard[rs2][6])
+	if (!scoreboard[rd][5] && !scoreboard[rs1][5] && !scoreboard[rs2][5]) //depends on instruction
 		begin 
 		stallReg<=0;
 		end
@@ -142,7 +149,7 @@ assign stall=stallReg;
       begin
        for(int j=0;j<32;j=j+1)
 	begin 
-      	if(scoreboard[j][0])  scoreboard[j][6]<=0;
+      	if(scoreboard[j][0])  scoreboard[j][5]<=0;
 	else  begin end    
 	end
       end
