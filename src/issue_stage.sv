@@ -45,6 +45,7 @@ module issue_stage (
     logic [3:0] mem_opReg4;
 	  logic [2:0] m_opReg4;
 	  logic [6:0] opcodeReg4;
+	logic [31:0]operandareg;
 
     // wires
     logic [31:0] operand_a, operand_b;   	   // operands value output from the register file
@@ -79,6 +80,7 @@ module issue_stage (
             mem_opReg4 <= 0;
 			      m_opReg4 <= 0; 
 			      opcodeReg4 <= 0;
+				operandareg<=0;
           end
         else
           begin
@@ -108,6 +110,7 @@ module issue_stage (
 			      fnReg4		<= 3'b000;
 			      I_immdReg4	<= 32'b0;
 			      rdReg4		<= 5'b0;
+				operandareg	<=32'b0;
 			     
           end
        else begin
@@ -118,6 +121,7 @@ module issue_stage (
            fnReg4		<= fn3;
            I_immdReg4	<= I_imm3;
            rdReg4		<= rd3;
+	 operandareg   <=operand_a;
            
           end
           end
@@ -129,7 +133,7 @@ module issue_stage (
     scoreboard_data_hazards scoreboard (.clk(clk),.nrst(nrst),.btaken(btaken),.rs1(rs1), .rs2(rs2), .rd(rd3),.op_code(opcode3),.stall(stall));
 
     // assign op_a and op_b outputs
-    assign op_a = operand_a;
+    assign op_a = operandareg;
  //   assign rs1_regfile = stall ? 5'b0:rs1;
 
 

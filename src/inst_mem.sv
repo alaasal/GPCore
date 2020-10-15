@@ -21,6 +21,6 @@ module instr_mem (
 	  end
         always_ff @(negedge clk)
 	  begin
-		instr = rom[addr];
+		instr = rom[addr-1];
 	  end
 endmodule
