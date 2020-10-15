@@ -34,23 +34,7 @@ module instdec_stage(
   	logic [1:0] stallnum;
     
     // PIPE
-   /*always_ff @(posedge clk, negedge nrst)
-      begin
-        if (!nrst)
-            begin
-            instrReg3 <= 0;
-            pcReg3<=0;
-            end
-        else if(!stall)
-            begin
-            instrReg3 <= instr2;
-            pcReg3<=pc2;
-            end
-         else begin 
-            instrReg3<=instrReg3;
-            pcReg3<=pcReg3;
-       end 
-      end*/
+
 always_ff @(posedge clk , negedge nrst)
       begin
         if (!nrst)
