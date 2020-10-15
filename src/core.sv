@@ -23,7 +23,7 @@ module core(
     logic [4:0] rd3, rd4, rd5, rd6, rd7;  //(rd3 connect between output of pipe #3 and and input of pipe #4)
     logic [4:0] shamt;
     logic [3:0] mem_op3, mem_op4;
-    logic [2:0] m_op4, m_op3;
+    logic [2:0] mulDiv_op4, mulDiv_op3;
     logic [31:0] mem_out6;
     logic [31:0] mul_div6;
     logic addr_misaligned6;
@@ -77,7 +77,7 @@ module core(
     .pc3          (pc3),
     .pcselect3    (pcselect3),
     .mem_op3      (mem_op3),
-    .m_op3        (m_op3)
+    .mulDiv_op3        (mulDiv_op3)
     );
 
     issue_stage issue (
@@ -108,7 +108,7 @@ module core(
     .LUI3         (LUI3),
     .auipc3       (auipc3),
     .mem_op3      (mem_op3),
-    .m_op3        (m_op3), 
+    .mulDiv_op3        (mulDiv_op3), 
     .fn4          (fn4),
     .we4          (we4),
     .bneq4        (bneq4),
@@ -128,7 +128,7 @@ module core(
     .LUI4         (LUI4),
     .auipc4       (auipc4),
     .mem_op4      (mem_op4),
-    .m_op4        (m_op4)
+    .mulDiv_op4        (mulDiv_op4)
     );
 
     exe_stage execute (
@@ -153,7 +153,7 @@ module core(
     .LUI4         (LUI4),
     .auipc4       (auipc4),
     .mem_op4      (mem_op4),
-    .m_op4      (m_op4),
+    .mulDiv_op4      (mulDiv_op4),
     .we6          (we6),
     .fn6          (fn6),
     .alu_resReg6   (alu_result6),    // alu result in PIPE #5
