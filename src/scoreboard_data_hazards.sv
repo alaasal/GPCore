@@ -36,53 +36,53 @@ logic stallReg;
 	 case(function_unit)
 		4'b0001: 
 			begin 	   // pending & write 
-				if ((scoreboard[rd][5]) && !stallReg )  stallReg <= 1; //assign stallo=stallreg
+				if ((scoreboard[rd][5])  )  stallReg <= 1; //assign stallo=stallreg
 				else if (!stallReg) 
 					begin 
 					scoreboard[rd][5]<=1; 
 					scoreboard[rd][3]<=1; 
    					end 
-				else begin end 
+				
 			end 
 		4'b0010: 
 			begin 
-				if ((scoreboard[rd][5] || scoreboard[rs1][5]) && !stallReg)  stallReg <= 1; //assign stallo=stallreg
+				if ((scoreboard[rd][5] || scoreboard[rs1][5]) )  stallReg <= 1; //assign stallo=stallreg
 				else if (!stallReg) 
 					begin 
 					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;
 					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;
    					end 
-				else begin end 
+				
 			end 
 		4'b0011: 
 			begin 
-				if (( scoreboard[rs1][5] || scoreboard[rs2][5]) && !stallReg)  stallReg <= 1; //assign stallo=stallreg
+				if (( scoreboard[rs1][5] || scoreboard[rs2][5]) )  stallReg <= 1; //assign stallo=stallreg
 				else if (!stallReg) 
 					begin 
 					 scoreboard[rs1][5]<=1;scoreboard[rs2][5]<=1;
 					 scoreboard[rs1][3]<=1;scoreboard[rs2][3]<=1;
    					end 
-				else begin end 
+				
 			end 
 		4'b0100: 
 			begin 
-				if ((scoreboard[rd][5] || scoreboard[rs1][5]) && !stallReg)  stallReg <= 1; //assign stallo=stallreg
+				if ((scoreboard[rd][5] || scoreboard[rs1][5]) )  stallReg <= 1; //assign stallo=stallreg
 				else  if (!stallReg)
 					begin 
 					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;
 					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;
    					end 
-				else begin end 
+				
 			end 
 		4'b0101: 
 			begin 
-				if ((scoreboard[rd][5] || scoreboard[rs1][5] || scoreboard[rs2][5]) && !stallReg)  stallReg <= 1; //assign stallo=stallreg
+				if ((scoreboard[rd][5] || scoreboard[rs1][5] || scoreboard[rs2][5]))  stallReg <= 1; //assign stallo=stallreg
 				else if (!stallReg) 
 					begin 
 					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;scoreboard[rs2][5]<=1;
 					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;scoreboard[rs2][3]<=1;
    					end 
-				else begin end 
+				 
 			end 
 		4'b0110: 
 			begin 
@@ -92,17 +92,17 @@ logic stallReg;
 					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;scoreboard[rs2][5]<=1;
 					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;scoreboard[rs2][3]<=1;
    					end 
-				//else begin end 
+				
 			end 
 		4'b0111: 
 			begin 
-				if ((scoreboard[rd][5] || scoreboard[rs1][5]) && !stallReg)  stallReg <= 1; //assign stallo=stallreg
+				if ((scoreboard[rd][5] || scoreboard[rs1][5]) )  stallReg <= 1; //assign stallo=stallreg
 				else if (!stallReg) 
 					begin 
 					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;
 					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;
    					end 
-				else begin end 
+			
 			end 
             
         endcase
