@@ -17,6 +17,7 @@ module issue_stage (
     input logic [3:0] mem_op3,
     input logic [2:0] m_op3,
     input logic [6:0] opcode3,
+	input bjtaken,
 
     output logic we4,bneq4,btype4,	// function selection ctrl in issue stage and write enable
     output logic [2:0] fn4,
@@ -46,10 +47,14 @@ module issue_stage (
 	  logic [2:0] m_opReg4;
 	  logic [6:0] opcodeReg4;
 	logic [31:0]operandareg;
+ 	logic [1:0]killnum;
+
 
     // wires
     logic [31:0] operand_a, operand_b;   	   // operands value output from the register file
-   // logic [4:0] rs1_regfile;
+	logic kill;
+
+  
     
     // PIPE
     always_ff @(posedge clk, negedge nrst)
@@ -80,7 +85,8 @@ module issue_stage (
             mem_opReg4 <= 0;
 			      m_opReg4 <= 0; 
 			      opcodeReg4 <= 0;
-				operandareg<=0;
+				
+	killnum<=2'b0;
           end
         else
           begin
@@ -98,19 +104,19 @@ module issue_stage (
             LUIReg4     <= LUI3;
             auipcReg4   <= auipc3;
             mem_opReg4 <= mem_op3;
-			      m_opReg4 <= m_op3;
-			      opcodeReg4<= opcode3;
+	    m_opReg4 <= m_op3;
+ 	    opcodeReg4<= opcode3;
 			  
 			      
-			  if(stall )begin
-			      pcselectReg4	<= 2'b00;
-			      weReg4		<= 1'b1;
-			      BSELReg4	<= 2'b01;
-			      alufnReg4	<= 3'b000;
-			      fnReg4		<= 3'b000;
-			      I_immdReg4	<= 32'b0;
-			      rdReg4		<= 5'b0;
-				operandareg	<=32'b0;
+	if(stall )begin
+		pcselectReg4	<= 2'b00;
+		weReg4		<= 1'b0;
+		BSELReg4	<= 2'b01;
+		alufnReg4	<= 3'b000;
+		fnReg4		<= 3'b000;
+		I_immdReg4	<= 32'b0;
+		rdReg4		<= 5'b0;
+				
 			     
           end
        else begin
@@ -121,19 +127,50 @@ module issue_stage (
            fnReg4		<= fn3;
            I_immdReg4	<= I_imm3;
            rdReg4		<= rd3;
-	 operandareg   <=operand_a;
+	
            
           end
+		if(kill ) begin 
+		killnum		<=killnum+1;
+		pcselectReg4	<= 2'b00;
+		weReg4		<= 1'b0;
+		BSELReg4	<= 2'b01;
+		alufnReg4	<= 3'b000;
+		fnReg4		<= 3'b000;
+		I_immdReg4	<= 32'b0;
+		rdReg4		<= 5'b0;
+end 
+else if ( !killnum[1] && killnum[0])begin 
+		killnum		<= 2'b0;
+		pcselectReg4	<= 2'b00;
+		weReg4		<= 1'b0;
+		BSELReg4	<= 2'b01;
+		alufnReg4	<= 3'b000;
+		fnReg4		<= 3'b000;
+		I_immdReg4	<= 32'b0;
+		rdReg4		<= 5'b0;
+end else begin
+		pcselectReg4	<= pcselect3;
+		weReg4		<= we3;
+		BSELReg4	<= B_SEL3;
+		alufnReg4	<= alu_fn3;
+		fnReg4		<= fn3;
+		I_immdReg4	<= I_imm3;
+		rdReg4		<= rd3;
+
+
+
+end
           end
       end
-    
+ 
     // register file
     regfile reg1 (.clk(clk), .clrn(nrst), .we(we6), .write_addr(rdaddr6), .source_a(rs1), .source_b(rs2), .result(wb6),
             .op_a(operand_a), .op_b(operand_b));
-    scoreboard_data_hazards scoreboard (.clk(clk),.nrst(nrst),.btaken(btaken),.rs1(rs1), .rs2(rs2), .rd(rd3),.op_code(opcode3),.stall(stall));
+    scoreboard_data_hazards scoreboard (.clk(clk),.nrst(nrst),.btaken(bjtaken),.rs1(rs1), .rs2(rs2), .rd(rd3),.op_code(opcode3),.stall(stall),.kill(kill));
 
     // assign op_a and op_b outputs
-    assign op_a = operandareg;
+    assign op_a =  ( !(|rd4) && !(|I_immdReg4) && !(|alufnReg4) && !(|fnReg4) )? 32'b0: operand_a;
  //   assign rs1_regfile = stall ? 5'b0:rs1;
 
 

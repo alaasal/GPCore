@@ -19,7 +19,6 @@ module frontend_stage(
 	logic [31:0] pcReg; 	   // pipe #1 pc
 	logic [31:0] pcReg2;	   // pipe #2 from pc to inst mem
 	logic [1:0] stallnum;
-	logic [31:0] instr2Reg;
     // wires
     logic [31:0] npc;   	   // next pc wire
     
@@ -32,29 +31,28 @@ module frontend_stage(
       begin
         if (!nrst)
           begin
-			pcReg		<= 0;
-			pcReg2 		<= 0;
-			stallnum 	<= 0;
+		pcReg		<= 0;
+		pcReg2 		<= 0;
+		stallnum 	<= 0;
 	
           end
          else if (stall && !((stallnum[1]) &&(stallnum[0])))
           begin
 		pcReg		<= pcReg;		
 		pcReg2		<= pcReg2;
-	
 
 		
           end
   else if ((stallnum[1]) &&(stallnum[0]) )begin 
 
-				pcReg		<= npc;		// PIPE1
-				pcReg2		<= pcReg;	
-		stallnum <=0;
+		pcReg		<= npc;		// PIPE1
+		pcReg2		<= pcReg;	
+		stallnum  	<=0;
 		
 end 
 else begin 
-           pcReg		<= npc;		// PIPE1
-            pcReg2		<= pcReg;	
+        	pcReg		<= npc;		// PIPE1
+      		pcReg2		<= pcReg;	
 
 end 
       end
@@ -93,7 +91,7 @@ end
     
     // dummy inst mem
     instr_mem m1 (
-        .clk(clk ),
+        .clk(~clk ),
         .addr(pc),
         .instr(instr2), 		
         .DEBUG_SIG(DEBUG_SIG),				//DEBUG Signals from debug module to load a program

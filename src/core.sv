@@ -135,7 +135,8 @@ module core(
     .auipc4       (auipc4),
     .mem_op4      (mem_op4),
     .m_op4        (m_op4),
-    .stall        (stall)
+    .stall        (stall),
+    .bjtaken	  (bjtaken)
     );
 
     exe_stage execute (
@@ -172,7 +173,8 @@ module core(
     .addr_misaligned6 (addr_misaligned6),
     .mul_divReg6         (mul_div6),
     .pc6Reg              (pc6),
-    .wb_data6	(wb_data6)
+    .wb_data6	(wb_data6),
+    .bjtaken6	  (bjtaken)
     );
 
     commit_stage commit(

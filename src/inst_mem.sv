@@ -17,10 +17,11 @@ module instr_mem (
 		if (DEBUG_SIG)
 		  begin
 			rom[DEBUG_addr] = DEBUG_instr;
+			instr = 0;
 		  end
 	  end
-        always_ff @(negedge clk)
+        always_ff @(posedge clk)
 	  begin
-		instr = rom[addr-1];
+		instr <= rom[addr-1];
 	  end
 endmodule

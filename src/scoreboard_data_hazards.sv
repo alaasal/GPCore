@@ -9,15 +9,15 @@ input logic [4:0] rd,
 
 input logic [6:0] op_code,
 
-output logic stall
+output logic stall,kill
 );
 
 
 
 logic [5:0] scoreboard[0:31];
-logic [3:0] function_unit;
+logic [2:0] function_unit;
 
-logic stallReg;
+logic stallReg,killReg;
 
 //assign stall = scoreboard[rd][5] /*in commit stage */ ? 1'b1 : 1'b0;  // zeroing pending 
 
@@ -34,77 +34,68 @@ logic stallReg;
           else 
 	  begin 
 	 case(function_unit)
-		4'b0001: 
+		4'b001: 
+
 			begin 	   // pending & write 
-				if ((scoreboard[rd][5])   )  stallReg <= 1; //assign stallo=stallreg
-				else    
+				if ((scoreboard[rd][5])   && (|rd))  stallReg <= 1; //assign stallo=stallreg
+				else if( (|rd))   
 					begin 
 					scoreboard[rd][5]<=1; 
 					scoreboard[rd][3]<=1; 
+					scoreboard[rd][4]<=1;
    					end 
+				else begin end 
 				
 			end 
-		4'b0010: 
+		4'b010: 
 			begin 
-				if ((scoreboard[rd][5] || scoreboard[rs1][5])  )  stallReg <= 1; //assign stallo=stallreg
-				else    
+				if ((scoreboard[rd][5] ||scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4] )  stallReg <= 1; //assign stallo=stallreg
+				else if( (|rd)&& scoreboard[rs1][4])   
 					begin 
-					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;
-					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;
+					scoreboard[rd][5]<=1; scoreboard[rd][4]<=1;
+					scoreboard[rd][3]<=1; 
    					end 
+				else begin end 
 				
 			end 
-		4'b0011: 
+		4'b011: 
 			begin 
-				if (( scoreboard[rs1][5] || scoreboard[rs2][5])  )  stallReg <= 1; //assign stallo=stallreg
-				else    
-					begin 
-					 scoreboard[rs1][5]<=1;scoreboard[rs2][5]<=1;
-					 scoreboard[rs1][3]<=1;scoreboard[rs2][3]<=1;
-   					end 
+				if (  (scoreboard[rs1][5] || scoreboard[rs2][5]) &&(scoreboard[rs1][4] || scoreboard[rs2][4])   )  stallReg <= 1; //assign stallo=stallreg
+				
+				else begin end 
 				
 			end 
-		4'b0100: 
+		4'b100: 
 			begin 
-				if ((scoreboard[rd][5] || scoreboard[rs1][5])  )  stallReg <= 1; //assign stallo=stallreg
-				else    
+				if ((scoreboard[rd][5] ||scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4])  stallReg <= 1; //assign stallo=stallreg
+				else if( (|rd) && scoreboard[rs1][4])   
 					begin 
-					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;
-					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;
+					scoreboard[rd][5]<=1; scoreboard[rd][4]<=1;
+					scoreboard[rd][3]<=1;
    					end 
+				else begin end 
 				
 			end 
-		4'b0101: 
+		4'b101: 
 			begin 
-				if ((scoreboard[rd][5] || scoreboard[rs1][5] || scoreboard[rs2][5])  )  stallReg <= 1; //assign stallo=stallreg
-				else    
-					begin 
-					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;scoreboard[rs2][5]<=1;
-					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;scoreboard[rs2][3]<=1;
-   					end 
+				if (( scoreboard[rs1][5] || scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4])   )  stallReg <= 1; //assign stallo=stallreg
+				
+				else begin end 
 				
 			end 
-		4'b0110: 
+		4'b110: 
 			begin 
-				if ((scoreboard[rd][5] || scoreboard[rs1][5] || scoreboard[rs2][5])  )  stallReg <= 1; //assign stallo=stallreg
-				else 
+				if ((scoreboard[rd][5] || scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4])&& (|rd) )  stallReg <= 1; //assign stallo=stallreg
+				else if( (|rd) )
 					begin 
-					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;scoreboard[rs2][5]<=1;
-					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;scoreboard[rs2][3]<=1;
+					scoreboard[rd][5]<=1; ;scoreboard[rd][4]<=1;
+					scoreboard[rd][3]<=1; 
    					end 
+				else begin end 
 				
 			end 
-		4'b0111: 
-			begin 
-				if ((scoreboard[rd][5] || scoreboard[rs1][5])  )  stallReg <= 1; //assign stallo=stallreg
-				else    
-					begin 
-					scoreboard[rd][5]<=1; scoreboard[rs1][5]<=1;
-					scoreboard[rd][3]<=1; scoreboard[rs1][3]<=1;
-   					end 
-				
-			end 
-            
+		default :
+            	begin end
         endcase
 
 	  end
@@ -113,20 +104,22 @@ logic stallReg;
  		always_comb
 	begin
 		unique case(op_code)
-			7'b0110111: function_unit =4'b0001 ;			//lui
-			7'b0010111: function_unit =4'b0001 ;			//auipc
-			7'b1101111: function_unit =4'b0001 ;			//jal
-			7'b1100111: function_unit =4'b0010 ;			//jalr
-			7'b1100011: function_unit =4'b0011 ;			//branches	
-			7'b0000011: function_unit =4'b0100 ;			//loads
-			7'b0100011: function_unit =4'b0101 ;			//stores
-			7'b0110011: function_unit =4'b0110 ;			//add 
-			7'b0010011: function_unit =4'b0111 ;			//addi
+			7'b0110111: function_unit =3'b001 ;			//lui
+			7'b0010111: function_unit =3'b001 ;			//auipc
+			7'b1101111: function_unit =3'b001 ;			//jal
+			7'b1100111: function_unit =3'b010 ;			//jalr
+			7'b0010011: function_unit =3'b010 ;			//addi
+			7'b1100011: function_unit =3'b011 ;			//branches	
+			7'b0000011: function_unit =3'b100 ;			//loads
+			7'b0100011: function_unit =3'b101 ;			//stores
+			7'b0110011: function_unit =3'b110 ;			//add 
+			
 				default: function_unit = 0;
 		endcase
 	end
 
 assign stall=stallReg;
+assign kill=killReg;
 
  always_ff @(posedge clk)
       begin
@@ -138,6 +131,7 @@ assign stall=stallReg;
 	if (!scoreboard[rd][5] && !scoreboard[rs1][5] && !scoreboard[rs2][5]) //depends on instruction
 		begin 
 		stallReg<=0;
+		
 		end
 	else begin end 
 
@@ -149,10 +143,23 @@ assign stall=stallReg;
       begin
        for(int j=0;j<32;j=j+1)
 	begin 
-      	if(scoreboard[j][0])  scoreboard[j][5]<=0;
+      	if(scoreboard[j][0])  begin scoreboard[j][5]<=0;   scoreboard[j][4]<=0;  end 
 	else  begin end    
 	end
       end
+   always_ff@(negedge clk) begin 
+if (btaken)
+begin 
+stallReg<=0;
+killReg<=1;
 
+
+end
+else 
+begin 
+killReg<=0;
+end 
+
+end 
 
 endmodule

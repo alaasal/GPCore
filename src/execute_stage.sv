@@ -13,7 +13,7 @@ module exe_stage(
     
     output logic we6,
     output logic [2:0] fn6,
-    output logic [31:0] alu_resReg6,  		// alu result in PIPE #5
+    output logic [31:0] alu_resReg6,  		// alu result in PIPE #6
     output logic [4:0] rd6,
     output logic [31:0] target,U_imm6,
     output logic [1:0] pcselect5,
@@ -21,12 +21,15 @@ module exe_stage(
     output logic addr_misaligned6,
     output logic [31:0] mul_divReg6,
     output logic [31:0] pc6Reg,
-    output logic [31:0] wb_data6
+    output logic [31:0] wb_data6,
+    output logic bjtaken6
     );
     
     // wires 
-    logic btaken;
-    logic j5, jr5;
+    logic bjtaken4;
+    logic j5, jr5; //notused ?
+
+
     // registers
     logic weReg5,bneqReg5,btypeReg5;
     logic [2:0] fnReg5;
@@ -39,24 +42,25 @@ module exe_stage(
     logic [1:0] pcselectReg5;
     logic jReg5, jrReg5,LUIReg5,auipcReg5;
     logic [2:0] m_opReg5;
-    logic [31:0] alu_res5;
+    logic [31:0] alu_res5,alu_resReg5;
     logic [31:0] mul_div5;
+	logic bjtakenReg5;
            
     
     
     //ALU
-    alu exe_alu (.alu_fn(alufnReg5), .operandA(opaReg5), .operandB(opbReg5), .result(alu_res5) , .bneq(bneqReg5), .btype(btypeReg5) , .btaken(btaken) );
+    alu exe_alu (.alu_fn(alu_fn4), .operandA(op_a), .operandB(op_b), .result(alu_res5) , .bneq(bneq4), .btype(btype4) , .btaken(btaken) );
     
     // branch unit
     branch_unit exe_bu (
-    .pc          (pcReg5),
+    .pc          (pc4),
     .operandA    (opaReg5),
-    .B_imm       (B_immReg5),
-    .J_imm       (J_immReg5),
+    .B_imm       (B_imm4),
+    .J_imm       (J_imm4),
     .I_imm       (opbReg5),
     .btaken      (btaken),
-    .jr          (jrReg5),
-    .j           (jReg5),
+    .jr          (jr4),
+    .j           (j4),
     .target      (target)
     );
 
@@ -100,7 +104,8 @@ module exe_stage(
             jrReg5 <= 0;
             LUIReg5   <=0;
             auipcReg5   <=0;
-			      m_opReg5 <= 0;
+	m_opReg5 <= 0;
+	bjtakenReg5<=0;
           end
         else
           begin
@@ -122,13 +127,14 @@ module exe_stage(
             LUIReg5 <= LUI4;
             auipcReg5 <= auipc4;
 	    m_opReg5 <= m_op4;
+  	    bjtakenReg5<=bjtaken4;
           end
       end
 
 logic [4:0] rdReg6;
 logic [2:0] fnReg6;
 logic weReg6;
-logic [1:0] pcselectReg6;
+
 logic [31:0] U_immReg6;
 logic [31:0] pcReg6;
 
@@ -140,10 +146,10 @@ begin
 			rdReg6 <= 5'b0;
 			fnReg6 <= 3'b0;
 			weReg6 <= 0;
-			pcselectReg6 <= 2'b0;
 			U_immReg6 <= 32'b0;
 			pcReg6 <= 32'b0;
 			alu_resReg6 <= 32'b0;
+			alu_resReg5 <= 32'b0;
 			mul_divReg6 <= 32'b0;
 		end
 	else
@@ -151,10 +157,10 @@ begin
 			rdReg6 <= rdReg5;
 			fnReg6 <= fnReg5;
 			weReg6 <= weReg5;
-			pcselectReg6 <= pcselectReg5;
 			U_immReg6 <= U_immReg5;
 			pcReg6 <= pcReg5;
-			alu_resReg6 <= alu_res5;
+			alu_resReg6 <= alu_resReg5;
+			alu_resReg5 <= alu_res5;
 			mul_divReg6 <= mul_div5;
 		end
 
@@ -166,9 +172,10 @@ end
     assign rd6 = rdReg6;
     assign fn6 = fnReg6;
     assign we6 = weReg6;
-    assign pcselect6=pcselectReg6;
-    assign pcselect5=pcselectReg5;	
+    assign pcselect5=pcselect4;	
     assign U_imm6 = U_immReg6;
+	assign bjtaken6 = btaken | jrReg5 |jReg5 ;
+	//assign bjtaken6=bjtakenReg5;
 
     always_comb begin
         unique case(fn6)
