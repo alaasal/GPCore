@@ -119,18 +119,7 @@ module issue_stage (
 				
 			     
           end
-       else begin
-           pcselectReg4	<= pcselect3;
-           weReg4		<= we3;
-           BSELReg4	<= B_SEL3;
-           alufnReg4	<= alu_fn3;
-           fnReg4		<= fn3;
-           I_immdReg4	<= I_imm3;
-           rdReg4		<= rd3;
-	
-           
-          end
-		if(kill ) begin 
+		else if(kill ) begin 
 		killnum		<=killnum+1;
 		pcselectReg4	<= 2'b00;
 		weReg4		<= 1'b0;
@@ -171,7 +160,7 @@ end
 
     // assign op_a and op_b outputs
     assign op_a =  ( !(|rd4) && !(|I_immdReg4) && !(|alufnReg4) && !(|fnReg4) )? 32'b0: operand_a;
- //   assign rs1_regfile = stall ? 5'b0:rs1;
+
 
 
     // mux to select between operand b from regfile or sign extended 32-bit I_immediate (I_imm) or shamt I_imm
