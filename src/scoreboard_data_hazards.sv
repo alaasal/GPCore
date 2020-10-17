@@ -37,8 +37,8 @@ logic stallReg,killReg;
 		4'b001: 
 
 			begin 	   // pending & write 
-				if ((scoreboard[rd][5])   && (|rd))  stallReg <= 1; //assign stallo=stallreg
-				else if( (|rd))   
+				if ((scoreboard[rd][5])   && (|rd) && !kill)  stallReg <= 1; //assign stallo=stallreg
+				else if( (|rd) && !kill)   
 					begin 
 					scoreboard[rd][5]<=1; 
 					scoreboard[rd][3]<=1; 
@@ -49,8 +49,8 @@ logic stallReg,killReg;
 			end 
 		4'b010: 
 			begin 
-				if ((scoreboard[rd][5] ||scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4] )  stallReg <= 1; //assign stallo=stallreg
-				else if( (|rd)&& scoreboard[rs1][4])   
+				if ((scoreboard[rd][5] ||scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4] && !kill)  stallReg <= 1; //assign stallo=stallreg
+				else if( (|rd)&& scoreboard[rs1][4] && !kill)   
 					begin 
 					scoreboard[rd][5]<=1; scoreboard[rd][4]<=1;
 					scoreboard[rd][3]<=1; 
@@ -60,15 +60,15 @@ logic stallReg,killReg;
 			end 
 		4'b011: 
 			begin 
-				if (  (scoreboard[rs1][5] || scoreboard[rs2][5]) &&(scoreboard[rs1][4] || scoreboard[rs2][4])   )  stallReg <= 1; //assign stallo=stallreg
+				if (  (scoreboard[rs1][5] || scoreboard[rs2][5]) &&(scoreboard[rs1][4] || scoreboard[rs2][4]) && !kill  )  stallReg <= 1; //assign stallo=stallreg
 				
 				else begin end 
 				
 			end 
 		4'b100: 
 			begin 
-				if ((scoreboard[rd][5] ||scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4])  stallReg <= 1; //assign stallo=stallreg
-				else if( (|rd) && scoreboard[rs1][4])   
+				if ((scoreboard[rd][5] ||scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4] && !kill)  stallReg <= 1; //assign stallo=stallreg
+				else if( (|rd) && scoreboard[rs1][4] && !kill)   
 					begin 
 					scoreboard[rd][5]<=1; scoreboard[rd][4]<=1;
 					scoreboard[rd][3]<=1;
@@ -78,15 +78,15 @@ logic stallReg,killReg;
 			end 
 		4'b101: 
 			begin 
-				if (( scoreboard[rs1][5] || scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4])   )  stallReg <= 1; //assign stallo=stallreg
+				if (( scoreboard[rs1][5] || scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4]) && !kill  )  stallReg <= 1; //assign stallo=stallreg
 				
 				else begin end 
 				
 			end 
 		4'b110: 
 			begin 
-				if ((scoreboard[rd][5] || scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4])&& (|rd) )  stallReg <= 1; //assign stallo=stallreg
-				else if( (|rd) )
+				if ((scoreboard[rd][5] || scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4])&& (|rd) && !kill)  stallReg <= 1; //assign stallo=stallreg
+				else if( (|rd) && !kill)
 					begin 
 					scoreboard[rd][5]<=1; ;scoreboard[rd][4]<=1;
 					scoreboard[rd][3]<=1; 
