@@ -43,7 +43,7 @@ module frontend_stage(
 
 		
           end
-  else if ((stallnum[1]) &&(stallnum[0]) )begin 
+  else if (!stall || (stallnum[1]) &&(stallnum[0]) )begin 
 
 		pcReg		<= npc;		// PIPE1
 		pcReg2		<= pcReg;	
