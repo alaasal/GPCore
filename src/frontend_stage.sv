@@ -31,7 +31,7 @@ module frontend_stage(
       begin
         if (!nrst)
           begin
-		pcReg		<= 0;
+		pcReg		<= -1;
 		pcReg2 		<= 0;
 		stallnum 	<= 0;
 	

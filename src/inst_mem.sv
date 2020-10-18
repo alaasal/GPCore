@@ -22,6 +22,6 @@ module instr_mem (
 	  end
         always_ff @(posedge clk)
 	  begin
-		instr <= rom[addr-1];
+		instr <= rom[addr];
 	  end
 endmodule
