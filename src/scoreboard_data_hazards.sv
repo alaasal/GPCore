@@ -150,9 +150,10 @@ assign kill=killReg;
    always_ff@(negedge clk) begin 
 if (btaken)
 begin 
-stallReg<=0;
-killReg<=1;
-
+	stallReg<=0;
+	killReg<=1;
+	scoreboard[rd][5]<=0; scoreboard[rd][4]<=0;
+	scoreboard[rd][3]<=0;
 
 end
 else 

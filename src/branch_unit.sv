@@ -15,9 +15,9 @@ assign b_target = btaken ? pc+B_imm : pc+1; // overflow check!
 assign j_target = (jr)? operandA + I_imm : pc + J_imm; 
 
 always_comb begin
-	if (j) target = j_target;
-	else if (jr) target = {j_target[31:1], 1'b0};
-	else target = b_target;
+	if (j) target = j_target-1;
+	else if (jr) target = {j_target[31:1], 1'b0}-1;
+	else target = b_target-1;
 end
 	
 endmodule
