@@ -12,8 +12,7 @@ module debug(
 //TODO: enhance the debugging
 
 logic [20:1] offset = 20'b1;
-logic [20:1] imm = {offset[20], offset[10:1], offset[11], offset[19:12]};
-//logic [20:1] imm = {1'b0, 10'b100, 1'b0, 8'b0};
+logic [20:1] imm = {1'b0, 10'b100, 1'b0, 8'b0};
 logic [4:0] dest = 5'b1; 
 logic [6:0] JAL = 7'b1101111;
 //jalr = {};	//JALR 

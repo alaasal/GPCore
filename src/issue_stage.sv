@@ -47,7 +47,7 @@ module issue_stage (
 	  logic [2:0] m_opReg4;
 	  logic [6:0] opcodeReg4;
 	logic [31:0]operandareg;
- 	//logic [2:0]killnum;
+ 	logic [1:0]killnum;
 
 
     // wires
@@ -86,7 +86,7 @@ module issue_stage (
 			      m_opReg4 <= 0; 
 			      opcodeReg4 <= 0;
 				
-	//killnum<=2'b0;
+	killnum<=2'b0;
           end
         else
           begin
@@ -120,7 +120,7 @@ module issue_stage (
 			     
           end
 		else if(kill ) begin 
-	//	killnum		<=killnum+1;
+		killnum		<=killnum+1;
 		pcselectReg4	<= 2'b00;
 		weReg4		<= 1'b0;
 		BSELReg4	<= 2'b01;
@@ -129,44 +129,16 @@ module issue_stage (
 		I_immdReg4	<= 32'b0;
 		rdReg4		<= 5'b0;
 end 
-/////////////////////////////////////////
-//else if(!killnum[2] && !killnum[1] && killnum[0] ) begin 
-	//	killnum		<=killnum+1;
-		//pcselectReg4	<= 2'b00;
-	//	weReg4		<= 1'b0;
-	//	BSELReg4	<= 2'b01;
-	//	alufnReg4	<= 3'b000;
-	//	fnReg4		<= 3'b000;
-		//I_immdReg4	<= 32'b0;
-	//	rdReg4		<= 5'b0;
-		
-//end 
-//else if(!killnum[2] && killnum[1] && !killnum[0] ) begin 
-	//	killnum		<=killnum+1;
-	//	pcselectReg4	<= 2'b00;
-	//	weReg4		<= 1'b0;
-	//	BSELReg4	<= 2'b01;
-	//	alufnReg4	<= 3'b000;
-	//	fnReg4		<= 3'b000;
-	//	I_immdReg4	<= 32'b0;
-	//	rdReg4		<= 5'b0;
-		
-		//killnum		<= 2'b0;
-//end 
-
-///////////////////////////////////
-
-//else if ( killnum[2] && !killnum[1] && !killnum[0] )begin  
-		//killnum		<= 2'b0;
-		//pcselectReg4	<= 2'b00;
-		//weReg4		<= 1'b0;
-		//BSELReg4	<= 2'b01;
-		//alufnReg4	<= 3'b000;
-		//fnReg4		<= 3'b000;
-		//I_immdReg4	<= 32'b0;
-		//rdReg4		<= 5'b0;
-//end 
-else begin
+else if ( !killnum[1] && killnum[0])begin 
+		killnum		<= 2'b0;
+		pcselectReg4	<= 2'b00;
+		weReg4		<= 1'b0;
+		BSELReg4	<= 2'b01;
+		alufnReg4	<= 3'b000;
+		fnReg4		<= 3'b000;
+		I_immdReg4	<= 32'b0;
+		rdReg4		<= 5'b0;
+end else begin
 		pcselectReg4	<= pcselect3;
 		weReg4		<= we3;
 		BSELReg4	<= B_SEL3;

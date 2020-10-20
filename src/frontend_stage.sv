@@ -18,65 +18,57 @@ module frontend_stage(
     // registers
 	logic [31:0] pcReg; 	   // pipe #1 pc
 	logic [31:0] pcReg2;	   // pipe #2 from pc to inst mem
-	//logic [2:0] stallnum;
-	 logic [31:0] instr2Reg;
+	logic [1:0] stallnum;
     // wires
     logic [31:0] npc;   	   // next pc wire
-     logic [31:0] instr1;  
-   
     
     
 
     // pipes
 
-
     always_ff @(posedge clk , negedge nrst)
       begin
         if (!nrst)
           begin
-		pcReg		<= 0;
+		pcReg		<= -1;
 		pcReg2 		<= 0;
-		//stallnum 	<= 0;
-		instr2Reg<=0;
+		stallnum 	<= 0;
 	
           end
-         else if (stall )begin//&& !((stallnum[2])&& (stallnum[1]) &&(stallnum[0])))begin
-        
+         else if (stall && !((stallnum[1]) &&(stallnum[0])))
+          begin
 		pcReg		<= pcReg;		
 		pcReg2		<= pcReg2;
-		instr2Reg<=instr2Reg;
 
 		
           end
-  else if (!stall )begin//|| (stallnum[1]) &&(stallnum[0]) )begin 
+  else if (!stall || (stallnum[1]) &&(stallnum[0]) )begin 
 
 		pcReg		<= npc;		// PIPE1
 		pcReg2		<= pcReg;	
-		//stallnum  	<=0;
-			instr2Reg <= instr1;
+		stallnum  	<=0;
 		
 end 
 else begin 
         	pcReg		<= npc;		// PIPE1
       		pcReg2		<= pcReg;	
-      			instr2Reg <= instr2Reg;
 
 end 
       end
-//always_ff@(posedge clk)
-//begin 
-  //      if (stall)
-    //      begin
-      //  stallnum<=stallnum+1;
+always_ff@(posedge clk)
+begin 
+        if (stall)
+          begin
+         stallnum<=stallnum+1;
 
 		
-        // end
- // else begin 
+          end
+  else begin 
 
 
 	
-//end 
-//end 
+end 
+end 
 
     always_comb
       begin
@@ -94,14 +86,13 @@ end
     // output
     assign pc  = pcReg;
     assign pc2 = pcReg2;// pc + 4 will be piped to (EXE/MEM stage)
-    assign instr2 = instr2Reg;
  
     
     // dummy inst mem
     instr_mem m1 (
-        //.clk(~clk ),
+        .clk(~clk ),
         .addr(pc),
-        .instr(instr1), 		
+        .instr(instr2), 		
         .DEBUG_SIG(DEBUG_SIG),				//DEBUG Signals from debug module to load a program
         .DEBUG_addr(DEBUG_addr),
         .DEBUG_instr(DEBUG_instr),
