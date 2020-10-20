@@ -1,3 +1,4 @@
+
 module scoreboard_data_hazards (
 input logic clk,nrst,btaken,
 //source registers
@@ -16,6 +17,8 @@ output logic stall,kill
 
 logic [5:0] scoreboard[0:31];
 logic [2:0] function_unit;
+logic [1:0] killnum;
+logic branch;
 
 logic stallReg,killReg;
 
@@ -28,47 +31,55 @@ logic stallReg,killReg;
        		for(int i=0;i<32;i=i+1)
 		begin 
 			scoreboard[i]<=7'b0;
-			stallReg<=0;
+			
 		end
+		stallReg<=0;
+			killReg<=0;
+			killnum <=0;
+		 
           end
+         
           else 
 	  begin 
 	 case(function_unit)
 		4'b001: 
 
 			begin 	   // pending & write 
-				if ((scoreboard[rd][5])   && (|rd) && !kill)  stallReg <= 1; //assign stallo=stallreg
-				else if( (|rd) && !kill)   
+				if ((scoreboard[rd][5])   && (|rd) && !btaken)  stallReg <= 1; //assign stallo=stallreg
+				else if( (|rd) && !btaken)   
 					begin 
 					scoreboard[rd][5]<=1; 
 					scoreboard[rd][3]<=1; 
 					scoreboard[rd][4]<=1;
+					branch <=0;
    					end 
 				else begin end 
 				
 			end 
 		4'b010: 
 			begin 
-				if ((scoreboard[rd][5] ||scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4] && !kill)  stallReg <= 1; //assign stallo=stallreg
-				else if( (|rd)&& scoreboard[rs1][4] && !kill)   
+				if ((scoreboard[rd][5] ||scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4] && !btaken)  stallReg <= 1; //assign stallo=stallreg
+				else if( (|rd)&& scoreboard[rs1][4] && !btaken)   
 					begin 
 					scoreboard[rd][5]<=1; scoreboard[rd][4]<=1;
-					scoreboard[rd][3]<=1; 
+					scoreboard[rd][3]<=1;  branch <=0;
    					end 
 				else begin end 
 				
 			end 
 		4'b011: 
 			begin 
-				if (  (scoreboard[rs1][5] || scoreboard[rs2][5]) &&(scoreboard[rs1][4] || scoreboard[rs2][4]) && !kill  )  stallReg <= 1; //assign stallo=stallreg
+				if (  (scoreboard[rs1][5] || scoreboard[rs2][5]) &&(scoreboard[rs1][4] || scoreboard[rs2][4]) && !btaken  )  stallReg <= 1; //assign stallo=stallreg
 				
-				else begin end 
+				else  begin
+				  branch <=1;
+				 end  
 				
 			end 
 		4'b100: 
 			begin 
-				if ((scoreboard[rd][5] ||scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4] && !kill)  stallReg <= 1; //assign stallo=stallreg
-				else if( (|rd) && scoreboard[rs1][4] && !kill)   
+				if ((scoreboard[rd][5] ||scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4] && !btaken)  stallReg <= 1; //assign stallo=stallreg
+				else if( (|rd) && scoreboard[rs1][4] && !btaken)   
 					begin 
 					scoreboard[rd][5]<=1; scoreboard[rd][4]<=1;
 					scoreboard[rd][3]<=1;
@@ -78,15 +89,15 @@ logic stallReg,killReg;
 			end 
 		4'b101: 
 			begin 
-				if (( scoreboard[rs1][5] || scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4]) && !kill  )  stallReg <= 1; //assign stallo=stallreg
+				if (( scoreboard[rs1][5] || scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4]) && !btaken  )  stallReg <= 1; //assign stallo=stallreg
 				
 				else begin end 
 				
 			end 
 		4'b110: 
 			begin 
-				if ((scoreboard[rd][5] || scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4])&& (|rd) && !kill)  stallReg <= 1; //assign stallo=stallreg
-				else if( (|rd) && !kill)
+				if ((scoreboard[rd][5] || scoreboard[rs1][5] || scoreboard[rs2][5] ) &&(scoreboard[rs1][4] || scoreboard[rs2][4])&& (|rd) && !btaken)  stallReg <= 1; //assign stallo=stallreg
+				else if( (|rd) && !btaken)
 					begin 
 					scoreboard[rd][5]<=1; ;scoreboard[rd][4]<=1;
 					scoreboard[rd][3]<=1; 
@@ -137,27 +148,40 @@ assign kill=killReg;
 
 			end
 	else begin end
+	  
       end
 
  always_ff @(negedge clk)
       begin
        for(int j=0;j<32;j=j+1)
 	begin 
-      	if(scoreboard[j][0])  begin scoreboard[j][5]<=0;   scoreboard[j][4]<=0;  end 
+      	if(scoreboard[j][0])  begin  scoreboard[j][5]<=0;   scoreboard[j][4]<=0;  
+      	end 
 	else  begin end    
 	end
+
       end
+      
+      
    always_ff@(negedge clk) begin 
-if (btaken)
+          if (btaken)begin
+				  killReg<=1;
+				 end 
+				 
+		  
+if (killReg)
 begin 
-stallReg<=0;
-killReg<=1;
-
-
+killnum<= killnum +1;
 end
-else 
+if( killnum[1] && !killnum[0] && branch) 
 begin 
 killReg<=0;
+killnum <=2'b0;
+end 
+if( !killnum[1] && killnum[0] && !branch) 
+begin 
+killReg<=0;
+killnum <=2'b0;
 end 
 
 end 

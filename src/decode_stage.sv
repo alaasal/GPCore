@@ -31,7 +31,7 @@ module instdec_stage(
     // registers
     logic [31:0] instrReg3;	// pipe #3 from inst mem to decode stage
     logic [31:0] pcReg3;	// pipe #3 from inst mem to decode stage
-  	logic [1:0] stallnum;
+  	//logic [2:0] stallnum;
     
     // PIPE
 
@@ -41,41 +41,41 @@ always_ff @(posedge clk , negedge nrst)
           begin
             instrReg3 <= 0;
             pcReg3<=0;
-	stallnum 		<= 0;
+	//stallnum 		<= 0;
           end
-         else if (stall && !((stallnum[1]) &&(stallnum[0])))
-          begin
+         else if (stall )begin//&& !((stallnum[1]) &&(stallnum[0]))) begin
+          
                  instrReg3<=instrReg3;
             pcReg3<=pcReg3;
 
 		
           end
-  else if ((stallnum[1]) &&(stallnum[0]) )begin 
+//  else if ((stallnum[1]) &&(stallnum[0]) )begin 
 
-            instrReg3 <= instr2;
-            pcReg3<=pc2;
-	stallnum <=0;
-end 
+          // instrReg3 <= instr2;
+          //  pcReg3<=pc2;
+	//stallnum <=0;
+//end 
 else begin 
             instrReg3 <= instr2;
             pcReg3<=pc2;
 end 
       end
 
-always_ff@(posedge clk)
-begin 
-        if (stall)
-          begin
-         stallnum<=stallnum+1;
+//always_ff@(posedge clk)
+//begin 
+  //      if (stall)
+    //      begin
+      //   stallnum<=stallnum+1;
 
 		
-          end
-  else begin 
+        //  end
+  //else begin 
 
 
 	
-end 
-end
+//end 
+//end
 
     // output
     // decoding instructions

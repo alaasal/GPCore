@@ -18,11 +18,12 @@ module frontend_stage(
     // registers
 	logic [31:0] pcReg; 	   // pipe #1 pc
 	logic [31:0] pcReg2;	   // pipe #2 from pc to inst mem
-	logic [1:0] stallnum;
+	//logic [2:0] stallnum;
+	 logic [31:0] instr2Reg;
     // wires
     logic [31:0] npc;   	   // next pc wire
-    logic [31:0] instr1;  
-    logic [31:0] instr2Reg;   	   
+     logic [31:0] instr1;  
+   
     
     
 
@@ -35,46 +36,47 @@ module frontend_stage(
           begin
 		pcReg		<= 0;
 		pcReg2 		<= 0;
-		stallnum 	<= 0;
+		//stallnum 	<= 0;
 		instr2Reg<=0;
 	
           end
-         else if (stall && !((stallnum[1]) &&(stallnum[0])))
-          begin
+         else if (stall )begin//&& !((stallnum[2])&& (stallnum[1]) &&(stallnum[0])))begin
+        
 		pcReg		<= pcReg;		
 		pcReg2		<= pcReg2;
+		instr2Reg<=instr2Reg;
 
 		
           end
-  else if (!stall || (stallnum[1]) &&(stallnum[0]) )begin 
+  else if (!stall )begin//|| (stallnum[1]) &&(stallnum[0]) )begin 
 
 		pcReg		<= npc;		// PIPE1
 		pcReg2		<= pcReg;	
-		stallnum  	<=0;
+		//stallnum  	<=0;
 			instr2Reg <= instr1;
 		
 end 
 else begin 
         	pcReg		<= npc;		// PIPE1
       		pcReg2		<= pcReg;	
-      		instr2Reg <= instr1;
+      			instr2Reg <= instr2Reg;
 
 end 
       end
-always_ff@(posedge clk)
-begin 
-        if (stall)
-          begin
-         stallnum<=stallnum+1;
+//always_ff@(posedge clk)
+//begin 
+  //      if (stall)
+    //      begin
+      //  stallnum<=stallnum+1;
 
 		
-          end
-  else begin 
+        // end
+ // else begin 
 
 
 	
-end 
-end 
+//end 
+//end 
 
     always_comb
       begin
@@ -97,7 +99,7 @@ end
     
     // dummy inst mem
     instr_mem m1 (
-        .clk(clk ),
+        //.clk(~clk ),
         .addr(pc),
         .instr(instr1), 		
         .DEBUG_SIG(DEBUG_SIG),				//DEBUG Signals from debug module to load a program
