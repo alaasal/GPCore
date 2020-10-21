@@ -204,7 +204,6 @@ module exe_stage(
 	logic [31:0] U_immReg6;
 	logic [31:0] AU_immReg6;
 
-	logic [1:0] pcselectReg6;
 	logic [31:0] pcReg6;
 	
 	logic [2:0] fn6;
@@ -226,7 +225,6 @@ module exe_stage(
 		mul_divReg6 	<= 32'b0;
 
 		pcReg6 		<= 32'b0;
-		pcselectReg6 	<= 2'b0;
 	  end
 	else
 	  begin
@@ -242,7 +240,6 @@ module exe_stage(
 		mul_divReg6 	<= mul_div5;
 
 		pcReg6 		<= pcReg5;
-		pcselectReg6 	<= pcselectReg5;
 	  end
 	end
 
@@ -259,7 +256,6 @@ module exe_stage(
 	assign AU_imm6 		= AU_immReg6;
 
 	assign pc6 		= pcReg6;
-	assign pcselect6	= pcselectReg6;
 	assign pcselect5	= pcselectReg5;
 
 	always_comb begin

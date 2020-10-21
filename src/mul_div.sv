@@ -11,7 +11,7 @@ module mul_div (
     logic sign_a, sign_b;
 
     always_comb begin
-        unique case(mulDiv_op[1:0])
+        case(mulDiv_op[1:0])
             1: begin
                 sign_a = 1;
                 sign_a = 1;
