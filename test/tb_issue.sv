@@ -7,6 +7,8 @@ class packet; // used for randomization of variables
   rand bit btype3_rand;
   rand bit j3_rand;
   rand bit jr3_rand;
+  rand bit LUI3_rand;
+  rand bit auipc3_rand;
   rand bit we6_rand;
   rand bit [3:0] alu_fn3_rand;
   rand bit [31:0] wb6_rand;	
@@ -19,6 +21,7 @@ class packet; // used for randomization of variables
   rand bit [31:0] I_imm3_rand; 
   rand bit [31:0] B_imm3_rand;
   rand bit [31:0] J_imm3_rand;
+  rand bit [31:0] U_imm3_rand;
   
   rand bit [31:0] pc3_rand;
   rand bit [1:0] pcselect3_rand;
@@ -39,9 +42,12 @@ reg [4:0] rs1, rs2;		// addresses of operands (to regfile)
 reg [4:0] rd3;			// rd address will be pipelined to commit stage
 reg [4:0] shamt;		
 reg [31:0] I_imm3,B_imm3,J_imm3;	// I_immediate sign extended
+reg [31:0] U_imm3;
 reg [31:0] pc3;
 reg [1:0] pcselect3;
 reg j3, jr3;
+reg LUI3, auipc3;
+
 
 wire fn4, we4,bneq4,btype4;	// function selection ctrl in issue stage and write enable
 wire [1:0] pcselect4;
@@ -49,13 +55,15 @@ wire [31:0] op_a, op_b;		// operands A & B output from regfile in PIPE #4 (to ex
 wire [4:0] rd4;
 wire [3:0] alu_fn4;		// alu control in issue stage
 wire [31:0] pc4,B_imm4, J_imm4;
+wire [31:0] U_imm4;
 wire j4, jr4;
+wire LUI4, auipc4;
 	
 //instantiation of DUT
  issue_stage DUT(.clk(clk), .nrst(nrst),.we6(we6),.we3(we3), .fn3(fn3) ,.bneq3(bneq3),.btype3(btype3),.rdaddr6(rdaddr6),.B_SEL3(B_SEL3),
- .alu_fn3(alu_fn3),.wb6(wb6),.rs1(rs1),.rs2(rs2),.rd3(rd3),.shamt(shamt),.I_imm3(I_imm3),.B_imm3(B_imm3),.J_imm3(J_imm3),.pc3(pc3),
- .pcselect3(pcselect3),.j3(j3), .jr3(jr3),.fn4(fn4), .we4(we4),.bneq4(bneq4),.btype4(btype4),.pcselect4(pcselect4),.op_a(op_a),.op_b(op_b),
- .rd4(rd4),.alu_fn4(alu_fn4), .pc4(pc4),.B_imm4(B_imm4),.J_imm4(J_imm4),.j4(j4), .jr4(jr4));
+ .alu_fn3(alu_fn3),.wb6(wb6),.rs1(rs1),.rs2(rs2),.rd3(rd3),.shamt(shamt),.I_imm3(I_imm3),.B_imm3(B_imm3),.J_imm3(J_imm3),.U_imm3(U_imm3),.pc3(pc3),
+ .pcselect3(pcselect3),.j3(j3),.jr3(jr3),.LUI3(jr3), .auipc3(jr3),.fn4(fn4), .we4(we4),.bneq4(bneq4),.btype4(btype4),.pcselect4(pcselect4),.op_a(op_a),.op_b(op_b),
+ .rd4(rd4),.alu_fn4(alu_fn4), .pc4(pc4),.B_imm4(B_imm4),.J_imm4(J_imm4),.U_imm4(U_imm4),.j4(j4), .jr4(jr4),.LUI4(LUI4),.auipc4(auipc4));
 
 //clock  generation
 initial begin 
@@ -90,8 +98,11 @@ initial begin
      B_SEL3 = pkt.B_SEL3_rand;
      we6 = pkt.we6_rand;
      J_imm3 = pkt.J_imm3_rand;
+     U_imm3 = pkt.U_imm3_rand;
      j3 = pkt.j3_rand;
      jr3 = pkt.jr3_rand;
+     LUI3 = pkt.LUI3_rand;
+     auipc3 = pkt.auipc3_rand;
      
      // pass alu, fn & we control signals  randomization to pass through the pipe form decode to issue stage
       alu_fn3 = pkt.alu_fn3_rand; // should be equal to alu_fn4 in simulation

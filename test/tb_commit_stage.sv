@@ -17,12 +17,12 @@ reg [31:0] mem_out6;
 reg [31:0] mul_div5;
 
 wire [4:0]  rd6;
-wire [31:0] U_imm6;
+wire [31:0] U_imm6 ,AU_imm6;
 wire [31:0] wb_data6; // final output that will be written back in register file PIPE #6
 wire  we6;
 
 // instantiate device under test
-  commit_stage dut(.clk(clk), .nrst(nrst), .we5(we5), .rd5(rd5), .U_imm5(U_imm5), .result5(result5), .pc5(pc5), .fn5(fn5), .mem_out6(mem_out6), .mul_div5(mul_div5), .rd6(rd6), .wb_data6(wb_data6),  .U_imm6(U_imm6), .we6(we6));
+  commit_stage dut(.clk(clk), .nrst(nrst), .we5(we5), .rd5(rd5), .U_imm5(U_imm5), .result5(result5), .pc5(pc5), .fn5(fn5), .mem_out6(mem_out6), .mul_div5(mul_div5), .rd6(rd6), .wb_data6(wb_data6),  .U_imm6(U_imm6),  .AU_imm6(AU_imm6), .we6(we6));
 
 // generate clock
 initial begin 

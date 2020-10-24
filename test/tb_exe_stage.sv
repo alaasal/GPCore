@@ -6,8 +6,10 @@ class packet; // used for randomization of variables
 	rand bit  [3:0] alu_fn4_rand;
 	rand bit [31:0] op_a_rand, op_b_rand;
 	rand bit [31:0] pc4_rand,B_imm4_rand, J_imm4_rand;
+        rand bit [31:0] U_imm4_rand;
 	rand bit [1:0] pcselect4_rand;
-	rand bit j4_rand, jr4_rand;  
+	rand bit j4_rand, jr4_rand;
+        rand bit LUI4_rand, auipc4_rand;  
 endclass
 
 module tb_exe_stage;
@@ -18,8 +20,10 @@ reg [4:0] rd4;
 reg  [3:0] alu_fn4;
 reg  [31:0] op_a, op_b;
 reg [31:0] pc4,B_imm4, J_imm4;
+reg [31:0] U_imm4;
 reg [1:0] pcselect4;
 reg j4, jr4;
+reg LUI4, auipc4;
 
 wire  we5;
 wire [2:0] fn5;
@@ -28,9 +32,10 @@ wire [4:0] rd5;
 wire [31:0] target;
 wire [1:0] pcselect5;
 wire j5, jr5;
+wire LUI5, auipc5;
 
 // instantiate device under test
- exe_stage dut(.clk(clk), .nrst(nrst), .fn4(fn4), .we4(we4), .bneq4(bneq4), .btype4(btype4), .rd4(rd4), .alu_fn4(alu_fn4), .op_a(op_a), .op_b(op_b), .pc4(pc4) , .B_imm4(B_imm4) ,  .J_imm4(J_imm4), .pcselect4(pcselet4) , .j4(j4), .jr4(jr4), .fn5(fn5) , .we5(we5) , .alu_res5(alu_res5) , .rd5(rd5) , .b_target(b_target) , .pcselect5(pcselect5) , .j5(j5), .jr5(jr5) );
+ exe_stage dut(.clk(clk), .nrst(nrst), .fn4(fn4), .we4(we4), .bneq4(bneq4), .btype4(btype4), .rd4(rd4), .alu_fn4(alu_fn4), .op_a(op_a), .op_b(op_b), .pc4(pc4) , .B_imm4(B_imm4) ,  .J_imm4(J_imm4),  .U_imm4(U_imm4), .pcselect4(pcselet4) , .j4(j4), .jr4(jr4), .fn5(fn5) , .we5(we5) , .alu_res5(alu_res5) , .rd5(rd5) , .b_target(b_target) , .pcselect5(pcselect5) , .j5(j5), .jr5(jr5),.LUI5(j5), .auipc5(jr5) );
 
 // generate clock
 initial begin 
@@ -61,10 +66,12 @@ initial begin
 	pc4 =  pkt.pc4_rand ;
 	B_imm4 =  pkt.B_imm4_rand  ;
 	J_imm4 = pkt.J_imm4_rand;
+        U_imm4 = pkt.U_imm4_rand;
 	pcselect4 =  pkt.pcselect4_rand ;
 	j4 =  pkt.j4_rand  ;
 	jr4 =  pkt.jr4_rand  ;
-     
+        LUI4 =  pkt.LUI4_rand  ;
+        auipc4 =  pkt.auipc4_rand  ;
    
   end
    end 
