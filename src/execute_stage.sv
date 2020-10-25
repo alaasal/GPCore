@@ -45,11 +45,14 @@ module exe_stage(
 	
 	output logic [31:0] target,
 	output logic [31:0] pc6,
-	output logic [1:0] pcselect5
+	output logic [1:0] pcselect5,
+	
+	output logic bjtaken6		//need some debug
     );
     
 	// wires 
 	logic btaken;
+	logic bjtaken4;
 	logic j5; 
 	logic jr5;
 	logic [31:0] mul_div5;
@@ -66,7 +69,6 @@ module exe_stage(
 
 	logic [31:0] alu_res5;   
 	logic weReg5;
-	
 	logic [4:0] rdReg5;
 
 	logic bneqReg5;
@@ -116,6 +118,8 @@ module exe_stage(
 
 		pcReg5	  	<= 0;
 		pcselectReg5	<=2'b0;
+		
+		bjtakenReg5		<= 0;
           end
         else
           begin
@@ -144,6 +148,8 @@ module exe_stage(
 	
 		pcReg5	  	<= pc4;
 		pcselectReg5 	<= pcselect4;
+		
+		bjtakenReg5		<=bjtaken4;
           end
       end   
     
@@ -244,7 +250,6 @@ module exe_stage(
 	end
 
 
-
 	// =============================================== //
 	//			 Outputs		   //
 	// =============================================== //
@@ -254,9 +259,8 @@ module exe_stage(
 	
 	assign U_imm6 		= U_immReg6;
 	assign AU_imm6 		= AU_immReg6;
-
-	assign pc6 		= pcReg6;
-	assign pcselect5	= pcselectReg5;
+	
+	assign bjtaken6 = btaken | jr4 |j4;
 
 	always_comb begin
         unique case(fn6)

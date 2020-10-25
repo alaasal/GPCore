@@ -1,5 +1,4 @@
 module instr_decoder(
-
 	input logic [6:0] op,
 	input logic [2:0] funct3,
 	input logic [6:0] funct7,
@@ -31,7 +30,10 @@ module instr_decoder(
 
 	// Program Counter Select Piped to Execute Unit
 	// until Branch and Jumps target is calculated	
-	output logic [1:0] pcselect	
+	output logic [1:0] pcselect,	
+	
+	// Scoreboard Signals 
+	input logic stall
     );
 
     	// Wires
@@ -169,17 +171,18 @@ module instr_decoder(
 	assign mem_op[2] = i_lbu | i_lhu | i_sb  | i_sh;
 	assign mem_op[3] = i_sw  | i_sb  | i_sh;
          
-	// generate control signals
-	assign pcselect[0] = 0; // to set pcselect to 0 (will be edited when branch and jump operations added)
-	assign pcselect[1] = btype | i_jal | i_jalr;
+    // generate control signals
+    assign pcselect[0] = 0 |stall; // to set pcselect to 0 (will be edited when branch and jump operations added)
+    assign pcselect[1] = btype | i_jal | i_jalr |stall;
 
-	//00 rtype itype nop
-	//01 
-	//10 branch 
-	//11
-	assign we 	    = rtype | itype | jtype | jr | ltype| utype | autype;		  // set we to 1 if instr is rtype or itype (1 for all alu op)
-	assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr | ltype;
-	assign B_SEL[1] = i_slli | i_srli | i_srai;
+    //00 rtype itype nop
+    //01 
+    //10 branch 
+    //11
+    assign we 	    = rtype | itype | jtype | jr | ltype| utype | autype;		  // set we to 1 if instr is rtype or itype (1 for all alu op)
+    assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr | ltype;
+    assign B_SEL[1] = i_slli | i_srli | i_srai;
+
     
 	// inst signal controls the type of instruction done by the ALU {bit30, funct3}
 	// 0000 -> add | addi	

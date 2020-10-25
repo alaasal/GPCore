@@ -7,8 +7,6 @@ module core(
 	input logic clk_debug
     );
 
-
-
 	// Wires
 	logic [31:0] pc, pc2, pc3, pc4, pc5, pc6;         // Program Counter Signals in each pipe 
 	logic [31:0] instr2;   	   // output wire of IF stage
@@ -50,6 +48,9 @@ module core(
 	logic [31:0] wb_data6;	
 	logic we6Issue;
 	logic [4:0] rd6Issue;
+	
+	//Scoreboared Logic 
+	logic stall;
 
 	// =============================================== //
 	//			FrpntEnd Stage		   //
@@ -72,7 +73,10 @@ module core(
 	.DEBUG_SIG      (DEBUG_SIG),
 	.DEBUG_addr     (DEBUG_addr),
 	.DEBUG_instr    (DEBUG_instr),
-	.clk_debug      (clk_debug)
+	.clk_debug      (clk_debug),
+	
+	//Scoreboared Signals
+	.stall          (stall)
 	);
 
 	// =============================================== //
@@ -117,7 +121,10 @@ module core(
 	.mulDiv_op3   (mulDiv_op3),
 	// Program Counter Piping
 	.pc3          (pc3),
-	.pcselect3    (pcselect3)
+	.pcselect3    (pcselect3),
+	
+	// Scoreboared Signals
+	.stall          (stall)
 	);
 
 	// =============================================== //
@@ -192,7 +199,10 @@ module core(
 	.mulDiv_op4   (mulDiv_op4),
 
 	.pc4          (pc4),
-	.pcselect4    (pcselect4)
+	.pcselect4    (pcselect4),
+	
+	// Scoreboared Signals
+	.stall          (stall)
     );
 
 	// =============================================== //

@@ -9,22 +9,10 @@ module debug(
 	output logic START
 );
 
-//TODO: enhance the debugging
-
-logic [20:1] offset = 20'b1;
-logic [20:1] imm = {offset[20], offset[10:1], offset[11], offset[19:12]};
-logic [4:0] dest = 5'b1; 
-logic [6:0] JAL = 7'b1101111;
-//jalr = {};	//JALR 
-logic [31:0] jal0  = {imm, dest, JAL}; //JAL x0, 1 (unconditional jump)
-//logic [31:0] jal1  = {,};
 
 parameter NUM_Of_INSTRS = 4;
 logic [31:0] instrs [3:0] = {32'h0 ,32'h0 ,32'h0, {7'h0,5'h2,5'h1, 3'h0,5'h8 , 7'b0110011}};
 logic [2:0] instrs_index;
-
-
-
 
 	always_ff @(posedge clk, negedge nrst)
 	  begin
