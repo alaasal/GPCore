@@ -36,9 +36,9 @@ module instdec_stage(
    	output logic [31:0] pc3,
 
 	// Memory Request
-    output logic [3:0] mem_op3,
+    	output logic [3:0] mem_op3,
 	// MulDiv Operation 
-    output logic [2:0] mulDiv_op3,
+   	 output logic [2:0] mulDiv_op3,
 
 	// Program Counter Select Piped to Execute Unit
 	// until Branch and Jumps target is calculated
@@ -46,7 +46,12 @@ module instdec_stage(
 	
 	// Scoreboard Signals
 	input logic stall,
-	output logic [6:0]opcode3
+	output logic [6:0]opcode3,
+
+	// CSR
+	output logic [2:0] funct3_3,
+	output logic [11:0] csr_addr,
+	output logic [31:0] csr_imm3
     );
 
 	// Wires
@@ -66,11 +71,11 @@ module instdec_stage(
 	always_ff @(posedge clk , negedge nrst)
 	begin
 	if (!nrst)
-	begin
-            instrReg3 	<= 0;
-            pcReg3		<= 0;
-			stallnum	<= 0;
-	end
+	  begin
+            	instrReg3 	<= 0;
+            	pcReg3		<= 0;
+		stallnum	<= 0;
+	  end
 	else
 	begin
 		if (stall && !( (stallnum[1]) && (stallnum[0]) ))
@@ -115,10 +120,13 @@ module instdec_stage(
     
 	
 	assign opcode   = instrReg3[6:0];
-	assign funct3   = instrReg3[14:12];
 	assign funct7   = instrReg3[31:25];
 	assign instr_30 = instrReg3[30];
 	assign opcode3  = opcode;
+	// to csr_unit
+	assign csr_addr = instrReg3[31:20];
+	assign csr_imm3	= instrReg3[19:15];
+	assign funct3_3 = instrReg3[14:12];
 
 	instr_decoder c1 (
 	.op          (opcode),

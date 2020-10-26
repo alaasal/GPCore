@@ -28,6 +28,9 @@ module exe_stage(
 
 	input logic [31:0] pc4,
 	input logic [1:0] pcselect4,
+	
+	input logic [2:0] funct3_4,
+	input logic [31:0] csr_imm4,
     
 	output logic [31:0] wb_data6,
 	output logic we6,
@@ -47,7 +50,9 @@ module exe_stage(
 	output logic [31:0] pc6,
 	output logic [1:0] pcselect5,
 	
-	output logic bjtaken6		//need some debug
+	output logic bjtaken6,		//need some debug
+
+	output logic wb_csr_rd6
     );
     
 	// wires 
@@ -88,6 +93,9 @@ module exe_stage(
 
 	logic [31:0] pcReg5;	
 	logic [1:0] pcselectReg5;
+	
+	logic [2:0] funct3Reg5;
+	logic [31:0]csr_immReg5;
 
 
 	always_ff @(posedge clk, negedge nrst)
@@ -120,7 +128,10 @@ module exe_stage(
 		pcReg5	  	<= 0;
 		pcselectReg5	<=2'b0;
 		
-		bjtakenReg5		<= 0;
+		bjtakenReg5	<= 0;
+
+		funct3Reg5	<= 0;
+		csr_immReg5	<= 0;
           end
         else
           begin
@@ -151,6 +162,9 @@ module exe_stage(
 		pcselectReg5 	<= pcselect4;
 		
 		bjtakenReg5		<=bjtaken4;
+
+		funct3Reg5	<= funct3_4;
+		csr_immReg5	<= csr_imm4;
           end
       end   
     
@@ -197,6 +211,15 @@ module exe_stage(
 	.res		(mul_div5)
 	);
 	
+	csr csr_unit(
+	.func3(funct3Reg5),
+	.rs1(op_a),
+	.imm(csr_immReg5),
+	.csr_reg(),
+	.csr_new(),
+	.csr_old(csr_rd5)
+	);
+	
 	// =============================================== //
 	//			Pipe 6			   //
 	// =============================================== //
@@ -214,6 +237,7 @@ module exe_stage(
 	logic [31:0] pcReg6;
 	
 	logic [2:0] fn6;
+	logic [31:0] csr_rdReg6;
 
  
 	always @(posedge clk)
@@ -232,6 +256,7 @@ module exe_stage(
 		mul_divReg6 	<= 32'b0;
 
 		pcReg6 		<= 32'b0;
+		csr_rdReg6	<= '0;
 	  end
 	else
 	  begin
@@ -247,6 +272,8 @@ module exe_stage(
 		mul_divReg6 	<= mul_div5;
 
 		pcReg6 		<= pcReg5;
+
+		csr_rdReg6	<= csr_rd5;
 	  end
 	end
 
@@ -270,7 +297,8 @@ module exe_stage(
             2: wb_data6  = mul_divReg6;
             3: wb_data6  = U_imm6;
             4: wb_data6  = mem_out6;
-            5: wb_data6  = AU_imm6 ;
+            5: wb_data6  = AU_imm6;
+	    6: wb_data6  = csr_rdReg6;
             default: wb_data6 = 0;
         endcase
 	end

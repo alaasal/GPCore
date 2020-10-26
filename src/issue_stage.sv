@@ -11,6 +11,7 @@ module issue_stage (
 	input logic bneq3,
 	input logic  btype3,
 	input logic [6:0] opcode3,
+	input logic [2:0] funct3_3,
 	
 	input logic [2:0] fn3,
 	input logic [3:0] alu_fn3,		// ALU control from decode stage
@@ -24,7 +25,10 @@ module issue_stage (
 	input logic [31:0] J_imm3,
 	input logic [31:0] S_imm3,
 	input logic [31:0] U_imm3,	
-	input logic [4:0] shamt,		
+	input logic [4:0] shamt,
+	// to csr_unit in execute stage
+	input logic [2:0] func3,
+	input logic [31:0]csr_imm3,
 
 	input logic j3,
 	input logic jr3,
@@ -47,7 +51,10 @@ module issue_stage (
 	// Piped Signals from Issue to Execute
 	output logic [4:0] rd4,
 	output logic [3:0] alu_fn4,
-	output logic [2:0] fn4,		
+	output logic [2:0] fn4,
+
+	output logic [2:0] funct3_4,
+	output logic [31:0]csr_imm4,
 
 	output logic [31:0] B_imm4,
 	output logic [31:0] J_imm4,
@@ -114,6 +121,8 @@ module issue_stage (
 	logic [31:0] pcReg4;
 	logic [1:0] pcselectReg4;
 	
+	logic [2:0] funct3Reg4;
+	logic [31:0]csr_immReg4;
 	// Scoreboard Regs
 	logic [1:0]killnum;
 	
@@ -153,6 +162,8 @@ module issue_stage (
 		pcReg4		<= 0;
 		pcselectReg4	<= 0;
 		killnum		<= 2'b0;
+		funct3Reg4	<= 0;
+		csr_immReg4	<= 0;
           end
         else
           begin
@@ -174,7 +185,9 @@ module issue_stage (
 		mulDiv_opReg4 	<= mulDiv_op3;
 
 		pcReg4		<= pc3;		
-		
+		funct3Reg4	<= funct3_3;
+		csr_immReg4	<= csr_imm3;
+
 		if(stall )
 		begin
 		pcselectReg4	<= 2'b00;
@@ -244,7 +257,7 @@ module issue_stage (
 	.kill(kill)
 	);
 
- 
+	 // csr register file
 
 
 
@@ -296,6 +309,9 @@ module issue_stage (
 
 	assign pc4		= pcReg4;
 	assign pcselect4	= pcselectReg4;
+
+	assign funct3_4		= funct3Reg4;
+	assign csr_imm4		= csr_immReg4;
 	// Piped Signals ended
 
 endmodule
