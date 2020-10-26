@@ -2,7 +2,7 @@ module exe_stage(
 	input logic clk, nrst,
 
 	input logic [31:0] op_a,
- 	input logic [31:0] op_b,	
+ 	input logic [31:0] op_b,
 	input logic [4:0] rd4,			// rd address from issue stage
 
 	input logic [2:0] fn4,
@@ -11,13 +11,13 @@ module exe_stage(
 	input logic we4,
 
 	input logic [31:0] B_imm4,
-	input logic [31:0] J_imm4, 
+	input logic [31:0] J_imm4,
 	input logic [31:0] U_imm4 ,
 	input logic [31:0] S_imm4,
 
 	input logic bneq4,
 	input logic btype4,
-	
+
 	input logic j4,
 	input logic jr4,
 	input logic LUI4,
@@ -28,32 +28,37 @@ module exe_stage(
 
 	input logic [31:0] pc4,
 	input logic [1:0] pcselect4,
-    
+
+	input logic [2:0] funct3_4,
+	input logic [31:0] csr_imm4,
+
 	output logic [31:0] wb_data6,
 	output logic we6,
 
-	
+
 	output logic [4:0] rd6,
-	
+
 	output logic [31:0] U_imm6,
 	output logic [31:0] AU_imm6 ,
-	
+
 	output logic [31:0] mem_out6,
 	output logic addr_misaligned6,
 
 	output logic [31:0] mul_divReg6,
-	
+
 	output logic [31:0] target,
 	output logic [31:0] pc6,
 	output logic [1:0] pcselect5,
-	
-	output logic bjtaken6		//need some debug
+
+	output logic bjtaken6,		//need some debug
+
+	output logic wb_csr_rd6
     );
-    
-	// wires 
+
+	// wires
 	logic btaken;
 	logic bjtaken4;
-	logic j5; 
+	logic j5;
 	logic jr5;
 	logic [31:0] mul_div5;
 
@@ -62,12 +67,12 @@ module exe_stage(
 	// =============================================== //
 
 	logic [31:0] opaReg5;		// Operand A at ALU input
-	logic [31:0] opbReg5;		// Operand B at ALU input	
+	logic [31:0] opbReg5;		// Operand B at ALU input
 
 	logic [2:0] fnReg5;
 	logic [3:0] alufnReg5;	   // alu control in exe stage will be input to alu block
 
-	logic [31:0] alu_res5;   
+	logic [31:0] alu_res5;
 	logic weReg5;
 	logic [4:0] rdReg5;
 
@@ -86,8 +91,11 @@ module exe_stage(
 
 	logic [2:0] mulDiv_opReg5;
 
-	logic [31:0] pcReg5;	
+	logic [31:0] pcReg5;
 	logic [1:0] pcselectReg5;
+
+	logic [2:0] funct3Reg5;
+	logic [31:0]csr_immReg5;
 
 
 	always_ff @(posedge clk, negedge nrst)
@@ -102,11 +110,11 @@ module exe_stage(
 
 		rdReg5	  	<= 0;
 		weReg5		<= 0;
-		
+
 		B_immReg5 	<= 0;
 		J_immReg5 	<= 0;
 		U_immReg5 	<= 0;
-		
+
 		bneqReg5	<= 0;
 		btypeReg5 	<= 0;
 
@@ -119,13 +127,16 @@ module exe_stage(
 
 		pcReg5	  	<= 0;
 		pcselectReg5	<=2'b0;
-		
-		bjtakenReg5		<= 0;
+
+		bjtakenReg5	<= 0;
+
+		funct3Reg5	<= 0;
+		csr_immReg5	<= 0;
           end
         else
           begin
 		opaReg5   	<= op_a;
-		opbReg5   	<= op_b;	
+		opbReg5   	<= op_b;
 
  		alufnReg5 	<= alu_fn4;
 		fnReg5	  	<= fn4;
@@ -146,26 +157,29 @@ module exe_stage(
 		auipcReg5 	<= auipc4;
 
 		mulDiv_opReg5 	<= mulDiv_op4;
-	
+
 		pcReg5	  	<= pc4;
 		pcselectReg5 	<= pcselect4;
-		
+
 		bjtakenReg5		<=bjtaken4;
+
+		funct3Reg5	<= funct3_4;
+		csr_immReg5	<= csr_imm4;
           end
-      end   
-    
-    
+      end
+
+
 	  //ALU
 	alu exe_alu (
-	.alu_fn(alufnReg5 ), 
-	.operandA(opaReg5 ), 
-	.operandB(opbReg5 ), 
-	.result(alu_res5) , 
-	.bneq(bneqReg5), 
-	.btype(btypeReg5) , 
-	.btaken(btaken) 
+	.alu_fn(alufnReg5 ),
+	.operandA(opaReg5 ),
+	.operandB(opbReg5 ),
+	.result(alu_res5) ,
+	.bneq(bneqReg5),
+	.btype(btypeReg5) ,
+	.btaken(btaken)
 	);
-    
+
     // branch unit
 	branch_unit exe_bu (
 	.pc          (pc4),
@@ -196,7 +210,16 @@ module exe_stage(
 	.mulDiv_op	(mulDiv_opReg5),
 	.res		(mul_div5)
 	);
-	
+
+	csr csr_unit(
+	.func3(funct3Reg5),
+	.rs1(op_a),
+	.imm(csr_immReg5),
+	.csr_reg(),
+	.csr_new(),
+	.csr_old(csr_rd5)
+	);
+
 	// =============================================== //
 	//			Pipe 6			   //
 	// =============================================== //
@@ -212,43 +235,45 @@ module exe_stage(
 	logic [31:0] AU_immReg6;
 
 	logic [31:0] pcReg6;
-	
-	logic [2:0] fn6;
-	
 
- 
+	logic [2:0] fn6;
+	logic [31:0] csr_rdReg6;
+
+
 	always @(posedge clk)
 	begin
 	if (!nrst)
-	  begin		
+	  begin
 		fnReg6 		<= 3'b0;
 
 		rdReg6 		<= 5'b0;
 		alu_resReg6 	<= 32'b0;
 		weReg6 		<= 0;
-		
+
 		U_immReg6 	<= 32'b0;
                 AU_immReg6 	<= 32'b0;
-			
+
 		mul_divReg6 	<= 32'b0;
 
 		pcReg6 		<= 32'b0;
+		csr_rdReg6	<= '0;
 	  end
 	else
 	  begin
 		fnReg6 		<= fnReg5;
 
-		rdReg6 		<= rdReg5;	
+		rdReg6 		<= rdReg5;
 		alu_resReg6 	<= alu_res5;
 		weReg6 		<= weReg5;
 
 		U_immReg6 	<= U_immReg5;
                 AU_immReg6 	<= U_immReg5+pcReg5 ;
-		
+
 		mul_divReg6 	<= mul_div5;
 
 		pcReg6 		<= pcReg5;
-		
+
+		csr_rdReg6	<= csr_rd5;
 	  end
 	end
 
@@ -259,26 +284,22 @@ module exe_stage(
 	assign fn6 = fnReg6;
 	assign rd6 = rdReg6;
 	assign we6 = weReg6;
-	
+
 	assign U_imm6 		= U_immReg6;
 	assign AU_imm6 		= AU_immReg6;
-	
+
 	assign bjtaken6 = btaken | jr4 |j4;
 	assign pcselect5=pcselect4;
 	always_comb begin
         unique case(fn6)
             0: wb_data6  = alu_resReg6;
-<<<<<<< Updated upstream
             1: wb_data6  = pcReg5 + 1;
-=======
-            1: wb_data6  = pcReg6 + 1;
->>>>>>> Stashed changes
             2: wb_data6  = mul_divReg6;
             3: wb_data6  = U_imm6;
             4: wb_data6  = mem_out6;
-            5: wb_data6  = AU_imm6 ;
+            5: wb_data6  = AU_imm6;
+	    6: wb_data6  = csr_rdReg6;
             default: wb_data6 = 0;
         endcase
 	end
 endmodule
-
