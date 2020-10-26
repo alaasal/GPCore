@@ -73,6 +73,7 @@ module exe_stage(
 
 	logic bneqReg5;
 	logic btypeReg5;
+	logic bjtakenReg5;
 
 	logic [31:0] B_immReg5;
 	logic [31:0] J_immReg5;
@@ -154,29 +155,29 @@ module exe_stage(
       end   
     
     
-	// ALU
+	  //ALU
 	alu exe_alu (
-	.alu_fn		(alufnReg5),
-	.operandA	(opaReg5),
-	.operandB	(opbReg5),
-	.result		(alu_res5),
-	.bneq		(bneqReg5),
-	.btype		(btypeReg5),
-	.btaken		(btaken)
+	.alu_fn(alu_fn4), 
+	.operandA(op_a), 
+	.operandB(op_b), 
+	.result(alu_res5) , 
+	.bneq(bneq4), 
+	.btype(btype4) , 
+	.btaken(btaken) 
 	);
     
-	// Branch Unit
+    // branch unit
 	branch_unit exe_bu (
-	.pc          (pcReg5),
-	.operandA    (opaReg5),
-	.B_imm       (B_immReg5),
-	.J_imm       (J_immReg5),
-	.I_imm       (opbReg5),
+	.pc          (pc4),
+	.operandA    (op_a),
+	.B_imm       (B_imm4),
+	.J_imm       (J_imm4),
+	.I_imm       (op_b),
 	.btaken      (btaken),
-	.jr          (jrReg5),
-	.j           (jReg5),
+	.jr          (jr4),
+	.j           (j4),
 	.target      (target)
-	);
+    );
 
 	mem_wrap dmem_wrap (
 	.clk                 (clk),
@@ -261,7 +262,7 @@ module exe_stage(
 	assign AU_imm6 		= AU_immReg6;
 	
 	assign bjtaken6 = btaken | jr4 |j4;
-
+	assign pcselect5=pcselect4;
 	always_comb begin
         unique case(fn6)
             0: wb_data6  = alu_resReg6;

@@ -51,9 +51,11 @@ module core(
 	
 	//Scoreboared Logic 
 	logic stall;
+	logic bjtaken;
+	logic [6:0] opcode3;
 
 	// =============================================== //
-	//			FrpntEnd Stage		   //
+	//			FrontEnd Stage		   //
 	// =============================================== //	
     
 	// instantiating stages (7 pipelines)
@@ -124,7 +126,8 @@ module core(
 	.pcselect3    (pcselect3),
 	
 	// Scoreboared Signals
-	.stall          (stall)
+	.stall          (stall),
+	.opcode3 	(opcode3)
 	);
 
 	// =============================================== //
@@ -167,7 +170,7 @@ module core(
 	.auipc3       (auipc3),
 	
 	.mem_op3      (mem_op3),
-	.mulDiv_op3        (mulDiv_op3), 
+	.mulDiv_op3   (mulDiv_op3), 
 
 	.pc3          (pc3),
 	.pcselect3    (pcselect3),
@@ -202,7 +205,9 @@ module core(
 	.pcselect4    (pcselect4),
 	
 	// Scoreboared Signals
-	.stall          (stall)
+	.stall          (stall),
+	.bjtaken	(bjtaken),
+	.opcode3	(opcode3)
     );
 
 	// =============================================== //
@@ -257,7 +262,9 @@ module core(
 	.wb_data6		(wb_data6),
 	.pc6              	(pc6),
 	.pcselect5    		(pcselect5),
-	.target       		(target)
+	.target       		(target),
+	//signal to scoreboard
+	.bjtaken6		(bjtaken)
 	);
 
 	// =============================================== //

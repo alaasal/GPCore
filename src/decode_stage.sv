@@ -12,12 +12,12 @@ module instdec_stage(
 	output logic [1:0] B_SEL3,
 
 	// Instruction Immediate
-    output logic [31:0] I_imm3,		  //Arithemtic, Jump, and Load Immediate
-    output logic [31:0] B_imm3,		  //Branch Immediate
-    output logic [31:0] J_imm3,		  //Jumps Immediate
-    output logic [31:0] U_imm3,		  //LUI & AUIPC Immediate
-    output logic [31:0] S_imm3,		  //Store Immediate	
-    output logic [4:0]  shamt,		  //Shift Amount Immediate
+	output logic [31:0] I_imm3,		  //Arithemtic, Jump, and Load Immediate
+	output logic [31:0] B_imm3,		  //Branch Immediate
+	output logic [31:0] J_imm3,		  //Jumps Immediate
+	output logic [31:0] U_imm3,		  //LUI & AUIPC Immediate
+	output logic [31:0] S_imm3,		  //Store Immediate	
+	output logic [4:0]  shamt,		  //Shift Amount Immediate
 
 	// Write back Enable
 	output logic we3,
@@ -36,8 +36,7 @@ module instdec_stage(
    	output logic [31:0] pc3,
 
 	// Memory Request
-    output logic [3:0] mem_op3
-,
+    output logic [3:0] mem_op3,
 	// MulDiv Operation 
     output logic [2:0] mulDiv_op3,
 
@@ -46,7 +45,8 @@ module instdec_stage(
 	output logic [1:0] pcselect3,
 	
 	// Scoreboard Signals
-	input logic stall
+	input logic stall,
+	output logic [6:0]opcode3
     );
 
 	// Wires
@@ -118,6 +118,7 @@ module instdec_stage(
 	assign funct3   = instrReg3[14:12];
 	assign funct7   = instrReg3[31:25];
 	assign instr_30 = instrReg3[30];
+	assign opcode3  = opcode;
 
 	instr_decoder c1 (
 	.op          (opcode),
@@ -139,7 +140,7 @@ module instdec_stage(
 	.LUI         (LUI3),
 	.auipc       (auipc3),
 	
-	stall       (stall)				// Stall Signal
+	.stall       (stall)				// Stall Signal
     );
     
 endmodule

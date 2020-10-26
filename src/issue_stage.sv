@@ -10,6 +10,7 @@ module issue_stage (
 	input logic we3,
 	input logic bneq3,
 	input logic  btype3,
+	input logic [6:0] opcode3,
 	
 	input logic [2:0] fn3,
 	input logic [3:0] alu_fn3,		// ALU control from decode stage
@@ -35,6 +36,7 @@ module issue_stage (
 
 	input logic [31:0] pc3,
 	input logic [1:0] pcselect3,
+	
 
 	// Piped Signals Ended
 
@@ -218,12 +220,31 @@ module issue_stage (
       end
     
     // register file
-    regfile reg1 (.clk(clk), .clrn(nrst), .we(we6), .write_addr(rdaddr6), .source_a(rs1), .source_b(rs2), .result(wb6),
-            .op_a(operand_a), .op_b(operand_b));
-    scoreboard_data_hazards scoreboard (.clk(clk),.nrst(nrst),.btaken(bjtaken),.rs1(rs1), .rs2(rs2), .rd(rd3),.op_code(opcode3),.stall(stall),.kill(kill));
+    regfile reg1 (
+	.clk(clk),
+	.clrn(nrst),
+	.we(we6),
+	.write_addr(rdaddr6),
+	.source_a(rs1),
+	.source_b(rs2), 
+	.result(wb6),
+	.op_a(operand_a), 
+	.op_b(operand_b)
+	);
+   
+ scoreboard_data_hazards scoreboard (
+	.clk(clk),
+	.nrst(nrst),
+	.btaken(bjtaken),
+	.rs1(rs1),
+	.rs2(rs2),
+	.rd(rd3),
+	.op_code(opcode3),
+	.stall(stall),
+	.kill(kill)
+	);
 
-    // assign op_a and op_b outputs
-    assign op_a =  ( !(|rd4) && !(|I_immdReg4) && !(|alufnReg4) && !(|fnReg4) )? 32'b0: operand_a;
+ 
 
 
 
@@ -244,7 +265,7 @@ module issue_stage (
 	// =============================================== //
 	
 	// Assign Operand A and Operand B to the outputs wires
-	assign op_a = operand_a;
+	 assign op_a =  ( !(|rd4) && !(|I_immdReg4) && !(|alufnReg4) && !(|fnReg4) )? 32'b0: operand_a;
 
 	// Piped Signals from Decode to Execute 
 	// Issue acts such as a cycle delay 
