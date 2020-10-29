@@ -266,7 +266,7 @@ module exe_stage(
 	always_comb begin
         unique case(fn6)
             0: wb_data6  = alu_resReg6;
-            1: wb_data6  = pcReg5 + 1;
+            1: wb_data6  = pcReg5 + 4;
             2: wb_data6  = mul_divReg6;
             3: wb_data6  = U_imm6;
             4: wb_data6  = mem_out6;

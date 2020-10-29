@@ -33,7 +33,7 @@ module frontend_stage(
 	begin
         if (!nrst)
         begin
-		pcReg		<= -1;
+		pcReg		<= 32'h70;
 		pcReg2 		<= 0;
 		stallnum 	<= 0;
 		end
@@ -60,11 +60,11 @@ module frontend_stage(
       begin
         // npc logic
         unique case(PCSEL)
-            0: npc = pcReg + 1;
+            0: npc = pcReg + 4;
             1: npc = 0;
             2: npc = target;
             3: npc = npc;
-            default: npc = pcReg + 1 ;
+            default: npc = pcReg + 4 ;
         endcase
         
       end
