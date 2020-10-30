@@ -31,6 +31,7 @@ module exe_stage(
 
 	input logic [2:0] funct3_4,
 	input logic [31:0] csr_imm4,
+	input logic ecall,
 
 	output logic [31:0] wb_data6,
 	output logic we6,
@@ -96,6 +97,7 @@ module exe_stage(
 
 	logic [2:0] funct3Reg5;
 	logic [31:0]csr_immReg5;
+	logic ecallReg5;
 
 
 	always_ff @(posedge clk, negedge nrst)
@@ -132,6 +134,7 @@ module exe_stage(
 
 		funct3Reg5	<= 0;
 		csr_immReg5	<= 0;
+		ecallReg5	<= 0;
           end
         else
           begin
@@ -165,6 +168,7 @@ module exe_stage(
 
 		funct3Reg5	<= funct3_4;
 		csr_immReg5	<= csr_imm4;
+		ecallReg5	<= ecall;
           end
       end
 
@@ -213,6 +217,7 @@ module exe_stage(
 
 	csr csr_unit(
 	.func3(funct3Reg5),
+	.ecall(ecallReg5),
 	.rs1(op_a),
 	.imm(csr_immReg5),
 	.csr_reg(),
