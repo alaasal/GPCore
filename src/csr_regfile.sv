@@ -6,6 +6,7 @@ module csr_regfile(
 	input logic [11:0] csr_address_r, csr_address_wb,
 	input logic [31:0] csr_wb,		// csr data written back from csr to the register file
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
+	output logic m_eie, m_tie,
 	output mode::mode_t     current_mode = mode::M
 );
 
@@ -36,8 +37,14 @@ logic [`XLEN-1:0] mtval;
 logic [`XLEN-1:0] mstatus;
 logic [`XLEN-1:0] mip;
 logic [`XLEN-1:0] mie;
+
+logic m_eie;
+logic m_tie;
+
 logic s_timer;
+
 assign s_timer = 0; // hardwired to zero untill implementing s-mode
+
 
 always_comb
   begin
@@ -179,5 +186,9 @@ always_ff @(posedge clk, negedge nrst)
 				mtval <= csr_wb;
 		endcase
 	  end
+
+// interrupts enable signals
+assign m_eie = meie && status_mie;
+assign m_tie = mtie && status_mie;
 
 endmodule
