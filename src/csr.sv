@@ -1,9 +1,12 @@
 module csr(
 	input logic [2:0] func3,
+	input logic ecall,		// exception
 	input logic [31:0] rs1, imm,
 	input logic [31:0] csr_reg,
+	input mode::mode_t  current_mode,
 	output logic [31:0] csr_new,	// csr that will be written back in csr regfile
-	output logic [31:0] csr_old	// csr that will be written in rd 
+	output logic [31:0] csr_old,	// csr that will be written in rd
+	output logic exception_pending
 	);
 
 	always_comb
@@ -18,6 +21,9 @@ module csr(
 			default:csr_new = csr_reg;
 		endcase
 	  end
+
+	assign exception_pending = ecall;
+	
 
 	assign csr_old = csr_reg;
 

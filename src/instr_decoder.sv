@@ -2,6 +2,7 @@ module instr_decoder(
 	input logic [6:0] op,
 	input logic [2:0] funct3,
 	input logic [6:0] funct7,
+	input logic [11:0]funct12,
 	input logic instr_30,		// instr[30]
 	
 	// Operands Select Sginals
@@ -30,7 +31,9 @@ module instr_decoder(
 
 	// Program Counter Select Piped to Execute Unit
 	// until Branch and Jumps target is calculated	
-	output logic [1:0] pcselect,	
+	output logic [1:0] pcselect,
+
+	output logic ecall,
 	
 	// Scoreboard Signals 
 	input logic stall
@@ -68,6 +71,8 @@ module instr_decoder(
 	logic lui,aupc;
 	logic noOp;
 
+	// interrupts and exceptions instructions
+	logic e_call;
 
 
 	assign instr_25 = (~& funct7[6:1]) & funct7[0];     //funct7 == 0000_001
@@ -89,6 +94,7 @@ module instr_decoder(
 
 	// zicsr
 	assign system = op[6] & op[5] & op[4] & ~op[3] & ~op[2] & op[1] & op[0];  //1110011 SYSTEM
+	assign e_call = system & (~&funct3) & ~funct12[0];
 
 	// rtype op								  // instr[30] funct3
 	assign i_add  = rtype & ~instr_30 & (~&funct3);				  //   	0	000

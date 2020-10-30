@@ -2,10 +2,42 @@
 
 module csr_regfile(
 	input logic clk, nrst,
+	input logic exception_pending, interrupt_exception,
 	input logic [11:0] csr_address_r, csr_address_wb,
 	input logic [31:0] csr_wb,		// csr data written back from csr to the register file
-	output logic [31:0] csr_data		// output to csr unit to perform operations on it
+	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
+	output mode::mode_t     current_mode = mode::M
 );
+
+// registers
+// mstatus
+logic status_sie;
+logic status_mie;
+logic status_spie;
+logic status_mpie;
+logic status_spp;
+mode::mode_t    status_mpp  = mode::U;
+logic status_sum;
+// mie
+logic meie;
+logic seie;
+logic mtie;
+logic stie;
+
+logic m_timer;
+
+logic [`XLEN-1:2] mtvec;
+logic [`XLEN-1:0] mscratch;
+logic [`XLEN-1:0] mcause;
+logic [`XLEN-1:0] mepc;
+logic [`XLEN-1:0] mtval;
+
+// wires
+logic [`XLEN-1:0] mstatus;
+logic [`XLEN-1:0] mip;
+logic [`XLEN-1:0] mie;
+logic s_timer;
+assign s_timer = 0; // hardwired to zero untill implementing s-mode
 
 always_comb
   begin
@@ -45,33 +77,6 @@ always_comb
 
 	endcase
   end
-
-
-// registers
-// mstatus
-logic status_sie;
-logic status_mie;
-logic status_spie;
-logic status_mpie;
-logic status_spp;
-logic status_mpp;
-logic status_sum;
-// mie
-logic meie;
-logic seie;
-logic mtie;
-logic stie;
-
-logic m_timer;
-
-logic [`XLEN-1:2] mtvec;
-
-logic [`XLEN-1:0] mscratch;
-
-// wires
-logic [`XLEN-1:0] mstatus;
-logic [`XLEN-1:0] mip;
-logic [`XLEN-1:0] mie;
 
 assign mstatus = {
     14'b0,
@@ -122,11 +127,13 @@ always_ff @(posedge clk, negedge nrst)
                 status_mie  	<= 0;
                 status_spie 	<= 0;
  		status_mpie 	<= 0;
-                status_spp  	<= `PRIV_M;
+                status_spp  	<= 0;
                 status_mpp  	<= 0;
                 status_sum  	<= 0;
 		mtvec	    	<= '0;
 		mscratch	<= '0;
+		mepc		<= '0;
+		mtval		<= '0;
 		meie		<= 0;
 		seie 		<= 0;
 		mtie 		<= 0;

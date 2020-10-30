@@ -51,7 +51,8 @@ module instdec_stage(
 	// CSR
 	output logic [2:0] funct3_3,
 	output logic [11:0] csr_addr,
-	output logic [31:0] csr_imm3
+	output logic [31:0] csr_imm3,
+	output logic ecall
     );
 
 	// Wires
@@ -121,6 +122,7 @@ module instdec_stage(
 	
 	assign opcode   = instrReg3[6:0];
 	assign funct7   = instrReg3[31:25];
+	assign funct12	= instrReg3[31:20];
 	assign instr_30 = instrReg3[30];
 	assign opcode3  = opcode;
 	// to csr_unit
@@ -132,6 +134,7 @@ module instdec_stage(
 	.op          (opcode),
 	.funct3      (funct3),
 	.funct7      (funct7),
+	.funct12     (funct12),
 	.instr_30    (instr_30),		// instr[30]
 
 	.pcselect    (pcselect3),		// Select pc source
@@ -147,6 +150,7 @@ module instdec_stage(
 	.mem_op      (mem_op3),
 	.LUI         (LUI3),
 	.auipc       (auipc3),
+	.ecall       (ecall),
 	
 	.stall       (stall)				// Stall Signal
     );
