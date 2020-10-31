@@ -5,6 +5,9 @@ module csr_regfile(
 	input logic exception_pending, interrupt_exception,
 	input logic [11:0] csr_address_r, csr_address_wb,
 	input logic [31:0] csr_wb,		// csr data written back from csr to the register file
+	input logic m_interrupt,
+	input logic stall,
+	output logic m_timer,
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
 	output logic m_eie, m_tie,
 	output mode::mode_t     current_mode = mode::M
@@ -25,7 +28,7 @@ logic seie;
 logic mtie;
 logic stie;
 
-logic m_timer;
+
 
 logic [`XLEN-1:2] mtvec;
 logic [`XLEN-1:0] mscratch;
@@ -145,7 +148,6 @@ always_ff @(posedge clk, negedge nrst)
 		seie 		<= 0;
 		mtie 		<= 0;
 		stie 		<= 0;
-		m_timer 	<= 0;
 	  end
 	else
 	  begin

@@ -1,10 +1,14 @@
+`include "define.sv"
 module core(
 	input logic clk, nrst,
 
 	input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
 	input logic [31:0] DEBUG_addr,
 	input logic [31:0] DEBUG_instr,
-	input logic clk_debug
+	input logic clk_debug,
+	/* Interrupt interface. */
+    input                   m_interrupt,
+    input                   s_interrupt
     );
 
 	// Wires
@@ -53,6 +57,11 @@ module core(
 	logic stall;
 	logic bjtaken;
 	logic [6:0] opcode3;
+	
+	//Interrupt
+	assign mode_m = (current_mode == mode::M);
+	assign mode_s = (current_mode == mode::S);
+	assign mode_u = (current_mode == mode::U);
 
 	// =============================================== //
 	//			FrontEnd Stage		   //
@@ -264,7 +273,13 @@ module core(
 	.pcselect5    		(pcselect5),
 	.target       		(target),
 	//signal to scoreboard
-	.bjtaken6		(bjtaken)
+	.bjtaken6		(bjtaken),
+	
+	//interrupts
+	.m_timer(m_timer),
+	.m_interrupt(m_interrupt),
+	.suppress_interrupts(suppress_interrupts),
+	.stall(stall)
 	);
 
 	// =============================================== //
@@ -286,5 +301,38 @@ module core(
 	
 	.pc6         (pc6)
 	);
+	
+	// =============================================== //
+	//			csr_regfile		   //
+	// =============================================== //
+	
+	csr_regfile csr_regfile(
+    .clock(clock),
+	.nrst(nrst),
+    .stall(stall),
+    .current_mode(current_mode),
+
+    
+    .m_eie(m_eie),
+    .m_tie(m_tie),
+    //.s_eie(s_eie),
+    //.s_tie(s_tie),
+    .m_timer(m_timer),
+    //.s_timer(s_timer),
+    .m_interrupt(m_interrupt),
+    //.s_interrupt(s_interrupt_reg),
+
+    
+    .exception_pending(exception_pending),
+    .interrupt_exception(interrupt_exception),
+    .csr_address_r(csr_address_r),
+	.csr_address_wb(csr_address_wb),
+	.csr_wb(csr_wb),
+	
+	.csr_data(csr_data)
+
+    
+);
+    
     
 endmodule
