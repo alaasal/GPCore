@@ -33,6 +33,14 @@ module exe_stage(
 	input logic [31:0] csr_imm4,
 	input logic ecall,
 
+	/* Interrupt lines. */
+    input                           m_timer,
+    //input                           s_timer,
+    input                           m_interrupt,
+    //input                           s_interrupt,
+	input                           suppress_interrupts,
+	output              stall,
+
 	output logic [31:0] wb_data6,
 	output logic we6,
 
@@ -224,6 +232,32 @@ module exe_stage(
 	.csr_new(),
 	.csr_old(csr_rd5)
 	);
+
+		/* INTERRUPT CONDITIONING. ********************************************************************************************/
+
+/* Set if this is not the first cycle of an instruction. */
+reg stalled = 0;
+always @(posedge clock) begin
+    stalled <= stall;
+end
+
+wire m_timer_conditioned     =                              (!suppress_interrupts) && (!stalled) && m_tie && m_timer;
+//wire s_timer_conditioned     = (current_mode <= mode::S) && (!suppress_interrupts) && (!stalled) && s_tie && s_timer;
+wire m_interrupt_conditioned =                              (!suppress_interrupts) && (!stalled) && m_eie && m_interrupt;
+//wire s_interrupt_conditioned = (current_mode <= mode::S) && (!suppress_interrupts) && (!stalled) && s_eie && s_interrupt;
+
+/* STALL LOGIC. *******************************************************************************************************/
+
+assign stall = !exception_pending && (
+            /* Handle stalling on divider. */
+            div_stall
+            /* Handle stalling on memory interface. */
+        ||  (is_memory_op && !mem_done)
+            /* Handle waiting for interrupts. */
+        ||  (wait_for_interrupt && !(s_interrupt || m_interrupt || s_timer || m_timer))
+            /* Multiplier has a 1 clock latency. */
+        ||  (result_select == execute::MUL && save_result_to_gpr && !stalled)
+    );
 
 	// =============================================== //
 	//			Pipe 6			   //
