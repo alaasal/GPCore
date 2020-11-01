@@ -11,6 +11,7 @@ constraint j_condition { j_random == 1 -> btaken_random > 0 & jr_random > 0 ;}
 
 endclass
 
+`timescale 1ns/1ns
 module tb_branch_unit;
 reg  [31:0]  pc; 
 reg  [31:0]  operandA;
@@ -19,7 +20,7 @@ reg  btaken, jr, j;
 wire [31:0]  target;
 
 // instantiate device under test
- branch_unit dut(.pc(pc), .operandA(operandA), .B_imm(B_imm), .J_imm(J_imm), .I_imm(I_imm), .btaken(btaken), .jr(jr), .j(j), .barget(target));
+ branch_unit dut(.pc(pc), .operandA(operandA), .B_imm(B_imm), .J_imm(J_imm), .I_imm(I_imm), .btaken(btaken), .jr(jr), .j(j), .target(target));
 
  initial begin
     packet pkt;

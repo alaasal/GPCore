@@ -1,5 +1,5 @@
 
- `timescale 10ns / 10ns 
+ `timescale 1ns / 1ns 
  
 class packet;
 rand bit [31:0] operandA_rand;
@@ -28,7 +28,7 @@ module tb_alu;
      pkt = new(); 
      
      repeat(5)begin
-#1   pkt.randomize();
+#5   pkt.randomize();
      operandA = pkt.operandA_rand;
      operandB = pkt.operandB_rand;
      alu_fn   = pkt.alu_fn_rand;
