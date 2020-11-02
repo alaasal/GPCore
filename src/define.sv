@@ -131,3 +131,21 @@ typedef enum logic[5:0] {
 } async_codes_t;
 
 endpackage
+
+//------------------------------------------------------------------
+/* Internal register file insterface types. ***************************************************************************/
+package ireg_file;
+
+/* Operations supported by internal register file. */
+typedef enum logic [1:0] {
+    /* Do nothing. */
+    NOP = 2'b00,
+    /* Read/Write. */
+    RW  = 2'b01,
+    /* Read and set bits. */
+    RS  = 2'b10,
+    /* Read and clear bits. */
+    RC  = 2'b11
+} op_t;
+
+endpackage
