@@ -6,12 +6,17 @@ module csr_regfile(
 	input logic [11:0] csr_address_r, csr_address_wb,
 	input logic [31:0] csr_wb,		// csr data written back from csr to the register file
 	input logic m_interrupt,
+	input logic [`XLEN-1:1] instruction_vaddr,// pc of instruction that caused the exception and is saved in mepc
+	input logic  s_ret,
+  input logic  m_ret,
 	input logic stall,
 	output logic m_timer,
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
 	output logic m_eie, m_tie,
 	output mode::mode_t     current_mode = mode::M
 );
+
+mode::mode_t  next_mode;
 
 // registers
 // mstatus
@@ -20,7 +25,7 @@ logic status_mie;
 logic status_spie;
 logic status_mpie;
 logic status_spp;
-mode::mode_t    status_mpp  = mode::U;
+//mode::mode_t    status_mpp  = mode::U;
 logic status_sum;
 // mie
 logic meie;
@@ -129,8 +134,16 @@ assign mie = {
     stie,
     5'b0
 };
+/////////////////////////////////////////////////////////////////////////
+always_comb begin
+if (mret) begin
+            mstatus_return.mie = mstatus.mpie;
+            mstatus_return.mpie = 1;
+            mstatus_return.mpp = ENABLE_U_MODE ? USER_PRIVILEGE : MACHINE_PRIVILEGE;
+end
+/////////////////////////////////////////////////////////////////////////////
 
-always_ff @(posedge clk, negedge nrst)
+always_ff @(posedge clk, negedge nrst) begin
 	if (!nrst)
 	  begin
 		status_sie  	<= 0;
@@ -151,6 +164,10 @@ always_ff @(posedge clk, negedge nrst)
 	  end
 	else
 	  begin
+	    /////////////////////////////////////////
+	     current_mode <= next_mode;
+        if (!exception_pending) begin
+          /////////////////////////////////////////////////////////////////
 		case(csr_address_wb)
 			`CSR_MSTATUS:
 			  begin
@@ -188,7 +205,33 @@ always_ff @(posedge clk, negedge nrst)
 				mtval <= csr_wb;
 		endcase
 	  end
+	 //Exception logic
+	  else if (next_mode==mode::M && !m_ret) begin
+           // mepc <= instruction_vaddr[`XLEN-1:2];
+            status_mie  <= 0;
+            status_mpie <= status_mie;
+            status_mpp  <= current_mode;
+          //  mcause_interrupt <= interrupt_exception;
+           // mcause_code      <= exception_code;
+          end
+    // return from interrupt 
+        else if (m_ret) begin
+            status_mie  <= status_mpie;
+            status_mpie <= 1;
+            status_mpp  <= mode::U;
+      end
+	 
+	end
 
+// Figure out what mode we are switching to
+always_comb begin
+    next_mode = current_mode;
+    if (exception_pending) begin
+        if (m_ret) begin
+            next_mode = status_mpp;
+        end
+
+	 
 // interrupts enable signals
 assign m_eie = meie && status_mie;
 assign m_tie = mtie && status_mie;
