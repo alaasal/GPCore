@@ -212,7 +212,7 @@ module exe_stage(
 	logic [31:0] AU_immReg6;
 
 	logic [31:0] pcReg6;
-    logic [31:0] mem_out6;
+
 	
 	logic [2:0] fn6;
 	
