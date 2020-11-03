@@ -155,6 +155,62 @@ module exe_stage(
       end   
     
     
+
+	// =============================================== //
+	//			Pipe 6			   //
+	// =============================================== //
+
+
+	logic [2:0] fnReg6;
+	logic [31:0] alu_resReg6;
+
+	logic [4:0] rdReg6;
+	logic weReg6;
+
+	logic [31:0] U_immReg6;
+	logic [31:0] AU_immReg6;
+
+	logic [31:0] pcReg6;
+	logic [31:0] mem_out6
+	
+	logic [2:0] fn6;
+	
+
+ 
+	always @(posedge clk)
+	begin
+	if (!nrst)
+	  begin		
+		fnReg6 		<= 3'b0;
+
+		rdReg6 		<= 5'b0;
+		alu_resReg6 	<= 32'b0;
+		weReg6 		<= 0;
+		
+		U_immReg6 	<= 32'b0;
+                AU_immReg6 	<= 32'b0;
+			
+		mul_divReg6 	<= 32'b0;
+
+		pcReg6 		<= 32'b0;
+	  end
+	else
+	  begin
+		fnReg6 		<= fnReg5;
+
+		rdReg6 		<= rdReg5;	
+		alu_resReg6 	<= alu_res5;
+		weReg6 		<= weReg5;
+
+		U_immReg6 	<= U_immReg5;
+                AU_immReg6 	<= U_immReg5+pcReg5 ;
+		
+		mul_divReg6 	<= mul_div5;
+
+		pcReg6 		<= pcReg5;
+		
+	  end
+	end
 	  //ALU
 	alu exe_alu (
 	.alu_fn(alufnReg5 ), 
@@ -197,62 +253,6 @@ module exe_stage(
 	.res		(mul_div5)
 	);
 	
-	// =============================================== //
-	//			Pipe 6			   //
-	// =============================================== //
-
-
-	logic [2:0] fnReg6;
-	logic [31:0] alu_resReg6;
-
-	logic [4:0] rdReg6;
-	logic weReg6;
-
-	logic [31:0] U_immReg6;
-	logic [31:0] AU_immReg6;
-
-	logic [31:0] pcReg6;
-
-	
-	logic [2:0] fn6;
-	
-
- 
-	always @(posedge clk)
-	begin
-	if (!nrst)
-	  begin		
-		fnReg6 		<= 3'b0;
-
-		rdReg6 		<= 5'b0;
-		alu_resReg6 	<= 32'b0;
-		weReg6 		<= 0;
-		
-		U_immReg6 	<= 32'b0;
-                AU_immReg6 	<= 32'b0;
-			
-		mul_divReg6 	<= 32'b0;
-
-		pcReg6 		<= 32'b0;
-	  end
-	else
-	  begin
-		fnReg6 		<= fnReg5;
-
-		rdReg6 		<= rdReg5;	
-		alu_resReg6 	<= alu_res5;
-		weReg6 		<= weReg5;
-
-		U_immReg6 	<= U_immReg5;
-                AU_immReg6 	<= U_immReg5+pcReg5 ;
-		
-		mul_divReg6 	<= mul_div5;
-
-		pcReg6 		<= pcReg5;
-		
-	  end
-	end
-
 
 	// =============================================== //
 	//			 Outputs		   //
