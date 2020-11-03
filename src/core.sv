@@ -258,7 +258,7 @@ module core(
 	.U_imm6       		(U_imm6),
 	.AU_imm6       		(AU_imm6),
 	
-	.mem_out6     		(mem_out6),
+	//.mem_out6     		(mem_out6),
 	.addr_misaligned6 	(addr_misaligned6),
 
 	.mul_divReg6         	(mul_div6),

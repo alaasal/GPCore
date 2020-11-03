@@ -38,7 +38,7 @@ module exe_stage(
 	output logic [31:0] U_imm6,
 	output logic [31:0] AU_imm6 ,
 	
-	output logic [31:0] mem_out6,
+	//output logic [31:0] mem_out6,
 	output logic addr_misaligned6,
 
 	output logic [31:0] mul_divReg6,
@@ -212,6 +212,7 @@ module exe_stage(
 	logic [31:0] AU_immReg6;
 
 	logic [31:0] pcReg6;
+    logic [31:0] mem_out6;
 	
 	logic [2:0] fn6;
 	
