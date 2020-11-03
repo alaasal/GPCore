@@ -54,10 +54,10 @@ module interrupt_pipeline(
 		
 		end
 		
-        else if(cause_reg != 0)
+        else if(interrupt_taken_reg	== 1)
 		begin
 			// interrupt is taken
-			interrupt_taken_reg	<= 1;
+			
 			
 			// reset
 			ex_D		<= 0;
@@ -67,8 +67,7 @@ module interrupt_pipeline(
 			pc_D		<= 0;
 			pc_E		<= 0;
 			pc_M		<= 0;
-			
-			
+				
 				
 		end
 		
@@ -78,13 +77,23 @@ module interrupt_pipeline(
 			ex_D		<= pc_address_ex;
 			ex_E 		<= {decode_ex , ex_D};
 			ex_M 		<= {alu_ex , ex_E};
-			cause_reg	<= {ex_M , data_mem_ex , asynchronous_ex};		// The Lower the bit means the higher priority
+			
 			
 		
 			pc_D		<= pc;
 			pc_E		<= pc_D;
 			pc_M		<= pc_E;
-			epc_reg		<= pc_M;
+			
+			
+			// check for interrupt
+			if ((asynchronous_ex || data_mem_ex || ex_M) == 1)
+			begin
+				interrupt_taken_reg	<= 1;
+				// cause
+				cause_reg	<= {ex_M , data_mem_ex , asynchronous_ex};		// The Lower the bit means the higher priority
+				// pc
+				epc_reg		<= pc_M;
+			end
 
 		end
 	
