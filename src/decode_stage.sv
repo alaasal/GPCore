@@ -46,7 +46,8 @@ module instdec_stage(
 	
 	// Scoreboard Signals
 	input logic stall,
-	output logic [6:0]opcode3
+	output logic [6:0]opcode3,
+	input logic [1:0]stallnumin
     );
 
 	// Wires
@@ -58,7 +59,6 @@ module instdec_stage(
 	// Registers
 	logic [31:0] instrReg3;	
 	logic [31:0] pcReg3;	
-	logic [1:0] stallnum;
     
 	// =============================================== //
 	//			Pipe 3			   //
@@ -67,34 +67,37 @@ module instdec_stage(
 	begin
 	if (!nrst)
 	begin
-            instrReg3 	<= 0;
+            instrReg3 		<= 0;
             pcReg3		<= 0;
-			stallnum	<= 0;
+
 	end
 	else
 	begin
-		if (stall && !( (stallnum[1]) && (stallnum[0]) ))
-		begin
-			instrReg3<=instrReg3;
-			pcReg3<=pcReg3;
-		end
-		else if ((stallnum[1]) &&(stallnum[0]) )
-		begin 
-			instrReg3 <= instr2;
-			pcReg3<=pc2;
-			stallnum <=0;
-		end 
-		else 
-		begin 
-			instrReg3 <= instr2;
-			pcReg3<=pc2;
-		end 	
-		
-		if (stall)
-        begin
-			stallnum<=stallnum+1;
-		end
-		
+	if ( stall&& !stallnumin[1] && !stallnumin[0]) 
+	begin 
+		instrReg3	<=instrReg3;
+		pcReg3		<=pcReg3;
+	end
+	else if(stall&& stallnumin[1] && !stallnumin[0] ) 
+	begin 
+		instrReg3	<=instrReg3;
+		pcReg3		<=pcReg3;
+	end 
+	else if(!stall &&!stallnumin[1] && stallnumin[0] ) 
+	begin 
+		instrReg3	<= instr2;
+		pcReg3		<=pc2;
+	end 
+	else if(stall ) 
+	begin 
+		instrReg3	<=instrReg3;
+		pcReg3		<=pcReg3;
+	end 
+	else 
+	begin 
+		instrReg3	<= instr2;
+		pcReg3		<=pc2;
+	end
 	end
 	end
 
@@ -138,9 +141,10 @@ module instdec_stage(
 	.jr          (jr3),
 	.mem_op      (mem_op3),
 	.LUI         (LUI3),
-	.auipc       (auipc3),
+	.auipc       (auipc3)
 	
-	.stall       (stall)				// Stall Signal
+	
+	
     );
     
 endmodule

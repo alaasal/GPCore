@@ -73,7 +73,8 @@ module issue_stage (
 	
 	// Socreboard Signals
 	input bjtaken,
-	output logic stall
+	output logic stall,
+	output logic [1:0]stallnum
     );
 
 	// Wires
@@ -195,8 +196,8 @@ module issue_stage (
 		I_immdReg4	<= 32'b0;
 		rdReg4		<= 5'b0;
 		end 
-		else if ( !killnum[1] && killnum[0])begin 
-		killnum		<= 2'b0;
+		else if ( killnum[1] && !killnum[0])begin 
+		killnum		<=killnum+1;
 		pcselectReg4	<= 2'b00;
 		weReg4		<= 1'b0;
 		BSELReg4	<= 2'b01;
@@ -207,6 +208,7 @@ module issue_stage (
 		end
 		else
 		begin
+		killnum		<= 2'b0;
 		pcselectReg4	<= pcselect3;
 		weReg4		<= we3;
 		BSELReg4	<= B_SEL3;
@@ -241,7 +243,8 @@ module issue_stage (
 	.rd(rd3),
 	.op_code(opcode3),
 	.stall(stall),
-	.kill(kill)
+	.kill(kill),
+	.stallnum(stallnum)
 	);
 
  

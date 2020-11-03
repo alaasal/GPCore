@@ -13,7 +13,6 @@ logic START;
 
 always 
 begin
-
     clk = 1'b0; 
     #20; // high for 20 * timescale = 20 ns
 
@@ -26,6 +25,7 @@ assign clk_debug = (START == 1'b0) ? clk : 0;
 
 
 
+
 initial 
 begin 
 nrst = 0;
@@ -33,7 +33,6 @@ nrst_core = 0;
 #10
 nrst = 1;
 nrst_core = 1;
-
 end
 
 core testCore(

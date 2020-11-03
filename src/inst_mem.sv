@@ -30,3 +30,4 @@ module instr_mem (
 		instr <= {rom[addr],rom[addr+1],rom[addr+2],rom[addr+3]};
 	  end
 endmodule
+

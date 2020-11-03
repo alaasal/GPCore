@@ -33,6 +33,7 @@ module core(
 	logic bneq3,bneq4;
 	logic LUI3,LUI4;
 	logic auipc3,auipc4;
+	logic [1:0]stallnum;
 
 	
 	 
@@ -78,7 +79,8 @@ module core(
 	.clk_debug      (clk_debug),
 	
 	//Scoreboared Signals
-	.stall          (stall)
+	.stall          (stall),
+	.stallnumin      (stallnum)
 	);
 
 	// =============================================== //
@@ -127,7 +129,8 @@ module core(
 	
 	// Scoreboared Signals
 	.stall          (stall),
-	.opcode3 	(opcode3)
+	.opcode3 	(opcode3),
+	.stallnumin	(stallnum)
 	);
 
 	// =============================================== //
@@ -207,7 +210,8 @@ module core(
 	// Scoreboared Signals
 	.stall          (stall),
 	.bjtaken	(bjtaken),
-	.opcode3	(opcode3)
+	.opcode3	(opcode3),
+	.stallnum	(stallnum)
     );
 
 	// =============================================== //
