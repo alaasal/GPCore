@@ -34,11 +34,7 @@ module frontend_stage(
 	begin
         if (!nrst)
         begin
-<<<<<<< Updated upstream
 		pcReg		<= -1;
-=======
-		pcReg		<= 0;
->>>>>>> Stashed changes
 		pcReg2 		<= 0;
 
 		end
