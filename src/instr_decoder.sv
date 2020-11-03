@@ -36,7 +36,10 @@ module instr_decoder(
 	output logic ecall,
 
 	// Scoreboard Signals
-	input logic stall
+	input logic stall,
+	
+	// Exceptions
+	output logic decode_ex
     );
 
     	// Wires
@@ -73,6 +76,7 @@ module instr_decoder(
 
 	// interrupts and exceptions instructions
 	logic e_call;
+	logic decode_ex_reg;
 
 
 	assign instr_25 = (~& funct7[6:1]) & funct7[0];     //funct7 == 0000_001
@@ -245,4 +249,9 @@ module instr_decoder(
 	assign fn[0] = i_jal | i_jalr | lui | aupc;
 	assign fn[1] = i_mul | i_mulh | i_mulhsu | i_mulhu | i_rem | i_remu | i_div | i_divu | lui | system;
 	assign fn[2] = ltype| aupc | system;
+	
+	// =============================================== //
+	//		Exceptions		   //
+	// =============================================== //
+	
 endmodule

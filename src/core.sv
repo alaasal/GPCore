@@ -6,9 +6,7 @@ module core(
 	input logic [31:0] DEBUG_addr,
 	input logic [31:0] DEBUG_instr,
 	input logic clk_debug,
-	/* Interrupt interface. */
-    input                   m_interrupt,
-    input                   s_interrupt
+	
     );
 
 	// Wires
@@ -59,10 +57,13 @@ module core(
 	logic bjtaken;
 	logic [6:0] opcode3;
 	
-	//Interrupt
-	assign mode_m = (current_mode == mode::M);
-	assign mode_s = (current_mode == mode::S);
-	assign mode_u = (current_mode == mode::U);
+	// Exceptions
+	logic pc_address_ex;
+	logic pc_address_ex2;
+	logic decode_ex3;		
+	logic pc_address_ex3;
+	
+	
 
 	// =============================================== //
 	//			FrontEnd Stage		   //
@@ -89,7 +90,10 @@ module core(
 	
 	//Scoreboared Signals
 	.stall          (stall),
-	.stallnumin      (stallnum)
+	.stallnumin      (stallnum),
+	
+	// Exceptions
+	.pc_address_ex	(pc_address_ex)
 	);
 
 	// =============================================== //
@@ -139,7 +143,13 @@ module core(
 	// Scoreboared Signals
 	.stall          (stall),
 	.opcode3 	(opcode3),
-	.stallnumin	(stallnum)
+	.stallnumin	(stallnum),
+	
+	// Exceptions
+	.pc_address_ex	(pc_address_ex),
+	.pc_address_ex2 (pc_address_ex2),
+	.decode_ex3		(decode_ex3),
+	.pc_address_ex3 (pc_address_ex3)
 	);
 
 	// =============================================== //
@@ -277,13 +287,8 @@ module core(
 	.pcselect5    		(pcselect5),
 	.target       		(target),
 	//signal to scoreboard
-	.bjtaken6		(bjtaken),
+	.bjtaken6		(bjtaken)
 	
-	//interrupts
-	.m_timer(m_timer),
-	.m_interrupt(m_interrupt),
-	.suppress_interrupts(suppress_interrupts),
-	.stall(stall)
 	);
 
 	// =============================================== //
@@ -306,37 +311,6 @@ module core(
 	.pc6         (pc6)
 	);
 	
-	// =============================================== //
-	//			csr_regfile		   //
-	// =============================================== //
-	
-	csr_regfile csr_regfile(
-    .clock(clock),
-	.nrst(nrst),
-    .stall(stall),
-    .current_mode(current_mode),
-
-    
-    .m_eie(m_eie),
-    .m_tie(m_tie),
-    //.s_eie(s_eie),
-    //.s_tie(s_tie),
-    .m_timer(m_timer),
-    //.s_timer(s_timer),
-    .m_interrupt(m_interrupt),
-    //.s_interrupt(s_interrupt_reg),
-
-    
-    .exception_pending(exception_pending),
-    .interrupt_exception(interrupt_exception),
-    .csr_address_r(csr_address_r),
-	.csr_address_wb(csr_address_wb),
-	.csr_wb(csr_wb),
-	
-	.csr_data(csr_data)
-
-    
-);
     
     
 endmodule

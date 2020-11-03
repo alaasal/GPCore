@@ -9,6 +9,9 @@ module frontend_stage(
 
     output logic [31:0] pc2,	// pc at instruction mem pipe #2
     output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
+	
+	// Exceptions
+	output logic pc_address_ex,
     
  
 
@@ -23,6 +26,10 @@ module frontend_stage(
 	logic [31:0] pcReg; 	   // pipe #1 pc
 	logic [31:0] pcReg2;	   // pipe #2 from pc to inst mem
 	logic [1:0] stallnum;
+	
+	// Exceptions
+	logic pc_address_ex_reg;
+	
     // wires
     logic [31:0] npc;   	   // next pc wire
     logic [31:0] pc; 
@@ -40,6 +47,8 @@ module frontend_stage(
 		pcReg		<= 0;
 >>>>>>> Stashed changes
 		pcReg2 		<= 0;
+		
+		pc_address_ex_reg <= 0;
 
 		end
         else begin	
@@ -67,6 +76,8 @@ module frontend_stage(
 	begin 
 		pcReg		<= npc;		// PIPE1
 		pcReg2		<= pcReg;
+		
+		// Exceptions logic here
 	end
 
 	end 
@@ -90,6 +101,8 @@ module frontend_stage(
 
 	assign pc = (stall && !stallnum[1] && !stallnum[0]) ? pcReg-1: pcReg;
 	assign pc2 = (stall && !stallnum[1] && !stallnum[0]) ? pcReg2 - 1 : pcReg2;
+	
+	assign pc_address_ex = pc_address_ex_reg;
     // dummy inst mem
     instr_mem m1 (
 	.clk(clk ),
