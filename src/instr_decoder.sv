@@ -30,10 +30,9 @@ module instr_decoder(
 
 	// Program Counter Select Piped to Execute Unit
 	// until Branch and Jumps target is calculated	
-	output logic [1:0] pcselect,	
+	output logic [1:0] pcselect
 	
-	// Scoreboard Signals 
-	input logic stall
+
     );
 
     	// Wires
@@ -172,8 +171,8 @@ module instr_decoder(
 	assign mem_op[3] = i_sw  | i_sb  | i_sh;
          
     // generate control signals
-    assign pcselect[0] = 0 |stall; // to set pcselect to 0 (will be edited when branch and jump operations added)
-    assign pcselect[1] = btype | i_jal | i_jalr |stall;
+    assign pcselect[0] = 0 ; // to set pcselect to 0 (will be edited when branch and jump operations added)
+    assign pcselect[1] = btype | i_jal | i_jalr;
 
     //00 rtype itype nop
     //01 

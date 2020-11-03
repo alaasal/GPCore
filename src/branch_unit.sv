@@ -11,8 +11,13 @@ module branch_unit(
 
 logic [31:0] b_target, j_target;
 
+<<<<<<< Updated upstream
 assign b_target = btaken ? pc+B_imm+1 : pc+1; // overflow check!
 assign j_target = (jr)? operandA + I_imm : pc + J_imm+1; 
+=======
+assign b_target = btaken ? pc+B_imm : pc+1; // overflow check!
+assign j_target = (jr)? operandA + I_imm : pc + J_imm; 
+>>>>>>> Stashed changes
 
 always_comb begin
 	if (j) target = j_target;

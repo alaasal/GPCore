@@ -157,12 +157,12 @@ module exe_stage(
     
 	  //ALU
 	alu exe_alu (
-	.alu_fn(alu_fn4), 
-	.operandA(op_a), 
-	.operandB(op_b), 
+	.alu_fn(alufnReg5 ), 
+	.operandA(opaReg5 ), 
+	.operandB(opbReg5 ), 
 	.result(alu_res5) , 
-	.bneq(bneq4), 
-	.btype(btype4) , 
+	.bneq(bneqReg5), 
+	.btype(btypeReg5) , 
 	.btaken(btaken) 
 	);
     
@@ -214,6 +214,7 @@ module exe_stage(
 	logic [31:0] pcReg6;
 	
 	logic [2:0] fn6;
+	
 
  
 	always @(posedge clk)
@@ -247,6 +248,7 @@ module exe_stage(
 		mul_divReg6 	<= mul_div5;
 
 		pcReg6 		<= pcReg5;
+		
 	  end
 	end
 
@@ -266,7 +268,11 @@ module exe_stage(
 	always_comb begin
         unique case(fn6)
             0: wb_data6  = alu_resReg6;
+<<<<<<< Updated upstream
             1: wb_data6  = pcReg5 + 1;
+=======
+            1: wb_data6  = pcReg6 + 1;
+>>>>>>> Stashed changes
             2: wb_data6  = mul_divReg6;
             3: wb_data6  = U_imm6;
             4: wb_data6  = mem_out6;

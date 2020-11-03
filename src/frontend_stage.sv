@@ -5,6 +5,7 @@ module frontend_stage(
 	
     input logic [1:0] PCSEL,		// pc select control signal
     input logic [31:0] target,
+	input logic [1:0] stallnumin,
 
     output logic [31:0] pc2,	// pc at instruction mem pipe #2
     output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
@@ -33,27 +34,43 @@ module frontend_stage(
 	begin
         if (!nrst)
         begin
+<<<<<<< Updated upstream
 		pcReg		<= -1;
+=======
+		pcReg		<= 0;
+>>>>>>> Stashed changes
 		pcReg2 		<= 0;
-		stallnum 	<= 0;
+
 		end
-        else if (stall && !((stallnum[1]) &&(stallnum[0])))
-        begin
+        else begin	
+	//stallnumin<=stallnuminin;
+	if ( stall&&!stallnumin[1] && !stallnumin[0]) begin 
+		pcReg		<= pcReg-1;		
+		pcReg2		<= pcReg2-1;
+	end
+	else if(stall && !(!stallnumin[1] && stallnumin[0]) ) 
+	begin 
 		pcReg		<= pcReg;		
 		pcReg2		<= pcReg2;
-		end
-		else if (!stall || (stallnum[1]) &&(stallnum[0]) )
-		begin 
+	end 
+	else if(stall &&!stallnumin[1] && stallnumin[0] )
+	begin 
+		pcReg		<= npc;		
+		pcReg2		<= pcReg;
+	end 
+	else if(stall ) 
+	begin 
+		pcReg		<= pcReg;		
+		pcReg2		<= pcReg2;
+	end 
+	else 
+	begin 
 		pcReg		<= npc;		// PIPE1
-		pcReg2		<= pcReg;	
-		stallnum  	<=0;
-		end 
-		else
-		begin 
-        pcReg		<= npc;		// PIPE1
-      	pcReg2		<= pcReg;	
-		end
-		stallnum = ( stall ) ? stallnum + 1 : stallnum;
+		pcReg2		<= pcReg;
+	end
+
+	end 
+
 	end 
 
     always_comb
@@ -70,13 +87,12 @@ module frontend_stage(
       end
 
     // output
-    assign pc  = pcReg;
-    assign pc2 = pcReg2;// pc + 4 will be piped to (EXE/MEM stage)
- 
-    
+
+	assign pc = (stall && !stallnum[1] && !stallnum[0]) ? pcReg-1: pcReg;
+	assign pc2 = (stall && !stallnum[1] && !stallnum[0]) ? pcReg2 - 1 : pcReg2;
     // dummy inst mem
     instr_mem m1 (
-	.clk(~clk ),
+	.clk(clk ),
 	.addr(pc),
 	.instr(instr2), 		
 	.DEBUG_SIG(DEBUG_SIG),				//DEBUG Signals from debug module to load a program
