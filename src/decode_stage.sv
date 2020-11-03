@@ -4,6 +4,7 @@ module instdec_stage(
 	input logic  [31:0] pc2,		  // input from frontend stage (pc)
 	input logic  [31:0] instr2,		  // input from frontend stage (inst mem)
 
+	input logic instruction_addr_misaligned2,  // exception
 
 	// Operands and Destination
 	output logic [4:0] rs1, rs2,
@@ -54,12 +55,10 @@ module instdec_stage(
 	output logic [2:0] funct3_3,
 	output logic [11:0] csr_addr,
 	output logic [31:0] csr_imm3,
-	output logic ecall,
+	// exceptions
+	output logic instruction_addr_misaligned3,
+	output logic ecall3
 
-	// Exception
-	input logic pc_address_ex2,
-	output logic decode_ex3,
-	output logic pc_address_ex3
     );
 
 	// Wires
@@ -73,56 +72,56 @@ module instdec_stage(
 	logic [31:0] pcReg3;
 
 	// Exception
-	logic pc_address_ex_reg,
+	logic instruction_addr_misalignedReg3;
+
 
 	// =============================================== //
 	//			Pipe 3			   //
 	// =============================================== //
 	always_ff @(posedge clk , negedge nrst)
-	begin
-	if (!nrst)
 	  begin
-            	instrReg3 	<= 0;
-            	pcReg3		<= 0;
-				stallnum	<= 0;
-				pc_address_ex_reg <= 0;
+		if (!nrst)
+	  	  begin
+            		instrReg3 	<= 0;
+            		pcReg3		<= 0;
+			instruction_addr_misalignedReg3 <= 0;
+	  	  end
+		else
+		  begin
+			if ( stall&& !stallnumin[1] && !stallnumin[0])
+			  begin
+				instrReg3	<=instrReg3;
+				pcReg3		<=pcReg3;
+				instruction_addr_misalignedReg3	<= instruction_addr_misalignedReg3;
+			  end
+
+			else if(stall&& stallnumin[1] && !stallnumin[0] )
+			  begin
+				instrReg3	<=instrReg3;
+				pcReg3		<=pcReg3;
+				instruction_addr_misalignedReg3	<= instruction_addr_misalignedReg3;
+			  end
+
+			else if(!stall &&!stallnumin[1] && stallnumin[0] )
+			  begin
+				instrReg3	<= instr2;
+				pcReg3		<=pc2;
+				instruction_addr_misalignedReg3	<= instruction_addr_misaligned2;
+			  end
+			else if(stall )
+			  begin
+				instrReg3	<=instrReg3;
+				pcReg3		<=pcReg3;
+				instruction_addr_misalignedReg3	<= instruction_addr_misalignedReg3;
+			  end
+			else
+			  begin
+				instrReg3	<= instr2;
+				pcReg3		<=pc2;
+				instruction_addr_misalignedReg3	<= instruction_addr_misaligned2;
+			  end
+		  end
 	  end
-	else
-	begin
-	if ( stall&& !stallnumin[1] && !stallnumin[0])
-	begin
-		instrReg3	<=instrReg3;
-		pcReg3		<=pcReg3;
-		pc_address_ex_reg	<= pc_address_ex_reg;
-	end
-	end
-	else if(stall&& stallnumin[1] && !stallnumin[0] )
-	begin
-		instrReg3	<=instrReg3;
-		pcReg3		<=pcReg3;
-		pc_address_ex_reg	<= pc_address_ex_reg;
-	end
-	end
-	else if(!stall &&!stallnumin[1] && stallnumin[0] )
-	begin
-		instrReg3	<= instr2;
-		pcReg3		<=pc2;
-		pc_address_ex_reg	<= pc_address_ex2;
-	end
-	else if(stall )
-	begin
-		instrReg3	<=instrReg3;
-		pcReg3		<=pcReg3;
-		pc_address_ex_reg	<= pc_address_ex_reg;
-	end
-	else
-	begin
-		instrReg3	<= instr2;
-		pcReg3		<=pc2;
-		pc_address_ex_reg	<= pc_address_ex2;
-	end
-	end
-	end
 
 
 	// =============================================== //
@@ -140,7 +139,7 @@ module instdec_stage(
 	assign pc3 	= pcReg3;
 
 	// Exception
-	assign pc_address_ex3 = pc_address_ex_reg;
+	assign instruction_addr_misaligned3 = instruction_addr_misalignedReg3;
 
 
 	assign opcode   = instrReg3[6:0];
@@ -173,7 +172,7 @@ module instdec_stage(
 	.mem_op      (mem_op3),
 	.LUI         (LUI3),
 	.auipc       (auipc3),
-	.ecall       (ecall),
+	.ecall3       (ecall),
 	.uret       (),
 	.sret       (),
 	.mret       (),

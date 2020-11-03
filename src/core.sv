@@ -5,7 +5,7 @@ module core(
 	input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
 	input logic [31:0] DEBUG_addr,
 	input logic [31:0] DEBUG_instr,
-	input logic clk_debug,
+	input logic clk_debug
 	
     );
 
@@ -58,10 +58,8 @@ module core(
 	logic [6:0] opcode3;
 	
 	// Exceptions
-	logic pc_address_ex;
-	logic pc_address_ex2;
-	logic decode_ex3;		
-	logic pc_address_ex3;
+	logic instruction_addr_misaligned2, instruction_addr_misaligned3, instruction_addr_misaligned4;
+	logic ecall3, ecall4;
 	
 	
 
@@ -93,7 +91,7 @@ module core(
 	.stallnumin      (stallnum),
 	
 	// Exceptions
-	.pc_address_ex	(pc_address_ex)
+	.instruction_addr_misaligned	(instruction_addr_misaligned2)
 	);
 
 	// =============================================== //
@@ -106,7 +104,8 @@ module core(
 	
 	// Inputs from FrontEnd Stage
 	.instr2       (instr2),	
-	.pc2          (pc2),	
+	.pc2          (pc2),
+	.instruction_addr_misaligned2(instruction_addr_misaligned2),
 	
 	// Outputs to Issue Stage 
 	.rs1          (rs1),
@@ -146,10 +145,8 @@ module core(
 	.stallnumin	(stallnum),
 	
 	// Exceptions
-	.pc_address_ex	(pc_address_ex),
-	.pc_address_ex2 (pc_address_ex2),
-	.decode_ex3		(decode_ex3),
-	.pc_address_ex3 (pc_address_ex3)
+	.instruction_addr_misaligned3(instruction_addr_misaligned3),
+	.ecall3(ecall3)
 	);
 
 	// =============================================== //
@@ -197,6 +194,9 @@ module core(
 	.pc3          (pc3),
 	.pcselect3    (pcselect3),
 
+	.instruction_addr_misaligned3(instruction_addr_misaligned3),
+	.ecall3		(ecall3),
+
 	// Outputs
 	.op_a         (opa),
 	.op_b         (opb),		// operands A & B output from regfile in PIPE #4 (to exe stage)
@@ -230,7 +230,11 @@ module core(
 	.stall          (stall),
 	.bjtaken	(bjtaken),
 	.opcode3	(opcode3),
-	.stallnum	(stallnum)
+	.stallnum	(stallnum),
+
+	// exceptions
+	.instruction_addr_misaligned4(instruction_addr_misaligned4),
+	.ecall4(ecall4)
     );
 
 	// =============================================== //
@@ -269,6 +273,9 @@ module core(
 	
 	.pc4          (pc4),
 	.pcselect4    (pcselect4),
+
+	.instruction_addr_misaligned4(instruction_addr_misaligned4),
+	.ecall4		(ecall4),
 
 	// Outputs
 	.rd6          		(rd6),

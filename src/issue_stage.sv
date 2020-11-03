@@ -29,6 +29,10 @@ module issue_stage (
 	// to csr_unit in execute stage
 	input logic [2:0] func3,
 	input logic [31:0]csr_imm3,
+	
+	// exceptions	
+	input logic instruction_addr_misaligned3,
+	input logic ecall3,	
 
 	input logic j3,
 	input logic jr3,
@@ -81,7 +85,11 @@ module issue_stage (
 	// Socreboard Signals
 	input bjtaken,
 	output logic stall,
-	output logic [1:0]stallnum
+	output logic [1:0]stallnum,
+
+	// exceptions
+	output logic instruction_addr_misaligned4,
+	output logic ecall4
     );
 
 	// Wires
@@ -127,7 +135,9 @@ module issue_stage (
 	// Scoreboard Regs
 	logic [1:0]killnum;
 	
-
+	// exceptions
+	logic instruction_addr_misalignedReg4;
+	logic ecallReg4;
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
@@ -165,6 +175,8 @@ module issue_stage (
 		killnum		<= 2'b0;
 		funct3Reg4	<= 0;
 		csr_immReg4	<= 0;
+		instruction_addr_misalignedReg4 <= 0;
+		ecallReg4	<= 0;
           end
         else
           begin
@@ -188,6 +200,9 @@ module issue_stage (
 		pcReg4		<= pc3;		
 		funct3Reg4	<= funct3_3;
 		csr_immReg4	<= csr_imm3;
+		// exceptions
+		instruction_addr_misalignedReg4 <= instruction_addr_misaligned3;
+		ecallReg4	<= ecall3;
 
 		if(stall )
 		begin
@@ -315,6 +330,9 @@ module issue_stage (
 
 	assign funct3_4		= funct3Reg4;
 	assign csr_imm4		= csr_immReg4;
+	// exceptions
+	assign instruction_addr_misaligned4 = instruction_addr_misalignedReg4;
+	assign ecall4		= ecallReg4;
 	// Piped Signals ended
 
 endmodule

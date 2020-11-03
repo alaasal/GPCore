@@ -31,9 +31,9 @@ module exe_stage(
 
 	input logic [2:0] funct3_4,
 	input logic [31:0] csr_imm4,
-	input logic ecall,
-
-	
+	// exceptions 
+	input logic instruction_addr_misaligned4,
+	input logic ecall4,
 
 	output logic [31:0] wb_data6,
 	output logic we6,
@@ -56,6 +56,8 @@ module exe_stage(
 	output logic bjtaken6,		//need some debug
 
 	output logic wb_csr_rd6
+
+	// exceptions
     );
 
 	// wires
@@ -100,10 +102,7 @@ module exe_stage(
 	logic [2:0] funct3Reg5;
 	logic [31:0]csr_immReg5;
 	logic ecallReg5;
-
-	logic [2:0] funct3Reg5;
-	logic [31:0]csr_immReg5;
-	logic ecallReg5;
+	logic instruction_addr_misalignedReg5;
 
 
 	always_ff @(posedge clk, negedge nrst)
@@ -141,6 +140,7 @@ module exe_stage(
 		funct3Reg5	<= 0;
 		csr_immReg5	<= 0;
 		ecallReg5	<= 0;
+		instruction_addr_misalignedReg5 <= 0;
           end
         else
           begin
@@ -174,7 +174,8 @@ module exe_stage(
 
 		funct3Reg5	<= funct3_4;
 		csr_immReg5	<= csr_imm4;
-		ecallReg5	<= ecall;
+		ecallReg5	<= ecall4;
+		instruction_addr_misalignedReg5 <= instruction_addr_misaligned4;
           end
       end
 
@@ -251,6 +252,12 @@ module exe_stage(
 
 	logic [2:0] fn6;
 	logic [31:0] csr_rdReg6;
+	
+	// exceptions
+	logic instruction_addr_misalignedReg6;
+	logic ecallReg6;
+
+	
 
 	always @(posedge clk)
 	begin
@@ -269,6 +276,8 @@ module exe_stage(
 
 		pcReg6 		<= 32'b0;
 		csr_rdReg6	<= '0;
+		instruction_addr_misalignedReg6 <= 0;
+		ecallReg6	<= 0;
 	  end
 	else
 	  begin
@@ -286,8 +295,17 @@ module exe_stage(
 		pcReg6 		<= pcReg5;
 
 		csr_rdReg6	<= csr_rd5;
+
+		instruction_addr_misalignedReg6 <= instruction_addr_misalignedReg5;
+		ecallReg6	<= ecallReg5;
 	  end
 	end
+	// =============================================== //
+	//		  Exception Logic		   //
+	// =============================================== //
+	logic [31:0] mcause;
+	assign exception_pending = instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6;
+	assign mcause[31] = ~(instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6);
 
 
 	// =============================================== //
