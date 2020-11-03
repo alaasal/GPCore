@@ -35,7 +35,8 @@ module instr_decoder(
 
 	output logic ecall,
 
-
+	// Scoreboard Signals
+	input logic stall
     );
 
     	// Wires

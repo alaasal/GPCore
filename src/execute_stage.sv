@@ -107,6 +107,10 @@ module exe_stage(
 	logic [31:0]csr_immReg5;
 	logic ecallReg5;
 
+	logic [2:0] funct3Reg5;
+	logic [31:0]csr_immReg5;
+	logic ecallReg5;
+
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
@@ -277,7 +281,6 @@ assign stall = !exception_pending && (
 
 	logic [2:0] fn6;
 	logic [31:0] csr_rdReg6;
-
 
 	always @(posedge clk)
 	begin
