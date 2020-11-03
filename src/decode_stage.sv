@@ -3,7 +3,7 @@ module instdec_stage(
 
 	input logic  [31:0] pc2,		  // input from frontend stage (pc)
 	input logic  [31:0] instr2,		  // input from frontend stage (inst mem)
-	
+
 
 	// Operands and Destination
 	output logic [4:0] rs1, rs2,
@@ -49,13 +49,13 @@ module instdec_stage(
 	input logic stall,
 	output logic [6:0]opcode3,
 
-	input logic [1:0]stallnumin
+	input logic [1:0]stallnumin,
 	// CSR
 	output logic [2:0] funct3_3,
 	output logic [11:0] csr_addr,
 	output logic [31:0] csr_imm3,
 	output logic ecall,
-	
+
 	// Exception
 	input logic pc_address_ex2,
 	output logic decode_ex3,
@@ -71,7 +71,7 @@ module instdec_stage(
 	// Registers
 	logic [31:0] instrReg3;
 	logic [31:0] pcReg3;
-	
+
 	// Exception
 	logic pc_address_ex_reg,
 
@@ -138,7 +138,7 @@ module instdec_stage(
 	assign U_imm3   = 32'(signed'({instrReg3[31:12] , {12'b0}}));
 	assign S_imm3   = 32'(signed'({instrReg3[31:25], instrReg3[11:7]}));
 	assign pc3 	= pcReg3;
-	
+
 	// Exception
 	assign pc_address_ex3 = pc_address_ex_reg;
 
@@ -174,9 +174,10 @@ module instdec_stage(
 	.LUI         (LUI3),
 	.auipc       (auipc3),
 	.ecall       (ecall),
-
+	.uret       (),
+	.sret       (),
+	.mret       (),
 	.stall       (stall),				// Stall Signal
-	
 	.decode_ex	 (decode_ex3)
     );
 
