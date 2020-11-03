@@ -33,7 +33,7 @@ module instr_decoder(
 	// until Branch and Jumps target is calculated
 	output logic [1:0] pcselect,
 
-	output logic ecall,
+	output logic ecall, u_ret, s_ret, m_ret,
 
 	// Scoreboard Signals
 	input logic stall
@@ -73,6 +73,7 @@ module instr_decoder(
 
 	// interrupts and exceptions instructions
 	logic e_call;
+	logic m_ret, u_ret, s_ret;
 
 
 	assign instr_25 = (~& funct7[6:1]) & funct7[0];     //funct7 == 0000_001
@@ -92,9 +93,12 @@ module instr_decoder(
 	assign utype = ~op[6] & ~op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];     //0010111 LUI
 	assign autype = ~op[6] & op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];    //0110111 auipc
 
-	// zicsr
+	// zicsr and system instructions
 	assign system = op[6] & op[5] & op[4] & ~op[3] & ~op[2] & op[1] & op[0];  //1110011 SYSTEM
 	assign e_call = system & (~&funct3) & ~funct12[0];
+	assign m_ret = system & (~&funct3) & (~funct7);
+	assign u_ret = system & (~&funct3) & (~funct7[4]) & funct7[3];
+	assign s_ret = system & (~&funct3) & funct7[4] & funct7[3];
 
 	// rtype op								  // instr[30] funct3
 	assign i_add  = rtype & ~instr_30 & (~&funct3);				  //   	0	000

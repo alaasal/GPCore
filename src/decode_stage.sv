@@ -48,7 +48,7 @@ module instdec_stage(
 	input logic stall,
 	output logic [6:0]opcode3,
 
-	input logic [1:0]stallnumin
+	input logic [1:0]stallnumin,
 	// CSR
 	output logic [2:0] funct3_3,
 	output logic [11:0] csr_addr,
@@ -154,7 +154,9 @@ module instdec_stage(
 	.LUI         (LUI3),
 	.auipc       (auipc3),
 	.ecall       (ecall),
-
+	.u_ret       (),
+	.s_ret       (),
+	.m_ret       (),
 	.stall       (stall)				// Stall Signal
     );
 
