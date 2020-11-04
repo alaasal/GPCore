@@ -22,7 +22,6 @@ module frontend_stage(
     // registers
 	logic [31:0] pcReg; 	   // pipe #1 pc
 	logic [31:0] pcReg2;	   // pipe #2 from pc to inst mem
-	logic [1:0] stallnum;
 	
 	// Exceptions at forntend
 	//logic instruction_addr_misalignedReg1;
@@ -41,7 +40,7 @@ module frontend_stage(
 	begin
         if (!nrst)
         begin
-		pcReg		<= -1;
+		pcReg		<= 0;
 		pcReg2 		<= 0;
 		
 		//instruction_addr_misalignedReg1 <= 0;
@@ -98,8 +97,8 @@ module frontend_stage(
 
     // output
 
-	assign pc = (stall && !stallnum[1] && !stallnum[0]) ? pcReg-1: pcReg;
-	assign pc2 = (stall && !stallnum[1] && !stallnum[0]) ? pcReg2 - 1 : pcReg2;
+	assign pc = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg-1: pcReg;
+	assign pc2 = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg2 - 1 : pcReg2;
 	
 	assign instruction_addr_misaligned = instruction_addr_misalignedReg2;
 
