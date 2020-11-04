@@ -29,8 +29,11 @@ module exe_stage(
 	input logic [31:0] pc4,
 	input logic [1:0] pcselect4,
 
+	// csr
 	input logic [2:0] funct3_4,
-	input logic [31:0] csr_imm4,
+	input logic [31:0] csr_data, csr_imm4,
+	input logic [11:0] csr_addr4,
+
 	// exceptions 
 	input logic instruction_addr_misaligned4,
 	input logic ecall4,
@@ -56,6 +59,7 @@ module exe_stage(
 	output logic bjtaken6,		//need some debug
 
 	output logic [31:0] csr_wb,
+	output logic [11:0] csr_wb_addr,
 
 	// exceptions
 	output logic pc_exc,
@@ -101,9 +105,11 @@ module exe_stage(
 
 	logic [31:0] pcReg5;
 	logic [1:0] pcselectReg5;
-
+	// csr
 	logic [2:0] funct3Reg5;
-	logic [31:0]csr_immReg5;
+	logic [31:0] csr_dataReg5, csr_immReg5;
+	logic [11:0] csr_addrReg5;
+	// exceptions
 	logic ecallReg5;
 	logic instruction_addr_misalignedReg5;
 
@@ -140,8 +146,11 @@ module exe_stage(
 
 		bjtakenReg5	<= 0;
 
-		funct3Reg5	<= 0;
-		csr_immReg5	<= 0;
+		funct3Reg5	<= '0;
+		csr_immReg5	<= '0;
+		csr_dataReg5	<= '0;
+		csr_addrReg5	<= '0;
+
 		ecallReg5	<= 0;
 		instruction_addr_misalignedReg5 <= 0;
           end
@@ -173,10 +182,13 @@ module exe_stage(
 		pcReg5	  	<= pc4;
 		pcselectReg5 	<= pcselect4;
 
-		bjtakenReg5		<=bjtaken4;
+		bjtakenReg5	<=bjtaken4;
 
 		funct3Reg5	<= funct3_4;
 		csr_immReg5	<= csr_imm4;
+		csr_dataReg5	<= csr_data;
+		csr_addrReg5	<= csr_addr4;
+
 		ecallReg5	<= ecall4;
 		instruction_addr_misalignedReg5 <= instruction_addr_misaligned4;
           end
@@ -227,10 +239,10 @@ module exe_stage(
 
 	csr csr_unit(
 	.func3(funct3Reg5),
-	.ecall(ecallReg5),
 	.rs1(op_a),
 	.imm(csr_immReg5),
-	.csr_reg(),
+	.csr_reg(csr_dataReg5),
+	.current_mode(),
 	.csr_new(csr5),
 	.csr_old(csr_rd5)
 	);
@@ -254,8 +266,10 @@ module exe_stage(
 	logic [31:0] pcReg6;
 
 	logic [2:0] fn6;
-	logic [31:0] csr_rdReg6; // this will be written back in regfile
-	logic [31:0] csrReg6;    // this will be written back in csr regfile
+	// csr
+	logic [31:0] csr_rdReg6;	// this will be written back in regfile
+	logic [31:0] csrReg6;		// this will be written back in csr regfile
+	logic [11:0] csr_addrReg6;	// csr address that new data will be written in
 	
 	// exceptions
 	logic instruction_addr_misalignedReg6;
@@ -279,8 +293,11 @@ module exe_stage(
 		mul_divReg6 	<= 32'b0;
 
 		pcReg6 		<= 32'b0;
+
 		csr_rdReg6	<= '0;
 		csrReg6		<= '0;
+		csr_addrReg6	<= '0;
+
 		instruction_addr_misalignedReg6 <= 0;
 		ecallReg6	<= 0;
 	  end
@@ -301,6 +318,7 @@ module exe_stage(
 
 		csr_rdReg6	<= csr_rd5;
 		csrReg6		<= csr5;
+		csr_addrReg6	<= csr_addrReg5;
 
 		instruction_addr_misalignedReg6 <= instruction_addr_misalignedReg5;
 		ecallReg6	<= ecallReg5;
@@ -344,8 +362,9 @@ module exe_stage(
 	assign bjtaken6 = btaken | jr4 |j4;
 	assign pcselect5=pcselect4;
 
-	// to csr register file
+	// to csr register file through commit stage
 	assign csr_wb = csrReg6;
+	assign csr_wb_addr = csr_addrReg6;
 	assign pc_exc = pcReg6;
 	assign m_cause = mcause;
 	assign exception_pending = exception;

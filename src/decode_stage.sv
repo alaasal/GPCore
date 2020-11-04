@@ -6,7 +6,7 @@ module instdec_stage(
 
 	input logic exception_pending,	// from commit stage
 
-	input logic instruction_addr_misaligned2,  // exception
+	input logic instruction_addr_misaligned2,  // exception from frontend
 
 	// Operands and Destination
 	output logic [4:0] rs1, rs2,
@@ -55,7 +55,7 @@ module instdec_stage(
 	input logic [1:0]stallnumin,
 	// CSR
 	output logic [2:0] funct3_3,
-	output logic [11:0] csr_addr,
+	output logic [11:0] csr_addr3,
 	output logic [31:0] csr_imm3,
 	// exceptions
 	output logic instruction_addr_misaligned3,
@@ -150,9 +150,9 @@ module instdec_stage(
 	assign instr_30 = instrReg3[30];
 	assign opcode3  = opcode;
 	// to csr_unit
-	assign csr_addr = instrReg3[31:20];
-	assign csr_imm3	= instrReg3[19:15];
-	assign funct3_3 = instrReg3[14:12];
+	assign csr_addr3 = instrReg3[31:20];
+	assign csr_imm3	 = instrReg3[19:15];
+	assign funct3_3  = instrReg3[14:12];
 
 	instr_decoder c1 (
 	.op          (opcode),
@@ -179,8 +179,7 @@ module instdec_stage(
 	.uret       (),
 	.sret       (),
 	.mret       (),
-	.stall       (stall),				// Stall Signal
-	.decode_ex	 (decode_ex3)
+	.stall       (stall)		// Stall Signal
     );
 
 endmodule

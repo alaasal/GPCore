@@ -2,14 +2,16 @@
 
 module csr_regfile(
 	input logic clk, nrst,
-	input logic exception_pending, interrupt_exception,
 	input logic [11:0] csr_address_r, csr_address_wb,
 	input logic [31:0] csr_wb,		// csr data written back from csr to the register file
-	input logic m_interrupt,
-	input logic [`XLEN-1:1] instruction_vaddr,// pc of instruction that caused the exception and is saved in mepc
-	input logic  s_ret,
- 	input logic  m_ret,
+	//inputs from execute stage
+	input logic exception_pending,
+	input logic [31:0] m_cause,
+	input logic [31:0] pc_exc,		// pc of instruction that caused the exception >> mepc
+ 	input logic  m_ret, s_ret, u_ret,
 	input logic stall,
+	input logic m_interrupt,
+
 	output logic m_timer,
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
 	output logic m_eie, m_tie,

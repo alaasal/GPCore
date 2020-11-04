@@ -28,12 +28,6 @@ package csr;
 `define CAUSE_LOAD_PAGE_FAULT       32'hd
 `define CAUSE_STORE_PAGE_FAULT      32'hf
 
-// PRIV MODE
-`define PRIV_U 0
-`define PRIV_S 1
-`define PRIV_H 2
-`define PRIV_M 3
-
 // Machine-Mode
 `define CSR_MVENDORID   12'hf11			//Machine Vendor ID Register (mvendorid) [p18] 
 `define CSR_MARCHID     12'hf12			//Machine Architecture ID Register (marchid)  [p18]

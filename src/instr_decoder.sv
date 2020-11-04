@@ -38,10 +38,7 @@ module instr_decoder(
 	output logic ecall, uret, sret, mret,
 
 	// Scoreboard Signals
-	input logic stall,
-
-	// Exceptions
-	output logic decode_ex
+	input logic stall
     );
 
     	// Wires

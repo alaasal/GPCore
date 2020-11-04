@@ -35,10 +35,7 @@ module core(
 	logic bneq3,bneq4;
 	logic LUI3,LUI4;
 	logic auipc3,auipc4;
-	logic [1:0]stallnum;
-
-	
-	 
+	logic [1:0]stallnum; 
 	
 	logic [3:0] mem_op3, mem_op4;
 	logic [31:0] mem_out6;
@@ -56,14 +53,14 @@ module core(
 	logic stall;
 	logic bjtaken;
 	logic [6:0] opcode3;
-	
+
 	// Exceptions and CSRs
+	logic [11:0] csr_addr3, csr_addr4, csr_wb_addr, csr_wb_addr6;
+	logic [2:0] funct3_3, funct3_4;
+	logic [31:0] csr_imm3, csr_imm4, csr_data, csr_wb6, m_cause6, csr_wb, pc_exc, m_cause;
 	logic instruction_addr_misaligned2, instruction_addr_misaligned3, instruction_addr_misaligned4;
 	logic ecall3, ecall4;
-	logic pc_exc;
-	logic exception_pending;
-	logic m_cause;
-	logic [31:0] csr_wb;
+	logic exception_pending, exception_pending6;
 	
 	
 
@@ -149,6 +146,11 @@ module core(
 	.opcode3 	(opcode3),
 	.stallnumin	(stallnum),
 	
+	// csr operations
+	.funct3_3	(funct3_3),
+	.csr_addr3	(csr_addr3),
+	.csr_imm3	(csr_imm3),
+	
 	// Exceptions
 	.instruction_addr_misaligned3(instruction_addr_misaligned3),
 	.ecall3(ecall3)
@@ -161,11 +163,17 @@ module core(
 	issue_stage issue (
 	.clk          (clk),
 	.nrst         (nrst),
-	
+
 	// Write Back address, enable, and data from commit stage
 	.we6          (we6Issue),		
 	.rdaddr6      (rd6Issue),	    
-	.wb6          (wb6),		
+	.wb6          (wb6),
+
+	.csr_wb		(csr_wb),
+	.csr_wb_addr	(csr_wb_addr),
+	.m_cause	(m_cause),
+	.exception_pending(exception_pending),
+	.pc_exc		(pc_exc),
 	
 	// Inputs from decode stage
 	.rs1          (rs1),
@@ -198,6 +206,10 @@ module core(
 
 	.pc3          (pc3),
 	.pcselect3    (pcselect3),
+
+	.funct3_3	(funct3_3),
+	.csr_addr3	(csr_addr3),
+	.csr_imm3	(csr_imm3),
 
 	.instruction_addr_misaligned3(instruction_addr_misaligned3),
 	.ecall3		(ecall3),
@@ -236,7 +248,13 @@ module core(
 	.bjtaken	(bjtaken),
 	.opcode3	(opcode3),
 	.stallnum	(stallnum),
-
+	
+	// csr
+	.csr_data	(csr_data),
+	.funct3_4	(funct3_4),
+	.csr_addr4	(csr_addr4),
+	.csr_imm4	(csr_imm4),
+	
 	// exceptions
 	.instruction_addr_misaligned4(instruction_addr_misaligned4),
 	.ecall4(ecall4)
@@ -279,6 +297,11 @@ module core(
 	.pc4          (pc4),
 	.pcselect4    (pcselect4),
 
+	.funct3_4	(funct3_4),
+	.csr_data	(csr_data),
+	.csr_imm4	(csr_imm4),
+	.csr_addr4	(csr_addr4),
+
 	.instruction_addr_misaligned4(instruction_addr_misaligned4),
 	.ecall4		(ecall4),
 
@@ -302,10 +325,11 @@ module core(
 	.bjtaken6		(bjtaken),
 
 	// to csr_regfile
-	.pc_exc			(pc_exc),
-	.exception_pending	(exception_pending),
-	.m_cause		(m_cause),
-	.csr_wb			(csr_wb)
+	.pc_exc			(pc6),
+	.exception_pending	(exception_pending6),
+	.m_cause		(m_cause6),
+	.csr_wb			(csr_wb6),
+	.csr_wb_addr		(csr_wb_addr6)
 	);
 
 	// =============================================== //
@@ -321,11 +345,22 @@ module core(
 	.we6          (we6),	  
 	.wb_data6    (wb6),	        // final output that will be written back in register file PIPE #6
 	
+	.csr_wb6	(csr_wb6),
+	.csr_wb_addr6	(csr_wb_addr6),
+	.m_cause6	(m_cause6),
+	.exception_pending6(exception_pending6),
+	
+	.pc6         (pc6),
+
 	.we6Issue        (we6Issue),
 	.rd6Issue   (rd6Issue),
 	.result6(wb_data6),
-	
-	.pc6         (pc6)
+
+	.csr_wb		(csr_wb),
+	.csr_wb_addr	(csr_wb_addr),
+	.pc_exc		(pc_exc),
+	.m_cause	(m_cause),
+	.exception_pending(exception_pending)
 	);
 	
     
