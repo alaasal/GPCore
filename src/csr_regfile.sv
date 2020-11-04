@@ -7,8 +7,8 @@ module csr_regfile(
 	//inputs from execute stage
 	input logic exception_pending,
 
-	input logic [5:0] exception_code,
-	input logic interrupt_exception,
+	//input logic [5:0] exception_code,
+	//input logic interrupt_exception,
 	
 	input logic [31:0] m_cause,
 	input logic [31:0] pc_exc,		// pc of instruction that caused the exception >> mepc
@@ -272,8 +272,8 @@ always_ff @(posedge clk, negedge nrst) begin
             status_mpp  <= mode::U;
 		end
 		
-		if (!interrupt_exception) 
-				case (exception_code)
+		if (!m_cause[`XLEN-1]) 
+				case (m_cause[`XLEN-2:0])
                 exception::I_ADDR_MISALIGNED:   mtval <= {pc_exc, 1'b0};
                 /* Despite the ISA spec allowing the instruction cache to be compressed by dropping the bottom 2 bits,
                  * this will expose this detail to code running on the target.
@@ -298,10 +298,10 @@ always_ff @(posedge clk, negedge nrst) begin
             status_sie  <= 0;
             status_spie <= status_sie;
             status_spp  <= current_mode[0];
-            scause_interrupt <= interrupt_exception;
-            scause_code      <= exception_code;
+            scause_interrupt <= m_cause[`XLEN-1];  //interrupt_exception
+            scause_code      <= m_cause[`XLEN-2:0];//exception_code
 
-            if (!interrupt_exception) case (exception_code)
+            if (!m_cause[`XLEN-1]) case (m_cause[`XLEN-2:0])
                 exception::I_ADDR_MISALIGNED:   stval <= {pc_exc, 1'b0};
                 /* Despite the ISA spec allowing the instruction cache to be compressed by dropping the bottom 2 bits,
                  * this will expose this detail to code running on the target.
@@ -337,11 +337,11 @@ always_comb begin
 		else if (s_ret) begin
             next_mode = status_spp ? mode::S : mode::U;
         end
-        else if (interrupt_exception) begin
-            next_mode = mideleg[exception_code] ? mode::S : mode::M;
+        else if (m_cause[`XLEN-1]) begin
+            next_mode = mideleg[m_cause[`XLEN-2:0]] ? mode::S : mode::M;
         end
         else begin
-            next_mode = medeleg[exception_code] ? mode::S : mode::M;
+            next_mode = medeleg[m_cause[`XLEN-2:0]] ? mode::S : mode::M;
         end
     end
 end
