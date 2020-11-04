@@ -5,8 +5,9 @@ module core(
 	input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
 	input logic [31:0] DEBUG_addr,
 	input logic [31:0] DEBUG_instr,
-	input logic clk_debug
+	input logic clk_debug,
 	
+	input logic asy_int			//Asynchronus interrupt 
     );
 
 	// Wires
@@ -363,6 +364,13 @@ module core(
 	.exception_pending(exception_pending)
 	);
 	
-    
+    // =============================================== //
+	//			CSR_REGFILE		   //
+	// =============================================== //
+	csr_regfile csr(
+	.clk (clk),
+	.nrst(nrst),
+	.asy_int(asy_int)
+	);
     
 endmodule

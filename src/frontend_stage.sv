@@ -26,6 +26,11 @@ module frontend_stage(
 	// Exceptions at forntend
 	//logic instruction_addr_misalignedReg1;
 	logic instruction_addr_misalignedReg2;
+	// Exception pending
+	logic pcsel_interrupt;
+	logic [31:0] mtvec_out;
+	logic flag_ex;
+	
 	
     // wires
     logic [31:0] npc;   	   // next pc wire
@@ -43,10 +48,20 @@ module frontend_stage(
 		pcReg		<= 0;
 		pcReg2 		<= 0;
 		
+		pcsel_interrupt	<= 0;
+		flag_ex	<= 0;
+		
 		//instruction_addr_misalignedReg1 <= 0;
 		instruction_addr_misalignedReg2 <= 0;
 
 		end
+		// Interrupt
+		else if (pcsel_interrupt && (!flag_ex)) 
+		begin
+			pcReg <= mtvec_out;
+			flag_ex <= 1;
+		end
+		
         else begin	
 	//stallnumin<=stallnuminin;
 	if ( stall&&!stallnumin[1] && !stallnumin[0]) begin 
@@ -85,15 +100,19 @@ module frontend_stage(
     always_comb
       begin
         // npc logic
-        unique case(PCSEL)
-            0: npc = pcReg + 1;
-            1: npc = 0;
-            2: npc = target;
-            3: npc = npc;
+        unique case({pcsel_interrupt, PCSEL})
+            3'b000: npc = pcReg + 1;
+            3'b001: npc = 0;
+            3'b010: npc = target;
+            3'b011: npc = npc;
+			//Exception
+			3'b100,3'b101,3b110,3b111: npc = pcReg + 1;
             default: npc = pcReg + 1 ;
         endcase
         
       end
+	  
+	  
 
     // output
 
@@ -101,6 +120,14 @@ module frontend_stage(
 	assign pc2 = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg2 - 1 : pcReg2;
 	
 	assign instruction_addr_misaligned = instruction_addr_misalignedReg2;
+	
+	// =============================================== //
+	//			CSR_REGFILE		   //
+	// =============================================== //
+	csr_regfile csr(
+	.pcsel_interrupt (pcsel_interrupt),
+	.mtvec_out (mtvec_out)
+	);
 
     // dummy inst mem
     instr_mem m1 (
