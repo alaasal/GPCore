@@ -5,13 +5,18 @@ module issue_stage (
 	input logic we6,			// Write Enable
 	input logic [4:0] rdaddr6,		// Destenation Address
 	input logic [31:0] wb6,			// Data
+	
+	input logic [31:0] csr_wb,
+	input logic [11:0] csr_wb_addr,
+	input logic [31:0] m_cause,
+	input logic exception_pending,
+	input logic [31:0] pc_exc,
 
 	// Piped Signals from Decode to Issue
 	input logic we3,
 	input logic bneq3,
 	input logic  btype3,
 	input logic [6:0] opcode3,
-	input logic [2:0] funct3_3,
 	
 	input logic [2:0] fn3,
 	input logic [3:0] alu_fn3,		// ALU control from decode stage
@@ -26,9 +31,15 @@ module issue_stage (
 	input logic [31:0] S_imm3,
 	input logic [31:0] U_imm3,	
 	input logic [4:0] shamt,
+	
 	// to csr_unit in execute stage
-	input logic [2:0] func3,
-	input logic [31:0]csr_imm3,
+	input logic [2:0] funct3_3,
+	input logic [11:0] csr_addr3,
+	input logic [31:0] csr_imm3,
+	
+	// exceptions	
+	input logic instruction_addr_misaligned3,
+	input logic ecall3,	
 
 	input logic j3,
 	input logic jr3,
@@ -52,9 +63,6 @@ module issue_stage (
 	output logic [4:0] rd4,
 	output logic [3:0] alu_fn4,
 	output logic [2:0] fn4,
-
-	output logic [2:0] funct3_4,
-	output logic [31:0]csr_imm4,
 
 	output logic [31:0] B_imm4,
 	output logic [31:0] J_imm4,
@@ -80,7 +88,18 @@ module issue_stage (
 	
 	// Socreboard Signals
 	input bjtaken,
-	output logic stall
+	output logic stall,
+	output logic [1:0]stallnum,
+
+	// csr
+	output logic [31:0] csr_data,
+	output logic [2:0] funct3_4,
+	output logic [11:0] csr_addr4,
+	output logic [31:0] csr_imm4,
+
+	// exceptions
+	output logic instruction_addr_misaligned4,
+	output logic ecall4
     );
 
 	// Wires
@@ -123,10 +142,14 @@ module issue_stage (
 	
 	logic [2:0] funct3Reg4;
 	logic [31:0]csr_immReg4;
+	logic [11:0] csr_addrReg4;
+
 	// Scoreboard Regs
 	logic [1:0]killnum;
 	
-
+	// exceptions
+	logic instruction_addr_misalignedReg4;
+	logic ecallReg4;
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
@@ -162,8 +185,12 @@ module issue_stage (
 		pcReg4		<= 0;
 		pcselectReg4	<= 0;
 		killnum		<= 2'b0;
-		funct3Reg4	<= 0;
-		csr_immReg4	<= 0;
+
+		funct3Reg4	<= '0;
+		csr_addrReg4	<= '0;
+		csr_immReg4	<= '0;
+		instruction_addr_misalignedReg4 <= 0;
+		ecallReg4	<= 0;
           end
         else
           begin
@@ -183,10 +210,14 @@ module issue_stage (
 
 		mem_opReg4 	<= mem_op3;
 		mulDiv_opReg4 	<= mulDiv_op3;
+		pcReg4		<= pc3;
 
-		pcReg4		<= pc3;		
 		funct3Reg4	<= funct3_3;
 		csr_immReg4	<= csr_imm3;
+		csr_addrReg4	<= csr_addr3;
+		// exceptions
+		instruction_addr_misalignedReg4 <= instruction_addr_misaligned3;
+		ecallReg4	<= ecall3;
 
 		if(stall )
 		begin
@@ -208,8 +239,8 @@ module issue_stage (
 		I_immdReg4	<= 32'b0;
 		rdReg4		<= 5'b0;
 		end 
-		else if ( !killnum[1] && killnum[0])begin 
-		killnum		<= 2'b0;
+		else if ( killnum[1] && !killnum[0])begin 
+		killnum		<=killnum+1;
 		pcselectReg4	<= 2'b00;
 		weReg4		<= 1'b0;
 		BSELReg4	<= 2'b01;
@@ -220,6 +251,7 @@ module issue_stage (
 		end
 		else
 		begin
+		killnum		<= 2'b0;
 		pcselectReg4	<= pcselect3;
 		weReg4		<= we3;
 		BSELReg4	<= B_SEL3;
@@ -254,11 +286,32 @@ module issue_stage (
 	.rd(rd3),
 	.op_code(opcode3),
 	.stall(stall),
-	.kill(kill)
+	.kill(kill),
+	.stallnum(stallnum)
 	);
 
-	 // csr register file
-
+	// csr register file
+	csr_regfile csr_registers(
+	.clk(clk),
+	.nrst(nrst),
+	.csr_address_r(csr_addrReg4),
+	.csr_address_wb(csr_wb_addr),
+	.csr_wb(csr_wb),
+	.exception_pending(exception_pending),
+	.m_cause(m_cause),
+	.pc_exc(pc_exc),
+	.m_ret(),
+	.s_ret(),
+	.u_ret(),
+	.stall(),
+	.m_interrupt(),
+	
+	.m_timer(),
+	.csr_data(csr_data),
+	.m_eie(),
+	.m_tie(),
+	.current_mode()
+	);
 
 
 	// mux to select between operand b from regfile or sign extended 32-bit I_immediate (I_imm) or shamt I_imm
@@ -312,6 +365,11 @@ module issue_stage (
 
 	assign funct3_4		= funct3Reg4;
 	assign csr_imm4		= csr_immReg4;
+	assign csr_addr4	= csr_addrReg4;
+
+	// exceptions
+	assign instruction_addr_misaligned4 = instruction_addr_misalignedReg4;
+	assign ecall4		= ecallReg4;
 	// Piped Signals ended
 
 endmodule

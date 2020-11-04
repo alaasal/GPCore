@@ -2,18 +2,26 @@
 
 module csr_regfile(
 	input logic clk, nrst,
-	input logic exception_pending, interrupt_exception,
 	input logic [11:0] csr_address_r, csr_address_wb,
 	input logic [31:0] csr_wb,		// csr data written back from csr to the register file
-	input logic m_interrupt,
-	input logic [`XLEN-1:1] instruction_vaddr,// pc of instruction that caused the exception and is saved in mepc
-	input logic  s_ret,
-  input logic  m_ret,
+	//inputs from execute stage
+	input logic exception_pending,
+	input logic [31:0] m_cause,
+	input logic [31:0] pc_exc,		// pc of instruction that caused the exception >> mepc
+ 	input logic  m_ret, s_ret, u_ret,
 	input logic stall,
+	input logic m_interrupt,
+	
+	input logic asy_int,		//Asynchronus interrupt 
+
 	output logic m_timer,
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
 	output logic m_eie, m_tie,
-	output mode::mode_t     current_mode = mode::M
+	output mode::mode_t     current_mode = mode::M,
+	
+	// To front end
+	output logic [31:0] mtvec_out,
+	output logic pcsel_interrupt
 );
 
 mode::mode_t  next_mode;
@@ -32,6 +40,9 @@ logic meie;
 logic seie;
 logic mtie;
 logic stie;
+// mcause
+logic mcause_interrupt;
+logic [`XLEN-2:0]mcause_code;
 
 
 
@@ -52,6 +63,9 @@ logic m_tie;
 logic s_timer;
 
 assign s_timer = 0; // hardwired to zero untill implementing s-mode
+
+assign mtvec_out = {mtvec, 2'b0};
+assign pcsel_interrupt = exception_pending || asy_int;
 
 
 always_comb
@@ -134,25 +148,23 @@ assign mie = {
     stie,
     5'b0
 };
-/////////////////////////////////////////////////////////////////////////
-always_comb begin
-if (mret) begin
-            mstatus_return.mie = mstatus.mpie;
-            mstatus_return.mpie = 1;
-            mstatus_return.mpp = ENABLE_U_MODE ? USER_PRIVILEGE : MACHINE_PRIVILEGE;
-end
-/////////////////////////////////////////////////////////////////////////////
+
+assign mcause = {
+    mcause_interrupt,
+    mcause_code
+};
+
 
 always_ff @(posedge clk, negedge nrst) begin
 	if (!nrst)
 	  begin
 		status_sie  	<= 0;
-                status_mie  	<= 0;
-                status_spie 	<= 0;
- 		status_mpie 	<= 0;
-                status_spp  	<= 0;
-                status_mpp  	<= 0;
-                status_sum  	<= 0;
+    status_mie  	<= 0;
+    status_spie 	<= 0;
+ 	  status_mpie 	<= 0;
+    status_spp  	<= 0;
+    status_mpp  	<= 0;
+    status_sum  	<= 0;
 		mtvec	    	<= '0;
 		mscratch	<= '0;
 		mepc		<= '0;
@@ -161,6 +173,8 @@ always_ff @(posedge clk, negedge nrst) begin
 		seie 		<= 0;
 		mtie 		<= 0;
 		stie 		<= 0;
+		mcause_interrupt <=0;
+    mcause_code      <=0;
 	  end
 	else
 	  begin
@@ -198,7 +212,7 @@ always_ff @(posedge clk, negedge nrst) begin
 				mepc <= csr_wb[31:2];
 			`CSR_MCAUSE:
 			  begin
-				mcause_code <= csr_wb[5:0];
+				mcause_code      <= csr_wb[5:0];
 				mcause_interrupt <= csr_wb[31];
 			  end
 			`CSR_MTVAL:
@@ -207,12 +221,12 @@ always_ff @(posedge clk, negedge nrst) begin
 	  end
 	 //Exception logic
 	  else if (next_mode==mode::M && !m_ret) begin
-           // mepc <= instruction_vaddr[`XLEN-1:2];
+            mepc <= pc_exc[`XLEN-1:2];
             status_mie  <= 0;
             status_mpie <= status_mie;
             status_mpp  <= current_mode;
-          //  mcause_interrupt <= interrupt_exception;
-           // mcause_code      <= exception_code;
+            mcause_interrupt <= m_cause[`XLEN-1];
+            mcause_code      <= m_cause[`XLEN-2:0];
           end
     // return from interrupt 
         else if (m_ret) begin

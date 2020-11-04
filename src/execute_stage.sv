@@ -2,7 +2,7 @@ module exe_stage(
 	input logic clk, nrst,
 
 	input logic [31:0] op_a,
- 	input logic [31:0] op_b,	
+ 	input logic [31:0] op_b,
 	input logic [4:0] rd4,			// rd address from issue stage
 
 	input logic [2:0] fn4,
@@ -11,13 +11,13 @@ module exe_stage(
 	input logic we4,
 
 	input logic [31:0] B_imm4,
-	input logic [31:0] J_imm4, 
+	input logic [31:0] J_imm4,
 	input logic [31:0] U_imm4 ,
 	input logic [31:0] S_imm4,
 
 	input logic bneq4,
 	input logic btype4,
-	
+
 	input logic j4,
 	input logic jr4,
 	input logic LUI4,
@@ -28,46 +28,49 @@ module exe_stage(
 
 	input logic [31:0] pc4,
 	input logic [1:0] pcselect4,
-	
+
+	// csr
 	input logic [2:0] funct3_4,
-	input logic [31:0] csr_imm4,
-	input logic ecall,
-	
-	/* Interrupt lines. */
-    input                           m_timer,
-    //input                           s_timer,
-    input                           m_interrupt,
-    //input                           s_interrupt,
-	input                           suppress_interrupts,
-	output              stall,
-    
+	input logic [31:0] csr_data, csr_imm4,
+	input logic [11:0] csr_addr4,
+
+	// exceptions 
+	input logic instruction_addr_misaligned4,
+	input logic ecall4,
+
 	output logic [31:0] wb_data6,
 	output logic we6,
 
-	
+
 	output logic [4:0] rd6,
-	
+
 	output logic [31:0] U_imm6,
 	output logic [31:0] AU_imm6 ,
-	
+
 	output logic [31:0] mem_out6,
 	output logic addr_misaligned6,
 
 	output logic [31:0] mul_divReg6,
-	
+
 	output logic [31:0] target,
 	output logic [31:0] pc6,
 	output logic [1:0] pcselect5,
-	
+
 	output logic bjtaken6,		//need some debug
 
-	output logic wb_csr_rd6
+	output logic [31:0] csr_wb,
+	output logic [11:0] csr_wb_addr,
+
+	// exceptions
+	output logic pc_exc,
+	output logic [31:0] m_cause,
+	output logic exception_pending
     );
-    
-	// wires 
+
+	// wires
 	logic btaken;
 	logic bjtaken4;
-	logic j5; 
+	logic j5;
 	logic jr5;
 	logic [31:0] mul_div5;
 
@@ -76,12 +79,12 @@ module exe_stage(
 	// =============================================== //
 
 	logic [31:0] opaReg5;		// Operand A at ALU input
-	logic [31:0] opbReg5;		// Operand B at ALU input	
+	logic [31:0] opbReg5;		// Operand B at ALU input
 
 	logic [2:0] fnReg5;
 	logic [3:0] alufnReg5;	   // alu control in exe stage will be input to alu block
 
-	logic [31:0] alu_res5;   
+	logic [31:0] alu_res5;
 	logic weReg5;
 	logic [4:0] rdReg5;
 
@@ -100,12 +103,15 @@ module exe_stage(
 
 	logic [2:0] mulDiv_opReg5;
 
-	logic [31:0] pcReg5;	
+	logic [31:0] pcReg5;
 	logic [1:0] pcselectReg5;
-	
+	// csr
 	logic [2:0] funct3Reg5;
-	logic [31:0]csr_immReg5;
+	logic [31:0] csr_dataReg5, csr_immReg5;
+	logic [11:0] csr_addrReg5;
+	// exceptions
 	logic ecallReg5;
+	logic instruction_addr_misalignedReg5;
 
 
 	always_ff @(posedge clk, negedge nrst)
@@ -120,11 +126,11 @@ module exe_stage(
 
 		rdReg5	  	<= 0;
 		weReg5		<= 0;
-		
+
 		B_immReg5 	<= 0;
 		J_immReg5 	<= 0;
 		U_immReg5 	<= 0;
-		
+
 		bneqReg5	<= 0;
 		btypeReg5 	<= 0;
 
@@ -137,17 +143,21 @@ module exe_stage(
 
 		pcReg5	  	<= 0;
 		pcselectReg5	<=2'b0;
-		
+
 		bjtakenReg5	<= 0;
 
-		funct3Reg5	<= 0;
-		csr_immReg5	<= 0;
+		funct3Reg5	<= '0;
+		csr_immReg5	<= '0;
+		csr_dataReg5	<= '0;
+		csr_addrReg5	<= '0;
+
 		ecallReg5	<= 0;
+		instruction_addr_misalignedReg5 <= 0;
           end
         else
           begin
 		opaReg5   	<= op_a;
-		opbReg5   	<= op_b;	
+		opbReg5   	<= op_b;
 
  		alufnReg5 	<= alu_fn4;
 		fnReg5	  	<= fn4;
@@ -168,30 +178,34 @@ module exe_stage(
 		auipcReg5 	<= auipc4;
 
 		mulDiv_opReg5 	<= mulDiv_op4;
-	
+
 		pcReg5	  	<= pc4;
 		pcselectReg5 	<= pcselect4;
-		
-		bjtakenReg5		<=bjtaken4;
+
+		bjtakenReg5	<=bjtaken4;
 
 		funct3Reg5	<= funct3_4;
 		csr_immReg5	<= csr_imm4;
-		ecallReg5	<= ecall;
+		csr_dataReg5	<= csr_data;
+		csr_addrReg5	<= csr_addr4;
+
+		ecallReg5	<= ecall4;
+		instruction_addr_misalignedReg5 <= instruction_addr_misaligned4;
           end
-      end   
-    
-    
+      end
+
+
 	  //ALU
 	alu exe_alu (
-	.alu_fn(alu_fn4), 
-	.operandA(op_a), 
-	.operandB(op_b), 
-	.result(alu_res5) , 
-	.bneq(bneq4), 
-	.btype(btype4) , 
-	.btaken(btaken) 
+	.alu_fn(alufnReg5 ),
+	.operandA(opaReg5 ),
+	.operandB(opbReg5 ),
+	.result(alu_res5) ,
+	.bneq(bneqReg5),
+	.btype(btypeReg5) ,
+	.btaken(btaken)
 	);
-    
+
     // branch unit
 	branch_unit exe_bu (
 	.pc          (pc4),
@@ -222,43 +236,19 @@ module exe_stage(
 	.mulDiv_op	(mulDiv_opReg5),
 	.res		(mul_div5)
 	);
-	
+
 	csr csr_unit(
 	.func3(funct3Reg5),
-	.ecall(ecallReg5),
 	.rs1(op_a),
 	.imm(csr_immReg5),
-	.csr_reg(),
-	.csr_new(),
+	.csr_reg(csr_dataReg5),
+	.current_mode(),
+	.csr_new(csr5),
 	.csr_old(csr_rd5)
 	);
-	
-		/* INTERRUPT CONDITIONING. ********************************************************************************************/
 
-/* Set if this is not the first cycle of an instruction. */
-reg stalled = 0;
-always @(posedge clock) begin
-    stalled <= stall;
-end
 
-wire m_timer_conditioned     =                              (!suppress_interrupts) && (!stalled) && m_tie && m_timer;
-//wire s_timer_conditioned     = (current_mode <= mode::S) && (!suppress_interrupts) && (!stalled) && s_tie && s_timer;
-wire m_interrupt_conditioned =                              (!suppress_interrupts) && (!stalled) && m_eie && m_interrupt;
-//wire s_interrupt_conditioned = (current_mode <= mode::S) && (!suppress_interrupts) && (!stalled) && s_eie && s_interrupt;
 
-/* STALL LOGIC. *******************************************************************************************************/
-
-assign stall = !exception_pending && (
-            /* Handle stalling on divider. */
-            div_stall
-            /* Handle stalling on memory interface. */
-        ||  (is_memory_op && !mem_done)
-            /* Handle waiting for interrupts. */
-        ||  (wait_for_interrupt && !(s_interrupt || m_interrupt || s_timer || m_timer))
-            /* Multiplier has a 1 clock latency. */
-        ||  (result_select == execute::MUL && save_result_to_gpr && !stalled)
-    );
-	
 	// =============================================== //
 	//			Pipe 6			   //
 	// =============================================== //
@@ -274,47 +264,89 @@ assign stall = !exception_pending && (
 	logic [31:0] AU_immReg6;
 
 	logic [31:0] pcReg6;
-	
-	logic [2:0] fn6;
-	logic [31:0] csr_rdReg6;
 
- 
+	logic [2:0] fn6;
+	// csr
+	logic [31:0] csr_rdReg6;	// this will be written back in regfile
+	logic [31:0] csrReg6;		// this will be written back in csr regfile
+	logic [11:0] csr_addrReg6;	// csr address that new data will be written in
+	
+	// exceptions
+	logic instruction_addr_misalignedReg6;
+	logic ecallReg6;
+
+	
+
 	always @(posedge clk)
 	begin
 	if (!nrst)
-	  begin		
+	  begin
 		fnReg6 		<= 3'b0;
 
 		rdReg6 		<= 5'b0;
 		alu_resReg6 	<= 32'b0;
 		weReg6 		<= 0;
-		
+
 		U_immReg6 	<= 32'b0;
                 AU_immReg6 	<= 32'b0;
-			
+
 		mul_divReg6 	<= 32'b0;
 
 		pcReg6 		<= 32'b0;
+
 		csr_rdReg6	<= '0;
+		csrReg6		<= '0;
+		csr_addrReg6	<= '0;
+
+		instruction_addr_misalignedReg6 <= 0;
+		ecallReg6	<= 0;
 	  end
 	else
 	  begin
 		fnReg6 		<= fnReg5;
 
-		rdReg6 		<= rdReg5;	
+		rdReg6 		<= rdReg5;
 		alu_resReg6 	<= alu_res5;
 		weReg6 		<= weReg5;
 
 		U_immReg6 	<= U_immReg5;
                 AU_immReg6 	<= U_immReg5+pcReg5 ;
-		
+
 		mul_divReg6 	<= mul_div5;
 
 		pcReg6 		<= pcReg5;
 
 		csr_rdReg6	<= csr_rd5;
+		csrReg6		<= csr5;
+		csr_addrReg6	<= csr_addrReg5;
+
+		instruction_addr_misalignedReg6 <= instruction_addr_misalignedReg5;
+		ecallReg6	<= ecallReg5;
 	  end
 	end
+	// =============================================== //
+	//		  Exception Logic		   //
+	// =============================================== //
+
+	logic [31:0] mcause;
+	assign exception = instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6;
+	assign mcause[31] = ~(instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6);
+
+	always_comb
+	  begin
+		// here will be a mux to check on the current mode and then set the cause register
+		// currently only M-mode
+		if (instruction_addr_misalignedReg6)
+			mcause[30:0] = '0;
+		else if (ecallReg6)
+		  begin
+			mcause[30:0] = 4'b1011;
+		  end
+		else // address misaligned
+			// this will be edited for load and store misaligned
+			mcause[30:0] = 4'b0100; // load exception
+
+	  end
 
 
 	// =============================================== //
@@ -323,12 +355,20 @@ assign stall = !exception_pending && (
 	assign fn6 = fnReg6;
 	assign rd6 = rdReg6;
 	assign we6 = weReg6;
-	
+
 	assign U_imm6 		= U_immReg6;
 	assign AU_imm6 		= AU_immReg6;
-	
+
 	assign bjtaken6 = btaken | jr4 |j4;
 	assign pcselect5=pcselect4;
+
+	// to csr register file through commit stage
+	assign csr_wb = csrReg6;
+	assign csr_wb_addr = csr_addrReg6;
+	assign pc_exc = pcReg6;
+	assign m_cause = mcause;
+	assign exception_pending = exception;
+
 	always_comb begin
         unique case(fn6)
             0: wb_data6  = alu_resReg6;
@@ -342,4 +382,3 @@ assign stall = !exception_pending && (
         endcase
 	end
 endmodule
-

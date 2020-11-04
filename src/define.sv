@@ -28,12 +28,6 @@ package csr;
 `define CAUSE_LOAD_PAGE_FAULT       32'hd
 `define CAUSE_STORE_PAGE_FAULT      32'hf
 
-// PRIV MODE
-`define PRIV_U 0
-`define PRIV_S 1
-`define PRIV_H 2
-`define PRIV_M 3
-
 // Machine-Mode
 `define CSR_MVENDORID   12'hf11			//Machine Vendor ID Register (mvendorid) [p18] 
 `define CSR_MARCHID     12'hf12			//Machine Architecture ID Register (marchid)  [p18]
@@ -129,5 +123,23 @@ typedef enum logic[5:0] {
     /* Machine external interrupt. */
     M_INT_EXT = 11
 } async_codes_t;
+
+endpackage
+
+//------------------------------------------------------------------
+/* Internal register file insterface types. ***************************************************************************/
+package ireg_file;
+
+/* Operations supported by internal register file. */
+typedef enum logic [1:0] {
+    /* Do nothing. */
+    NOP = 2'b00,
+    /* Read/Write. */
+    RW  = 2'b01,
+    /* Read and set bits. */
+    RS  = 2'b10,
+    /* Read and clear bits. */
+    RC  = 2'b11
+} op_t;
 
 endpackage
