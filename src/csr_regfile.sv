@@ -275,14 +275,11 @@ always_ff @(posedge clk, negedge nrst) begin
 		if (!m_cause[`XLEN-1]) 
 				case (m_cause[`XLEN-2:0])
                 exception::I_ADDR_MISALIGNED:   mtval <= {pc_exc, 1'b0};
-                /* Despite the ISA spec allowing the instruction cache to be compressed by dropping the bottom 2 bits,
-                 * this will expose this detail to code running on the target.
-                 * This should not be an issue in practice though.
-                 */
+          
                 exception::I_ILLEGAL:           mtval <= {32'b0, instruction_word, 2'b11};
 
-                /* This is not entirely compliant to the spec, but our machine mode is special anyway. */
-                default:                        mtval <= add_result;
+                
+                default:                        mtval <= 0;
             endcase
             else begin
                 mtval <= 0;
@@ -303,10 +300,7 @@ always_ff @(posedge clk, negedge nrst) begin
 
             if (!m_cause[`XLEN-1]) case (m_cause[`XLEN-2:0])
                 exception::I_ADDR_MISALIGNED:   stval <= {pc_exc, 1'b0};
-                /* Despite the ISA spec allowing the instruction cache to be compressed by dropping the bottom 2 bits,
-                 * this will expose this detail to code running on the target.
-                 * This should not be an issue in practice though.
-                 */
+                
                 exception::I_ILLEGAL:           stval <= {32'b0, instruction_word, 2'b11};
                 exception::L_ADDR_MISALIGNED,
                 exception::S_ADDR_MISALIGNED,
