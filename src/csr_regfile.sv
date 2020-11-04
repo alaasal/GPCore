@@ -6,8 +6,12 @@ module csr_regfile(
 	input logic [31:0] csr_wb,		// csr data written back from csr to the register file
 	//inputs from execute stage
 	input logic exception_pending,
+	input logic [5:0] exception_code,
+	input logic interrupt_exception,
+	
 	input logic [31:0] m_cause,
 	input logic [31:0] pc_exc,		// pc of instruction that caused the exception >> mepc
+	input logic [31:2] instruction_word,  // type of exception
  	input logic  m_ret, s_ret, u_ret,
 	input logic stall,
 	input logic m_interrupt,
@@ -48,6 +52,8 @@ logic [`XLEN-1:0] mscratch;
 logic [`XLEN-1:0] mcause;
 logic [`XLEN-1:0] mepc;
 logic [`XLEN-1:0] mtval;
+logic [`XLEN-1:0] medeleg;
+logic [`XLEN-1:0] mideleg;
 
 // wires
 logic [`XLEN-1:0] mstatus;
@@ -80,17 +86,21 @@ always_comb
 		`CSR_MIMPID:		csr_data = '0;
 		`CSR_MHARTID:		csr_data = '0;
 		`CSR_MSTATUS:		csr_data = mstatus;
-		`CSR_MIP:		csr_data = mip;
-		`CSR_MIE:		csr_data = mie;
-		`CSR_MTVEC:		csr_data = {mtvec, 2'b0}; // direct mode
-		`CSR_MEPC:		csr_data = {mepc, 2'b0};  // two low bits are always zero
+		`CSR_MIP:			csr_data = mip;
+		`CSR_MIE:			csr_data = mie;
+		`CSR_MTVEC:			csr_data = {mtvec, 2'b0}; // direct mode
+		`CSR_MEPC:			csr_data = {mepc, 2'b0};  // two low bits are always zero
 		`CSR_MCAUSE:		csr_data = mcause;
-		`CSR_MTVAL:		csr_data = mtval;
+		`CSR_MTVAL:			csr_data = mtval;
 		`CSR_MSCRATCH:		csr_data = mscratch;
+		
+		`CSR_MEDELEG: 		csr_data = medeleg;
+        `CSR_MIDELEG: 		csr_data = mideleg;
+		
+		// S Mode
+		`CSR_SEPC:      	csr_data = {sepc, 2'b0};
 
 /** not implemented yet **
-		`CSR_MEDELEG:	// will be implemented in s-mode
-		`CSR_MIDELEG:	// will be implemented in s-mode
 		`CSR_MCOUNTEREN:
 		`CSR_MCYCLE:
 		`CSR_MINSTRET:
@@ -172,6 +182,11 @@ always_ff @(posedge clk, negedge nrst) begin
 		seie 		<= 0;
 		mtie 		<= 0;
 		stie 		<= 0;
+		
+		medeleg		<= 0;
+		mideleg		<= 0;
+		
+		sepc		<= 0;
 	  end
 	else
 	  begin
@@ -214,23 +229,90 @@ always_ff @(posedge clk, negedge nrst) begin
 			  end
 			`CSR_MTVAL:
 				mtval <= csr_wb;
+			`CSR_MEDELEG:
+				medeleg <= csr_wb[15:0];
+			`CSR_MIDELEG:
+				mideleg <= csr_wb[11:0];
+				
+			// S Mode
+			`CSR_SEPC:
+                    sepc <= csr_wb[32:2];
+			`CSR_SCAUSE:
+              begin
+                scause_code <= new_value[5:0];
+                scause_interrupt <= new_value[31];
+              end
+			
 		endcase
 	  end
 	 //Exception logic
 	  else if (next_mode==mode::M && !m_ret) begin
-           // mepc <= instruction_vaddr[`XLEN-1:2];
+            mepc <= pc_exc[`XLEN-1:2];
             status_mie  <= 0;
             status_mpie <= status_mie;
             status_mpp  <= current_mode;
-          //  mcause_interrupt <= interrupt_exception;
-           // mcause_code      <= exception_code;
+            mcause_interrupt <= interrupt_exception;
+            mcause_code      <= exception_code;
           end
     // return from interrupt 
         else if (m_ret) begin
             status_mie  <= status_mpie;
             status_mpie <= 1;
             status_mpp  <= mode::U;
-      end
+		end
+		
+		if (!interrupt_exception) 
+				case (exception_code)
+                exception::I_ADDR_MISALIGNED:   mtval <= {pc_exc, 1'b0};
+                /* Despite the ISA spec allowing the instruction cache to be compressed by dropping the bottom 2 bits,
+                 * this will expose this detail to code running on the target.
+                 * This should not be an issue in practice though.
+                 */
+                exception::I_ILLEGAL:           mtval <= {32'b0, instruction_word, 2'b11};
+
+                /* This is not entirely compliant to the spec, but our machine mode is special anyway. */
+                default:                        mtval <= add_result;
+            endcase
+            else begin
+                mtval <= 0;
+            end
+        end
+        else if (m_ret) begin
+            status_mie  <= status_mpie;
+            status_mpie <= 1;
+            status_mpp  <= mode::U;
+        end
+        else if (exception_pending && next_mode==mode::S && !s_ret) begin
+            sepc <= pc_exc[`XLEN-1:2];
+            status_sie  <= 0;
+            status_spie <= status_sie;
+            status_spp  <= current_mode[0];
+            scause_interrupt <= interrupt_exception;
+            scause_code      <= exception_code;
+
+            if (!interrupt_exception) case (exception_code)
+                exception::I_ADDR_MISALIGNED:   stval <= {pc_exc, 1'b0};
+                /* Despite the ISA spec allowing the instruction cache to be compressed by dropping the bottom 2 bits,
+                 * this will expose this detail to code running on the target.
+                 * This should not be an issue in practice though.
+                 */
+                exception::I_ILLEGAL:           stval <= {32'b0, instruction_word, 2'b11};
+                exception::L_ADDR_MISALIGNED,
+                exception::S_ADDR_MISALIGNED,
+
+                default:                        stval <= 0;
+            endcase
+            else begin
+                stval <= 0;
+            end
+        end
+        else if (s_ret) begin
+            status_sie  <= status_spie;
+            status_spie <= 1;
+            status_spp  <= 0;
+        end
+    end
+end
 	 
 	end
 
@@ -241,6 +323,17 @@ always_comb begin
         if (m_ret) begin
             next_mode = status_mpp;
         end
+		else if (s_ret) begin
+            next_mode = status_spp ? mode::S : mode::U;
+        end
+        else if (interrupt_exception) begin
+            next_mode = mideleg[exception_code] ? mode::S : mode::M;
+        end
+        else begin
+            next_mode = medeleg[exception_code] ? mode::S : mode::M;
+        end
+    end
+end
 
 	 
 // interrupts enable signals
