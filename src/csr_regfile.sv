@@ -11,11 +11,17 @@ module csr_regfile(
  	input logic  m_ret, s_ret, u_ret,
 	input logic stall,
 	input logic m_interrupt,
+	
+	input logic asy_int,		//Asynchronus interrupt 
 
 	output logic m_timer,
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
 	output logic m_eie, m_tie,
-	output mode::mode_t     current_mode = mode::M
+	output mode::mode_t     current_mode = mode::M,
+	
+	// To front end
+	output logic [31:0] mtvec_out,
+	output logic pcsel_interrupt
 );
 
 mode::mode_t  next_mode;
@@ -54,6 +60,9 @@ logic m_tie;
 logic s_timer;
 
 assign s_timer = 0; // hardwired to zero untill implementing s-mode
+
+assign mtvec_out = {mtvec, 2'b0};
+assign pcsel_interrupt = exception_pending && asy_int;
 
 
 always_comb
