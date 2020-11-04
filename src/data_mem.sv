@@ -8,9 +8,9 @@ module data_mem #(
     parameter BC        = XLEN / 8, //byte count
     parameter BADDR     = 2,    //byte address
     parameter EADDR     = XLEN - BADDR,   //byte address
-    parameter MEM_LEN   = 256
+    parameter MEM_LEN   = 'hffffffff
 )(
-    input logic clk, 
+    input logic clk,nrst, 
     input logic gwe, rd,
     input logic bw0, bw1, bw2, bw3,         //byte write signals
     input logic [XLEN - 1:0] addr, data_in,
@@ -44,55 +44,19 @@ module data_mem #(
         end
     end
 
-    always_ff @(negedge clk) begin
-        if (rd) data_out <= MEM[waddr]; //word align to multiples of 4
+    always_ff @(negedge clk, nrst) 
+	begin
+	if (!nrst) data_out <= 0;
+        if (rd) data_out <={ MEM[waddr][3],MEM[waddr][2],MEM[waddr][1],MEM[waddr][0]}; //word align to multiples of 4
+    end
+
+    always_ff @(negedge clk, nrst) 
+begin
+	for (int i=0;i<MEM_LEN;i=i+1) begin 
+		for(int j=0;j<4;j=j+1)begin
+			MEM[i][j]=8'b0;
+		end
+	end
     end
 endmodule
 
-//TODO: adjust testbench for half and byte writes
-/*
-module mem_test;
-    timeunit 1ns;
-
-    parameter XLEN = 32;
-    parameter MEM_LEN  = 256;
-
-    logic clk;
-    logic we, rd;
-    logic [XLEN - 1:0] addr, data_in;
-
-    logic [XLEN - 1:0] data_out;
-
-    data_mem #(
-    .XLEN        (XLEN),
-    .MEM_LEN     (MEM_LEN)
-    ) mem_dut (
-    .clk         (clk),
-    .we          (we),
-    .rd          (rd),
-    .addr        (addr),
-    .data_in     (data_in),
-    .data_out    (data_out)
-    );
-
-    initial begin
-        clk     <= 0;
-        we      <= 1;
-        rd      <= 0;
-        addr    <= 0;
-        data_in <= 0;
-
-        forever begin
-            #10;
-            clk <= !clk;
-        end
-    end
-
-    always @(posedge clk) begin
-        #8;
-        we      <= 1;
-        data_in <= data_in + 1;
-        addr    <= addr + 4;
-    end
-endmodule
-*/
