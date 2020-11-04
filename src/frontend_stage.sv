@@ -67,38 +67,47 @@ module frontend_stage(
 	if ( stall&&!stallnumin[1] && !stallnumin[0]) begin 
 		pcReg		<= pcReg-1;		
 		pcReg2		<= pcReg2-1;
+
 	////////////////////////////////////////////////////////////
 	//instruction_addr_misalignedReg1 <= 0;
 		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
 	////////////////////////////////////////////////////////////
+
 	end
 	else if(stall && !(!stallnumin[1] && stallnumin[0]) ) 
 	begin 
 		pcReg		<= pcReg;		
 		pcReg2		<= pcReg2;
+
 		////////////////////////////////
 		//instruction_addr_misalignedReg1 <= 0;
 		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
 
 		/////////////////////////////////
+
 	end 
 	else if(stall &&!stallnumin[1] && stallnumin[0] )
 	begin 
 		pcReg		<= npc;		
 		pcReg2		<= pcReg;
+
 	////////////////////////////////////////////////
 		//instruction_addr_misalignedReg1 <= 0;
 		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
 	////////////////////////////////////////////////	
+
+
 	end 
 	else if(stall ) 
 	begin 
 		pcReg		<= pcReg;		
 		pcReg2		<= pcReg2;
+
 	/////////////////////////////////////////////
 		//instruction_addr_misalignedReg1 <= 0;
 		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
 	//////////////////////////////////////////////
+
 	end 
 	else 
 	begin 
@@ -123,7 +132,9 @@ module frontend_stage(
             3'b010: npc = target;
             3'b011: npc = npc;
 			//Exception
+
 			3'b100,3'b101,3'b110,3'b111: npc = pcReg + 1;
+
             default: npc = pcReg + 1 ;
         endcase
         
