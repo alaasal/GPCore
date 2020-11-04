@@ -57,9 +57,13 @@ module core(
 	logic bjtaken;
 	logic [6:0] opcode3;
 	
-	// Exceptions
+	// Exceptions and CSRs
 	logic instruction_addr_misaligned2, instruction_addr_misaligned3, instruction_addr_misaligned4;
 	logic ecall3, ecall4;
+	logic pc_exc;
+	logic exception_pending;
+	logic m_cause;
+	logic [31:0] csr_wb;
 	
 	
 
@@ -105,6 +109,7 @@ module core(
 	// Inputs from FrontEnd Stage
 	.instr2       (instr2),	
 	.pc2          (pc2),
+	.exception_pending(exception_pending),
 	.instruction_addr_misaligned2(instruction_addr_misaligned2),
 	
 	// Outputs to Issue Stage 
@@ -294,8 +299,13 @@ module core(
 	.pcselect5    		(pcselect5),
 	.target       		(target),
 	//signal to scoreboard
-	.bjtaken6		(bjtaken)
-	
+	.bjtaken6		(bjtaken),
+
+	// to csr_regfile
+	.pc_exc			(pc_exc),
+	.exception_pending	(exception_pending),
+	.m_cause		(m_cause),
+	.csr_wb			(csr_wb)
 	);
 
 	// =============================================== //

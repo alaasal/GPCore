@@ -8,7 +8,7 @@ module csr_regfile(
 	input logic m_interrupt,
 	input logic [`XLEN-1:1] instruction_vaddr,// pc of instruction that caused the exception and is saved in mepc
 	input logic  s_ret,
-  input logic  m_ret,
+ 	input logic  m_ret,
 	input logic stall,
 	output logic m_timer,
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it

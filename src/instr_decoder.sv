@@ -4,6 +4,8 @@ module instr_decoder(
 	input logic [6:0] funct7,
 	input logic [11:0]funct12,
 	input logic instr_30,		// instr[30]
+	// from commit stage
+	input logic exception_pending,
 
 	// Operands Select Sginals
 	output logic [1:0] B_SEL,	// select op b
@@ -75,10 +77,7 @@ module instr_decoder(
 	logic noOp;
 
 	// interrupts and exceptions instructions
-	logic e_call;
-	logic decode_ex_reg;
-
-logic m_ret, u_ret, s_ret;
+	logic e_call, m_ret, u_ret, s_ret;
 
 	assign instr_25 = (~& funct7[6:1]) & funct7[0];     //funct7 == 0000_001
 	//noOp
@@ -100,9 +99,9 @@ logic m_ret, u_ret, s_ret;
 	// zicsr and system instructions
 	assign system = op[6] & op[5] & op[4] & ~op[3] & ~op[2] & op[1] & op[0];  //1110011 SYSTEM
 	assign e_call = system & (~&funct3) & ~funct12[0];
-	assign m_ret = system & (~&funct3) & (~funct7);
-	assign u_ret = system & (~&funct3) & (~funct7[4]) & funct7[3];
-	assign s_ret = system & (~&funct3) & funct7[4] & funct7[3];
+	assign m_ret  = system & (~&funct3) & (~funct7);
+	assign u_ret  = system & (~&funct3) & (~funct7[4]) & funct7[3];
+	assign s_ret  = system & (~&funct3) & funct7[4] & funct7[3];
 
 	// rtype op								  // instr[30] funct3
 	assign i_add  = rtype & ~instr_30 & (~&funct3);				  //   	0	000
@@ -196,7 +195,7 @@ logic m_ret, u_ret, s_ret;
     //01
     //10 branch
     //11
-    assign we 	    = rtype | itype | jtype | jr | ltype| utype | autype | system;		  // set we to 1 if instr is rtype or itype (1 for all alu op)
+    assign we 	    = rtype | itype | jtype | jr | ltype| utype | autype | system & ~(exception_pending);
     assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr | ltype;
     assign B_SEL[1] = i_slli | i_srli | i_srai;
 
@@ -255,7 +254,7 @@ logic m_ret, u_ret, s_ret;
 	assign fn[2] = ltype| aupc | system;
 
 	// =============================================== //
-	//		Exceptions		   //
+	//		Exceptions		   	   //
 	// =============================================== //
 
 endmodule

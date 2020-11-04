@@ -4,6 +4,8 @@ module instdec_stage(
 	input logic  [31:0] pc2,		  // input from frontend stage (pc)
 	input logic  [31:0] instr2,		  // input from frontend stage (inst mem)
 
+	input logic exception_pending,	// from commit stage
+
 	input logic instruction_addr_misaligned2,  // exception
 
 	// Operands and Destination
@@ -158,6 +160,7 @@ module instdec_stage(
 	.funct7      (funct7),
 	.funct12     (funct12),
 	.instr_30    (instr_30),		// instr[30]
+	.exception_pending(exception_pending),
 
 	.pcselect    (pcselect3),		// Select pc source
 	.we          (we3),				// Regfile write enable

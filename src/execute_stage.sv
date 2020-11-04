@@ -55,9 +55,12 @@ module exe_stage(
 
 	output logic bjtaken6,		//need some debug
 
-	output logic wb_csr_rd6
+	output logic [31:0] csr_wb,
 
 	// exceptions
+	output logic pc_exc,
+	output logic [31:0] m_cause,
+	output logic exception_pending
     );
 
 	// wires
@@ -228,7 +231,7 @@ module exe_stage(
 	.rs1(op_a),
 	.imm(csr_immReg5),
 	.csr_reg(),
-	.csr_new(),
+	.csr_new(csr5),
 	.csr_old(csr_rd5)
 	);
 
@@ -251,7 +254,8 @@ module exe_stage(
 	logic [31:0] pcReg6;
 
 	logic [2:0] fn6;
-	logic [31:0] csr_rdReg6;
+	logic [31:0] csr_rdReg6; // this will be written back in regfile
+	logic [31:0] csrReg6;    // this will be written back in csr regfile
 	
 	// exceptions
 	logic instruction_addr_misalignedReg6;
@@ -276,6 +280,7 @@ module exe_stage(
 
 		pcReg6 		<= 32'b0;
 		csr_rdReg6	<= '0;
+		csrReg6		<= '0;
 		instruction_addr_misalignedReg6 <= 0;
 		ecallReg6	<= 0;
 	  end
@@ -295,6 +300,7 @@ module exe_stage(
 		pcReg6 		<= pcReg5;
 
 		csr_rdReg6	<= csr_rd5;
+		csrReg6		<= csr5;
 
 		instruction_addr_misalignedReg6 <= instruction_addr_misalignedReg5;
 		ecallReg6	<= ecallReg5;
@@ -303,9 +309,26 @@ module exe_stage(
 	// =============================================== //
 	//		  Exception Logic		   //
 	// =============================================== //
+
 	logic [31:0] mcause;
-	assign exception_pending = instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6;
+	assign exception = instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6;
 	assign mcause[31] = ~(instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6);
+
+	always_comb
+	  begin
+		// here will be a mux to check on the current mode and then set the cause register
+		// currently only M-mode
+		if (instruction_addr_misalignedReg6)
+			mcause[30:0] = '0;
+		else if (ecallReg6)
+		  begin
+			mcause[30:0] = 4'b1011;
+		  end
+		else // address misaligned
+			// this will be edited for load and store misaligned
+			mcause[30:0] = 4'b0100; // load exception
+
+	  end
 
 
 	// =============================================== //
@@ -320,6 +343,13 @@ module exe_stage(
 
 	assign bjtaken6 = btaken | jr4 |j4;
 	assign pcselect5=pcselect4;
+
+	// to csr register file
+	assign csr_wb = csrReg6;
+	assign pc_exc = pcReg6;
+	assign m_cause = mcause;
+	assign exception_pending = exception;
+
 	always_comb begin
         unique case(fn6)
             0: wb_data6  = alu_resReg6;
