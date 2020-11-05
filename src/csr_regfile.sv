@@ -22,7 +22,7 @@ module csr_regfile(
 
 	output logic m_timer,
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
-	output logic m_eie, m_tie,
+	output logic m_eie, m_tie,s_eie, s_tie,
 	//output mode::mode_t     current_mode = mode::M,
 	output logic[1:0] current_mode,//edit here
 	// To front end
@@ -357,9 +357,23 @@ always_comb begin
     end
 end
 
+/* Counter for time and cycle CSRs. */
+reg [63:0] cycle_counter = 0;
+always @(posedge clk) begin
+    cycle_counter <= cycle_counter + 1;
+end
+
+/* Supervisor's timer. */
+/*reg [63:0] supervisor_next_event_cycle = 0;
+always @(posedge clk) begin
+    s_timer <= (cycle_counter >= supervisor_next_event_cycle);
+end*/
+
 	 
 // interrupts enable signals
 assign m_eie = meie && status_mie;
 assign m_tie = mtie && status_mie;
+assign s_eie = seie && status_sie;
+assign s_tie = stie && status_sie;
 
 endmodule
