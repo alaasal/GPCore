@@ -87,11 +87,11 @@ typedef enum logic [1:0] {
 
 endpackage
 
-package exception;
+package exceptions;
 
 // synchronous (interrupt = 0) values are defined here.
 
-typedef enum logic[5:0] {
+typedef enum logic[4:0] {
     /* Instruction address misaligned. */
     I_ADDR_MISALIGNED = 0,
     /* Instruction access fault. */
@@ -118,7 +118,7 @@ typedef enum logic[5:0] {
 
  // asynchronous (interrupt = 1) values are defined here.
 
-typedef enum logic[5:0] {
+typedef enum logic[4:0] {
     /* User software interrupt. */
     U_INT_SW = 0,
     /* Supervisor software interrupt. */

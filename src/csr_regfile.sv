@@ -13,78 +13,65 @@ module csr_regfile(
        // input  [`XLEN-1:0] add_result,
   
 	input logic [31:2] instruction_word,  // type of exception
- 	input logic  m_ret, s_ret, u_ret,
+ 	input logic m_ret, s_ret, u_ret,
 	input logic stall,
 	input logic m_interrupt,
         input logic s_interrupt,
-	
-	input logic asy_int,		//Asynchronus interrupt 
 
 	output logic m_timer,
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
 	output logic m_eie, m_tie,s_eie, s_tie,
-	//output mode::mode_t     current_mode = mode::M,
-	output logic[1:0] current_mode,//edit here
+	output mode::mode_t     current_mode = mode::M,
 	// To front end
 	output logic [31:0] mtvec_out,
 	output logic pcsel_interrupt
-);
+	);
 
-//mode::mode_t  next_mode;
-logic[1:0] next_mode;//edit here
-
+	mode::mode_t  next_mode;
 
 
-// registers
-// mstatus
-logic status_sie;
-logic status_mie;
-logic status_spie;
-logic status_mpie;
-logic status_spp;
-logic [1:0] status_mpp;//edit here
-//mode::mode_t    status_mpp  = mode::U;
-logic status_sum;
-// mie
-logic meie;
-logic seie;
-logic mtie;
-logic stie;
+	// registers
+	// mstatus
+	logic status_sie;
+	logic status_mie;
+	logic status_spie;
+	logic status_mpie;
+	logic status_spp;
+	mode::mode_t status_mpp  = mode::U;
+	logic status_sum;
+	// mie
+	logic meie;
+	logic seie;
+	logic mtie;
+	logic stie;
 
-// mcause
-logic mcause_interrupt;
-logic [`XLEN-2:0]mcause_code;
-//SCAUSE
-logic scause_interrupt;
-logic [`XLEN-2:0]scause_code;
-
-
-logic [`XLEN-1:2] mtvec;
-logic [`XLEN-1:0] mscratch;
-logic [`XLEN-1:0] mcause;
-logic [`XLEN-1:0] mepc;
-logic [`XLEN-1:0] mtval;
-logic [`XLEN-1:0] medeleg;
-logic [`XLEN-1:0] mideleg;
-
-logic [`XLEN-1:0] sepc;
-logic [`XLEN-1:0] stval;
-
-// wires
-logic [`XLEN-1:0] mstatus;
-logic [`XLEN-1:0] mip;
-logic [`XLEN-1:0] mie;
+	// mcause
+	logic mcause_interrupt;
+	logic [`XLEN-2:0]mcause_code;
+	//SCAUSE
+	logic scause_interrupt;
+	logic [`XLEN-2:0]scause_code;
 
 
+	logic [`XLEN-1:2] mtvec;
+	logic [`XLEN-1:0] mscratch;
+	logic [`XLEN-1:0] mcause;
+	logic [`XLEN-1:0] mepc;
+	logic [`XLEN-1:0] mtval;
+	logic [`XLEN-1:0] medeleg;
+	logic [`XLEN-1:0] mideleg;
 
-logic s_timer;
+	logic [`XLEN-1:0] sepc;
+	logic [`XLEN-1:0] stval;
 
-assign s_timer = 0; // hardwired to zero untill implementing s-mode
+	// wires
+	logic [`XLEN-1:0] mstatus;
+	logic [`XLEN-1:0] mip;
+	logic [`XLEN-1:0] mie;
 
-assign mtvec_out = {mtvec, 2'b0};
+	logic s_timer;
 
-assign pcsel_interrupt = exception_pending || asy_int;
-
+	assign mtvec_out = {mtvec, 2'b0};
 
 
 always_comb
@@ -102,20 +89,18 @@ always_comb
 		`CSR_MIMPID:		csr_data = '0;
 		`CSR_MHARTID:		csr_data = '0;
 		`CSR_MSTATUS:		csr_data = mstatus;
-		`CSR_MIP:			csr_data = mip;
-		`CSR_MIE:			csr_data = mie;
-		`CSR_MTVEC:			csr_data = {mtvec, 2'b0}; // direct mode
-		`CSR_MEPC:			csr_data = {mepc, 2'b0};  // two low bits are always zero
+		`CSR_MIP:		csr_data = mip;
+		`CSR_MIE:		csr_data = mie;
+		`CSR_MTVEC:		csr_data = {mtvec, 2'b0}; // direct mode
+		`CSR_MEPC:		csr_data = {mepc, 2'b0};  // two low bits are always zero
 		`CSR_MCAUSE:		csr_data = mcause;
-		`CSR_MTVAL:			csr_data = mtval;
+		`CSR_MTVAL:		csr_data = mtval;
 		`CSR_MSCRATCH:		csr_data = mscratch;
 		
 		`CSR_MEDELEG: 		csr_data = medeleg;
                 `CSR_MIDELEG: 		csr_data = mideleg;
 		
 		// S Mode
-
-
 		`CSR_SEPC:      	csr_data = {sepc, 2'b0};
 
 /** not implemented yet **
@@ -185,12 +170,12 @@ always_ff @(posedge clk, negedge nrst) begin
 	if (!nrst)
 	  begin
 		status_sie  	<= 0;
-    status_mie  	<= 0;
-    status_spie 	<= 0;
- 	  status_mpie 	<= 0;
-    status_spp  	<= 0;
-    status_mpp  	<= 0;
-    status_sum  	<= 0;
+    		status_mie  	<= 0;
+    		status_spie 	<= 0;
+ 	 	status_mpie 	<= 0;
+   		status_spp  	<= 0;
+    		status_mpp  	<= mode::M;
+    		status_sum  	<= 0;
 		mtvec	    	<= '0;
 		mscratch	<= '0;
 		mepc		<= '0;
@@ -201,7 +186,7 @@ always_ff @(posedge clk, negedge nrst) begin
 		stie 		<= 0;
 
 		mcause_interrupt <=0;
-    mcause_code      <=0;
+    		mcause_code      <=0;
 
 		
 		medeleg		<= 0;
@@ -213,7 +198,7 @@ always_ff @(posedge clk, negedge nrst) begin
 	else
 	  begin
 	    /////////////////////////////////////////
-	     current_mode <= next_mode;
+	current_mode <= next_mode;
         if (!exception_pending) begin
           /////////////////////////////////////////////////////////////////
 		case(csr_address_wb)
@@ -224,7 +209,7 @@ always_ff @(posedge clk, negedge nrst) begin
                         	status_spie <= csr_wb[5];
                         	status_mpie <= csr_wb[7];
                         	status_spp  <= csr_wb[8];
-                        	status_mpp  <= csr_wb[12:11];
+                        	status_mpp  <= mode::mode_t'(csr_wb[12:11]);
                         	status_sum  <= csr_wb[18];
 			  end
 			`CSR_MTVEC:
@@ -258,54 +243,53 @@ always_ff @(posedge clk, negedge nrst) begin
 				
 			// S Mode
 			`CSR_SEPC:
-                    sepc <= csr_wb[31:2];
+                    		sepc <= csr_wb[31:2];
 			`CSR_SCAUSE:
-              begin
-                scause_code <= csr_wb[5:0];
-                scause_interrupt <= csr_wb[31];
-             end
+              		  begin
+               			scause_code <= csr_wb[5:0];
+                		scause_interrupt <= csr_wb[31];
+             		  end
 		
 		endcase
 	  end
          
-	 //Exception logic """"""""""""problem here"""""""""""""""""
-		else if (next_mode==mode::M && !m_ret) begin
-            mepc <= pc_exc[`XLEN-1:2];
-            status_mie  <= 0;
-            status_mpie <= status_mie;
-            status_mpp  <= current_mode;
+	 //Exception logic
+	else if (next_mode==mode::M && !m_ret)
+	  begin
+		mepc <= pc_exc[`XLEN-1:2];
+            	status_mie  <= 0;
+            	status_mpie <= status_mie;
+            	status_mpp  <= current_mode;
 
-            mcause_interrupt <= m_cause[`XLEN-1];
-            mcause_code      <= m_cause[`XLEN-2:0];
+            	mcause_interrupt <= m_cause[`XLEN-1];
+            	mcause_code      <= m_cause[`XLEN-2:0];
 
           
-			if (!m_cause[`XLEN-1]) 
-				begin
-				case (m_cause[`XLEN-2:0])
-                exception::I_ADDR_MISALIGNED:   mtval <= {pc_exc, 1'b0};
-          
-                exception::I_ILLEGAL:           mtval <= { instruction_word, 2'b11};
-
-                
-                default:                        mtval <= 0;
-				endcase
-				end
+		if (!m_cause[`XLEN-1]) 
+		  begin
+			case (m_cause[`XLEN-2:0])
+                		exception::I_ADDR_MISALIGNED:   mtval <= {pc_exc, 1'b0};
+                		exception::I_ILLEGAL:           mtval <= {instruction_word, 2'b11};
+                		default:                        mtval <= 0;
+			endcase
+		  end
 				
-			else begin
-                mtval <= 0;
-            end
-		end	
+		else
+		  begin
+                	mtval <= 0;
+           	  end
+	  end	
 		
     // return from interrupt 
-        else if (m_ret) begin
+        else if (m_ret)
+	  begin
             status_mie  <= status_mpie;
             status_mpie <= 1;
             status_mpp  <= mode::U;
-		end
+	  end
 		
-
-
-        else if (exception_pending && next_mode==mode::S && !s_ret) begin
+        else if (exception_pending && next_mode==mode::S && !s_ret)
+	  begin
             sepc <= pc_exc[`XLEN-1:2];
             status_sie  <= 0;
             status_spie <= status_sie;
@@ -314,20 +298,22 @@ always_ff @(posedge clk, negedge nrst) begin
             scause_code      <= m_cause[`XLEN-2:0];//exception_code
 
 
-            if (!m_cause[`XLEN-1])  case (m_cause[`XLEN-2:0]) 
-                exception::I_ADDR_MISALIGNED:   stval <= {pc_exc, 1'b0};
+            if (!m_cause[`XLEN-1])
+		begin
+		case (m_cause[`XLEN-2:0])
+                	exception::I_ADDR_MISALIGNED:   stval <= {pc_exc, 1'b0};
                 
-                exception::I_ILLEGAL:           stval <= { instruction_word, 2'b11};
-                //exception::L_ADDR_MISALIGNED,
-                //exception::S_ADDR_MISALIGNED,
-
-                default:                        stval <= 0;
-            endcase
-         
-            else begin
+                	exception::I_ILLEGAL:           stval <= { instruction_word, 2'b11};
+                	//exception::L_ADDR_MISALIGNED,
+                	//exception::S_ADDR_MISALIGNED,
+                	default:                        stval <= 0;
+            	endcase
+         	end
+            else
+		begin
                 stval <= 0;
-            end
-        end
+            	end
+          end
 		
         else if (s_ret) begin
             status_sie  <= status_spie;
@@ -345,7 +331,7 @@ always_comb begin
         if (m_ret) begin
             next_mode = status_mpp;
         end
-		else if (s_ret) begin
+	else if (s_ret) begin
             next_mode = status_spp ? mode::S : mode::U;
         end
         else if (m_cause[`XLEN-1]) begin

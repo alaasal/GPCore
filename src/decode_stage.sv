@@ -59,8 +59,9 @@ module instdec_stage(
 	output logic [31:0] csr_imm3,
 	// exceptions
 	output logic instruction_addr_misaligned3,
-	output logic ecall3
-
+	output logic ecall3,
+	output logic illegal_instr3,
+	output logic system3
     );
 
 	// Wires
@@ -175,11 +176,13 @@ module instdec_stage(
 	.mem_op      (mem_op3),
 	.LUI         (LUI3),
 	.auipc       (auipc3),
-	.ecall3       (ecall),
-	.uret       (),
-	.sret       (),
-	.mret       (),
-	.stall       (stall)		// Stall Signal
+	.ecall3      (ecall),
+	.uret        (),
+	.sret        (),
+	.mret        (),
+	.wfi	     (),
+	.system	     (system3),
+	.illegal_instr(illegal_instr3)
     );
 
 endmodule

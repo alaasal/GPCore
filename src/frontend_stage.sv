@@ -1,23 +1,26 @@
 module frontend_stage(
-    input logic clk, 
+	input logic clk, 
 	input logic nrst,
 	input logic stall,
 	
-    input logic [1:0] PCSEL,		// pc select control signal
-    input logic [31:0] target,
+    	input logic [1:0] PCSEL,		// pc select control signal
+    	input logic [31:0] target,
 	input logic [1:0] stallnumin,
+	// exceptions
+	input logic exception_pending,
+	input logic mtvec_out,
 
-    output logic [31:0] pc2,	// pc at instruction mem pipe #2
-    output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
+    	output logic [31:0] pc2,	// pc at instruction mem pipe #2
+    	output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
 
 	output logic instruction_addr_misaligned2, // output from front_end to decode_stage
 
 	//DEBUG Signals from debug module to load a program
-    input logic DEBUG_SIG,				
-    input logic [31:0] DEBUG_addr,
-    input logic [31:0] DEBUG_instr,
-    input logic clk_debug
-    );
+    	input logic DEBUG_SIG,				
+    	input logic [31:0] DEBUG_addr,
+    	input logic [31:0] DEBUG_instr,
+    	input logic clk_debug
+    	);
 
     // registers
 	logic [31:0] pcReg; 	   // pipe #1 pc
@@ -27,8 +30,6 @@ module frontend_stage(
 	//logic instruction_addr_misalignedReg1;
 	logic instruction_addr_misalignedReg2;
 	// Exception pending
-	logic pcsel_interrupt;
-	logic [31:0] mtvec_out;
 	logic flag_ex;
 	
 	
@@ -45,22 +46,19 @@ module frontend_stage(
 	begin
         if (!nrst)
         begin
-		pcReg		<= 0;
-		pcReg2 		<= 0;
-		
-		pcsel_interrupt	<= 0;
+		pcReg	<= 0;
+		pcReg2 	<= 0;
 		flag_ex	<= 0;
 		
-		//instruction_addr_misalignedReg1 <= 0;
 		instruction_addr_misalignedReg2 <= 0;
 
 		end
 		// Interrupt
-		else if (pcsel_interrupt && (!flag_ex)) 
-		begin
-			pcReg <= mtvec_out;
-			flag_ex <= 1;
-		end
+	else if (exception_pending && (!flag_ex)) 
+	  begin
+		pcReg <= mtvec_out;
+		flag_ex <= 1;
+	  end
 		
         else begin	
 	//stallnumin<=stallnuminin;
@@ -126,16 +124,14 @@ module frontend_stage(
     always_comb
       begin
         // npc logic
-        unique case({pcsel_interrupt, PCSEL})
-            3'b000: npc = pcReg + 1;
-            3'b001: npc = 0;
-            3'b010: npc = target;
-            3'b011: npc = npc;
-			//Exception
-
-			3'b100,3'b101,3'b110,3'b111: npc = pcReg + 1;
-
-            default: npc = pcReg + 1 ;
+	unique case({exception_pending, PCSEL})
+		3'b000: npc = pcReg + 1;
+            	3'b001: npc = 0;
+            	3'b010: npc = target;
+            	3'b011: npc = npc;
+		//Exception
+		3'b1??: npc = pcReg + 1;
+            	default: npc = pcReg + 1 ;
         endcase
         
       end
@@ -149,13 +145,11 @@ module frontend_stage(
 	
 	assign instruction_addr_misaligned = instruction_addr_misalignedReg2;
 	
-	// =============================================== //
-	//			CSR_REGFILE		   //
-	// =============================================== //
+/*
 	csr_regfile csr(
 	.pcsel_interrupt (pcsel_interrupt),
 	.mtvec_out (mtvec_out)
-	);
+	);*/
 
     // dummy inst mem
     instr_mem m1 (

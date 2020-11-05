@@ -36,10 +36,12 @@ module issue_stage (
 	input logic [2:0] funct3_3,
 	input logic [11:0] csr_addr3,
 	input logic [31:0] csr_imm3,
+	input logic system3,
 	
 	// exceptions	
 	input logic instruction_addr_misaligned3,
-	input logic ecall3,	
+	input logic ecall3,
+	input logic illegal_instr3,
 
 	input logic j3,
 	input logic jr3,
@@ -96,10 +98,13 @@ module issue_stage (
 	output logic [2:0] funct3_4,
 	output logic [11:0] csr_addr4,
 	output logic [31:0] csr_imm4,
+	output logic system4,
 
 	// exceptions
 	output logic instruction_addr_misaligned4,
-	output logic ecall4
+	output logic ecall4,
+	output logic illegal_instr4,
+	output logic mtvec_out
     );
 
 	// Wires
@@ -143,6 +148,7 @@ module issue_stage (
 	logic [2:0] funct3Reg4;
 	logic [31:0]csr_immReg4;
 	logic [11:0] csr_addrReg4;
+	logic systemReg4;
 
 	// Scoreboard Regs
 	logic [1:0]killnum;
@@ -150,6 +156,7 @@ module issue_stage (
 	// exceptions
 	logic instruction_addr_misalignedReg4;
 	logic ecallReg4;
+	logic illegal_instrReg4;
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
@@ -189,8 +196,10 @@ module issue_stage (
 		funct3Reg4	<= '0;
 		csr_addrReg4	<= '0;
 		csr_immReg4	<= '0;
+		systemReg4	<= 0;
 		instruction_addr_misalignedReg4 <= 0;
 		ecallReg4	<= 0;
+		illegal_instrReg4<= 0;
           end
         else
           begin
@@ -215,9 +224,11 @@ module issue_stage (
 		funct3Reg4	<= funct3_3;
 		csr_immReg4	<= csr_imm3;
 		csr_addrReg4	<= csr_addr3;
+		systemReg4	<= system3;
 		// exceptions
 		instruction_addr_misalignedReg4 <= instruction_addr_misaligned3;
 		ecallReg4	<= ecall3;
+		illegal_instrReg4<= illegal_instr3;
 
 		if(stall )
 		begin
@@ -305,12 +316,12 @@ module issue_stage (
 	.u_ret(),
 	.stall(),
 	.m_interrupt(),
-	
 	.m_timer(),
 	.csr_data(csr_data),
 	.m_eie(),
 	.m_tie(),
-	.current_mode()
+	.current_mode(),
+	.mtvec_out(mtvec_out)
 	);
 
 
@@ -366,10 +377,12 @@ module issue_stage (
 	assign funct3_4		= funct3Reg4;
 	assign csr_imm4		= csr_immReg4;
 	assign csr_addr4	= csr_addrReg4;
+	assign system4		= systemReg4;
 
 	// exceptions
 	assign instruction_addr_misaligned4 = instruction_addr_misalignedReg4;
 	assign ecall4		= ecallReg4;
+	assign illegal_instr4	= illegal_instrReg4;
 	// Piped Signals ended
 
 endmodule
