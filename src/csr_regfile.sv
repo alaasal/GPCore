@@ -23,8 +23,7 @@ module csr_regfile(
 	output logic m_eie, m_tie,s_eie, s_tie,
 	output mode::mode_t     current_mode = mode::M,
 	// To front end
-	output logic [31:0] mtvec_out,
-	output logic pcsel_interrupt
+	output logic [31:0] mtvec_out
 	);
 
 	mode::mode_t  next_mode;
