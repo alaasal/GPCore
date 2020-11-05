@@ -1,5 +1,8 @@
 `include "define.sv"
+ 
+
 module exe_stage(
+
 	input logic clk, nrst,
 
 	input logic [31:0] op_a,
@@ -37,7 +40,19 @@ module exe_stage(
 
 	// exceptions 
 	input logic instruction_addr_misaligned4,
-	input logic ecall4,
+	input logic ecall4, m_timer,s_timer,
+    input logic [1:0] current_mode,
+	input logic m_tie,s_tie,m_eie,s_eie,
+        input logic m_interrupt,s_interrupt,
+
+
+
+
+
+
+//need to assign 
+input logic instruction_addr_misaligned,instruction_illegal,load_address_misaligned,store_address_misaligned,e_call,
+
 
 	output logic [31:0] wb_data6,
 	output logic we6,
@@ -67,6 +82,10 @@ module exe_stage(
 	output logic [31:0] m_cause,
 	output logic exception_pending
     );
+	
+
+
+
 
 	// wires
 	logic btaken;
@@ -114,6 +133,7 @@ module exe_stage(
 	// exceptions
 	logic ecallReg5;
 	logic instruction_addr_misalignedReg5;
+    
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
@@ -243,9 +263,17 @@ module exe_stage(
 	.rs1(op_a),
 	.imm(csr_immReg5),
 	.csr_reg(csr_dataReg5),
-	.current_mode(),
+	.current_mode(current_mode),
 	.csr_new(csr5),
-	.csr_old(csr_rd5)
+	.csr_old(csr_rd5),
+	.s_timer(s_timer),
+	.m_timer(m_timer),
+	.s_eie(s_eie),
+	.m_eie(m_eie),
+	.m_tie(m_tie),
+	.s_tie(s_tie),
+        .m_interrupt(m_interrupt),
+        .s_interrupt(s_interrupt)
 	);
 
 
@@ -276,6 +304,7 @@ module exe_stage(
 	logic instruction_addr_misalignedReg6;
 	logic ecallReg6;
 	logic exception;
+	
 	
 	// kill logic registers
 	 logic [2:0]killnum;
@@ -363,7 +392,7 @@ module exe_stage(
 	// =============================================== //
 
 	logic [31:0] mcause;
-	assign exception = instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6;
+	/*assign exception = instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6;
 	assign mcause[31] = ~(instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6);
 
 	always_comb
@@ -380,7 +409,78 @@ module exe_stage(
 			// this will be edited for load and store misaligned
 			mcause[30:0] = 4'b0100; // load exception
 
-	  end
+	  end*/
+
+// =============================================== //
+	//		  Exception Logic		   //
+	// =============================================== //
+	/* Set if this is not the first cycle of an instruction. */
+/*reg stalled = 0;
+always @(posedge clk) begin
+    stalled <= stall;
+end*/
+
+wire m_timer_conditioned     =                                m_tie && m_timer;
+wire s_timer_conditioned     = (current_mode <= mode::S) &&    s_tie && s_timer;
+wire m_interrupt_conditioned =                                 m_eie && m_interrupt;
+wire s_interrupt_conditioned = (current_mode <= mode::S) &&   s_eie && s_interrupt;
+
+/* EXCEPTIONS. ********************************************************************************************************/
+
+ //assign exception_pending =
+        /* Incoming exceptions. */
+       // I_ADDR_MISALIGNED || I_ILLEGAL || e_call || e_break || s_ret || m_ret
+        /* Alignment faults. */
+    //||  S_ADDR_MISALIGNED|| L_ADDR_MISALIGNED
+       
+            /* Interrupts. */
+    //||  m_timer_conditioned || s_timer_conditioned || m_interrupt_conditioned || s_interrupt_conditioned;
+
+always_comb begin
+    m_cause[`XLEN-1] = 0;
+    m_cause[`XLEN-2:0] = 0;
+    if (m_interrupt_conditioned) begin
+        m_cause[`XLEN-1] = 1;
+        m_cause[`XLEN-2:0] = exception::M_INT_EXT;
+    end
+    else if (s_interrupt_conditioned) begin
+        m_cause[`XLEN-1] = 1;
+        m_cause[`XLEN-2:0] = exception::S_INT_EXT;
+    end
+    else if (m_timer_conditioned) begin
+        m_cause[`XLEN-1] = 1;
+        m_cause[`XLEN-2:0] = exception::M_INT_TIMER;
+    end
+    else if (s_timer_conditioned) begin
+        m_cause[`XLEN-1] = 1;
+        m_cause[`XLEN-2:0] = exception::S_INT_TIMER;
+    end
+    else if (instruction_addr_misaligned) begin
+        m_cause[`XLEN-2:0] = exception::I_ADDR_MISALIGNED;
+    end
+    else if (instruction_illegal) begin
+        m_cause[`XLEN-2:0] = exception::I_ILLEGAL;
+    end
+    /*else if (e_break) begin
+        m_cause[`XLEN-2:0] = exception::BREAKPOINT;
+    end*/
+    else if (load_address_misaligned) begin
+        m_cause[`XLEN-2:0] = exception::L_ADDR_MISALIGNED;
+    end
+    else if (store_address_misaligned) begin
+        m_cause[`XLEN-2:0] = exception::S_ADDR_MISALIGNED;
+    end
+    else if (e_call) begin
+        m_cause[`XLEN-2:0] = exception::U_CALL + {3'b0, current_mode};
+    end
+   
+    
+       
+        /*else begin
+            m_cause[`XLEN-2:0] = exception::S_TLB_MISS;
+        end*/
+    end
+
 
 
 	// =============================================== //
