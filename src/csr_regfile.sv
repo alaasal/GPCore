@@ -284,7 +284,7 @@ always_ff @(posedge clk, negedge nrst) begin
 				case (m_cause[`XLEN-2:0])
                 exception::I_ADDR_MISALIGNED:   mtval <= {pc_exc, 1'b0};
           
-                exception::I_ILLEGAL:           mtval <= {32'b0, instruction_word, 2'b11};
+                exception::I_ILLEGAL:           mtval <= { instruction_word, 2'b11};
 
                 
                 default:                        mtval <= 0;
@@ -317,7 +317,7 @@ always_ff @(posedge clk, negedge nrst) begin
             if (!m_cause[`XLEN-1])  case (m_cause[`XLEN-2:0]) 
                 exception::I_ADDR_MISALIGNED:   stval <= {pc_exc, 1'b0};
                 
-                exception::I_ILLEGAL:           stval <= {32'b0, instruction_word, 2'b11};
+                exception::I_ILLEGAL:           stval <= { instruction_word, 2'b11};
                 //exception::L_ADDR_MISALIGNED,
                 //exception::S_ADDR_MISALIGNED,
 
