@@ -7,8 +7,6 @@ module csr_regfile(
 	//inputs from execute stage
 	input logic exception_pending,
 
-	input logic [5:0] exception_code,
-	input logic interrupt_exception,
 	
 	input logic [31:0] m_cause,
 	input logic [31:0] pc_exc,		// pc of instruction that caused the exception >> mepc
@@ -267,7 +265,7 @@ always_ff @(posedge clk, negedge nrst) begin
 	  end
          
 	 //Exception logic
-	  else if (next_mode==mode::M && !m_ret) begin
+		else if (next_mode==mode::M && !m_ret) begin
             mepc <= pc_exc[`XLEN-1:2];
             status_mie  <= 0;
             status_mpie <= status_mie;
@@ -276,15 +274,9 @@ always_ff @(posedge clk, negedge nrst) begin
             mcause_interrupt <= m_cause[`XLEN-1];
             mcause_code      <= m_cause[`XLEN-2:0];
 
-          end
-    // return from interrupt 
-        else if (m_ret) begin
-            status_mie  <= status_mpie;
-            status_mpie <= 1;
-            status_mpp  <= mode::U;
-		end
-		
-		if (!m_cause[`XLEN-1]) begin
+          
+			if (!m_cause[`XLEN-1]) 
+				begin
 				case (m_cause[`XLEN-2:0])
                 exception::I_ADDR_MISALIGNED:   mtval <= {pc_exc, 1'b0};
           
@@ -292,20 +284,22 @@ always_ff @(posedge clk, negedge nrst) begin
 
                 
                 default:                        mtval <= 0;
-            endcase
-             end
-
-            else begin
+				endcase
+				end
+				
+			else begin
                 mtval <= 0;
             end
-        end
-end
- 
+		end	
+		
+    // return from interrupt 
         else if (m_ret) begin
             status_mie  <= status_mpie;
             status_mpie <= 1;
             status_mpp  <= mode::U;
-        end
+		end
+		
+
 
         else if (exception_pending && next_mode==mode::S && !s_ret) begin
             sepc <= pc_exc[`XLEN-1:2];
@@ -314,7 +308,7 @@ end
             status_spp  <= current_mode[0];
             scause_interrupt <= m_cause[`XLEN-1];  //interrupt_exception
             scause_code      <= m_cause[`XLEN-2:0];//exception_code
-end
+
 
             if (!m_cause[`XLEN-1]) begin case (m_cause[`XLEN-2:0]) 
                 exception::I_ADDR_MISALIGNED:   stval <= {pc_exc, 1'b0};
@@ -325,11 +319,12 @@ end
 
                 default:                        stval <= 0;
             endcase
-end
+
             else begin
                 stval <= 0;
             end
         end
+		
         else if (s_ret) begin
             status_sie  <= status_spie;
             status_spie <= 1;
@@ -337,8 +332,7 @@ end
         end
     end
 end
-	 
-	end
+
 
 // Figure out what mode we are switching to
 always_comb begin
