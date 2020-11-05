@@ -23,14 +23,17 @@ module csr_regfile(
 	output logic m_timer,
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
 	output logic m_eie, m_tie,
-	output mode::mode_t     current_mode = mode::M,
-	
+	//output mode::mode_t     current_mode = mode::M,
+	output logic[1:0] current_mode,//edit here
 	// To front end
 	output logic [31:0] mtvec_out,
 	output logic pcsel_interrupt
 );
 
-mode::mode_t  next_mode;
+//mode::mode_t  next_mode;
+logic[1:0] next_mode;//edit here
+
+
 
 // registers
 // mstatus
@@ -39,7 +42,7 @@ logic status_mie;
 logic status_spie;
 logic status_mpie;
 logic status_spp;
-logic status_mpp;
+logic [1:0] status_mpp;//edit here
 //mode::mode_t    status_mpp  = mode::U;
 logic status_sum;
 // mie
@@ -65,6 +68,7 @@ logic [`XLEN-1:0] medeleg;
 logic [`XLEN-1:0] mideleg;
 
 logic [`XLEN-1:0] sepc;
+logic [`XLEN-1:0] stval;
 
 // wires
 logic [`XLEN-1:0] mstatus;
@@ -224,7 +228,7 @@ always_ff @(posedge clk, negedge nrst) begin
                         	status_sum  <= csr_wb[18];
 			  end
 			`CSR_MTVEC:
-				mtvec <= csr_wb[`XLEN:2];
+				mtvec <= csr_wb[`XLEN-1:2];
 			`CSR_MEDELEG:
 				begin end
 			`CSR_MIDELEG:
@@ -254,7 +258,7 @@ always_ff @(posedge clk, negedge nrst) begin
 				
 			// S Mode
 			`CSR_SEPC:
-                    sepc <= csr_wb[32:2];
+                    sepc <= csr_wb[31:2];
 			`CSR_SCAUSE:
               begin
                 scause_code <= csr_wb[5:0];
@@ -264,7 +268,7 @@ always_ff @(posedge clk, negedge nrst) begin
 		endcase
 	  end
          
-	 //Exception logic
+	 //Exception logic """"""""""""problem here"""""""""""""""""
 		else if (next_mode==mode::M && !m_ret) begin
             mepc <= pc_exc[`XLEN-1:2];
             status_mie  <= 0;
@@ -310,16 +314,16 @@ always_ff @(posedge clk, negedge nrst) begin
             scause_code      <= m_cause[`XLEN-2:0];//exception_code
 
 
-            if (!m_cause[`XLEN-1]) begin case (m_cause[`XLEN-2:0]) 
+            if (!m_cause[`XLEN-1])  case (m_cause[`XLEN-2:0]) 
                 exception::I_ADDR_MISALIGNED:   stval <= {pc_exc, 1'b0};
                 
                 exception::I_ILLEGAL:           stval <= {32'b0, instruction_word, 2'b11};
-                exception::L_ADDR_MISALIGNED,
-                exception::S_ADDR_MISALIGNED,
+                //exception::L_ADDR_MISALIGNED,
+                //exception::S_ADDR_MISALIGNED,
 
                 default:                        stval <= 0;
             endcase
-
+         
             else begin
                 stval <= 0;
             end
