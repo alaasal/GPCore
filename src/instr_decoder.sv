@@ -35,10 +35,8 @@ module instr_decoder(
 	// until Branch and Jumps target is calculated
 	output logic [1:0] pcselect,
 
-	output logic ecall, uret, sret, mret,
-
-	// Scoreboard Signals
-	input logic stall
+	output logic ecall, uret, sret, mret, wfh, illegal_instr,
+	output logic system
     );
 
     	// Wires
@@ -74,7 +72,7 @@ module instr_decoder(
 	logic noOp;
 
 	// interrupts and exceptions instructions
-	logic e_call, m_ret, u_ret, s_ret;
+	logic e_call, m_ret, u_ret, s_ret, wfi;
 
 	assign instr_25 = (~& funct7[6:1]) & funct7[0];     //funct7 == 0000_001
 	//noOp
@@ -99,6 +97,8 @@ module instr_decoder(
 	assign m_ret  = system & (~&funct3) & (~funct7);
 	assign u_ret  = system & (~&funct3) & (~funct7[4]) & funct7[3];
 	assign s_ret  = system & (~&funct3) & funct7[4] & funct7[3];
+	assign wfi    = system & (~&funct3) & funct12[0] & funct12[2] & funct12[8];
+	assign illegal_instr = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system);
 
 	// rtype op								  // instr[30] funct3
 	assign i_add  = rtype & ~instr_30 & (~&funct3);				  //   	0	000

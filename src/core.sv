@@ -61,8 +61,10 @@ module core(
 	logic [31:0] csr_imm3, csr_imm4, csr_data, csr_wb6, m_cause6, csr_wb, pc_exc, m_cause;
 	logic instruction_addr_misaligned2, instruction_addr_misaligned3, instruction_addr_misaligned4;
 	logic ecall3, ecall4;
+	logic illegal_instr3, illegal_instr4;
 	logic exception_pending, exception_pending6;
-	
+	logic system3, system4;
+	logic mtvec;
 	
 
 	// =============================================== //
@@ -77,6 +79,10 @@ module core(
 	// Branch Select and Branch Target
 	.PCSEL          (pcselect5),	
 	.target         (target),
+
+	// exceptions to control pc
+	.exception_pending(exception_pending),
+	.mtvec_out(mtvec),
 	
 	// Outputs to Decode Stage
 	.pc2            (pc2),		// pc at instruction mem pipe #2
@@ -154,7 +160,9 @@ module core(
 	
 	// Exceptions
 	.instruction_addr_misaligned3(instruction_addr_misaligned3),
-	.ecall3(ecall3)
+	.ecall3		(ecall3),
+	.illegal_instr3 (illegal_instr3),
+	.system		(system3)
 	);
 
 	// =============================================== //
@@ -211,9 +219,11 @@ module core(
 	.funct3_3	(funct3_3),
 	.csr_addr3	(csr_addr3),
 	.csr_imm3	(csr_imm3),
+	.system3	(system3),
 
 	.instruction_addr_misaligned3(instruction_addr_misaligned3),
 	.ecall3		(ecall3),
+	.illegal_instr3 (illegal_instr3),
 
 	// Outputs
 	.op_a         (opa),
@@ -255,10 +265,13 @@ module core(
 	.funct3_4	(funct3_4),
 	.csr_addr4	(csr_addr4),
 	.csr_imm4	(csr_imm4),
+	.system4	(system4),
 	
 	// exceptions
 	.instruction_addr_misaligned4(instruction_addr_misaligned4),
-	.ecall4(ecall4)
+	.ecall4		(ecall4),
+	.illegal_instr4 (illegal_instr4),
+	.mtvec_out	(mtvec)
     );
 
 	// =============================================== //
@@ -302,9 +315,11 @@ module core(
 	.csr_data	(csr_data),
 	.csr_imm4	(csr_imm4),
 	.csr_addr4	(csr_addr4),
+	.system4	(system4),
 
 	.instruction_addr_misaligned4(instruction_addr_misaligned4),
 	.ecall4		(ecall4),
+	.illegal_instr4	(illegal_instr4),
 
 	// Outputs
 	.rd6          		(rd6),

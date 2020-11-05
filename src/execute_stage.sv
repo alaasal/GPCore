@@ -37,22 +37,17 @@ module exe_stage(
 	input logic [2:0] funct3_4,
 	input logic [31:0] csr_data, csr_imm4,
 	input logic [11:0] csr_addr4,
+	input logic system4,
 
 	// exceptions 
 	input logic instruction_addr_misaligned4,
-	input logic ecall4, m_timer,s_timer,
-    input logic [1:0] current_mode,
-	input logic m_tie,s_tie,m_eie,s_eie,
-        input logic m_interrupt,s_interrupt,
-
-
-
-
-
-
-//need to assign 
-input logic instruction_addr_misaligned,instruction_illegal,load_address_misaligned,store_address_misaligned,e_call,
-
+	input logic ecall4,
+	input logic illegal_instr4,
+	
+	input logic m_timer,s_timer,
+    	input logic [1:0] current_mode,
+	input logic m_tie, s_tie, m_eie, s_eie,
+        input logic m_interrupt, s_interrupt,
 
 	output logic [31:0] wb_data6,
 	output logic we6,
@@ -82,8 +77,6 @@ input logic instruction_addr_misaligned,instruction_illegal,load_address_misalig
 	output logic [31:0] m_cause,
 	output logic exception_pending
     );
-	
-
 
 
 
@@ -130,9 +123,11 @@ input logic instruction_addr_misaligned,instruction_illegal,load_address_misalig
 	logic [2:0]  funct3Reg5;
 	logic [31:0] csr_dataReg5, csr_immReg5;
 	logic [11:0] csr_addrReg5;
+	logic systemReg5;
 	// exceptions
 	logic ecallReg5;
 	logic instruction_addr_misalignedReg5;
+	logic illegal_instrReg5;
     
 
 	always_ff @(posedge clk, negedge nrst)
@@ -171,9 +166,11 @@ input logic instruction_addr_misaligned,instruction_illegal,load_address_misalig
 		csr_immReg5	<= '0;
 		csr_dataReg5	<= '0;
 		csr_addrReg5	<= '0;
+		systemReg5	<= 0;
 
 		ecallReg5	<= 0;
 		instruction_addr_misalignedReg5 <= 0;
+		illegal_instrReg5<= 0;
           end
         else
           begin
@@ -209,9 +206,11 @@ input logic instruction_addr_misaligned,instruction_illegal,load_address_misalig
 		csr_immReg5	<= csr_imm4;
 		csr_dataReg5	<= csr_data;
 		csr_addrReg5	<= csr_addr4;
+		systemReg5	<= system4;
 
 		ecallReg5	<= ecall4;
 		instruction_addr_misalignedReg5 <= instruction_addr_misaligned4;
+		illegal_instrReg5 <= illegal_instr4;
           end
       end
 
@@ -263,6 +262,7 @@ input logic instruction_addr_misaligned,instruction_illegal,load_address_misalig
 	.rs1(op_a),
 	.imm(csr_immReg5),
 	.csr_reg(csr_dataReg5),
+	.system(systemReg5),
 	.current_mode(current_mode),
 	.csr_new(csr5),
 	.csr_old(csr_rd5),
@@ -303,6 +303,7 @@ input logic instruction_addr_misaligned,instruction_illegal,load_address_misalig
 	// exceptions
 	logic instruction_addr_misalignedReg6;
 	logic ecallReg6;
+	logic illegal_instrReg6;
 	logic exception;
 	
 	
@@ -315,18 +316,19 @@ input logic instruction_addr_misaligned,instruction_illegal,load_address_misalig
 	if (!nrst)
 	  begin
 		fnReg6 		    <= 3'b0;
-    rdReg6 	    	<= 5'b0;
+    		rdReg6 	    	<= 5'b0;
 		alu_resReg6 	<= 32'b0;
 		weReg6 		    <= 0;
 		U_immReg6 	  <= 32'b0;
-    AU_immReg6 	 <= 32'b0;
+    		AU_immReg6 	 <= 32'b0;
 		mul_divReg6 	<= 32'b0;
 		pcReg6 		    <= 32'b0;
 		csr_rdReg6	  <= 32'b0;
 		csrReg6		    <= 32'b0;
 		csr_addrReg6	<= 12'b0;
 		instruction_addr_misalignedReg6 <= 0;
-		ecallReg6	   <= 0;
+		ecallReg6	  <= 0;
+		illegal_instrReg6 <= 0;
 		killnum      <= 0;
 		kill         <= 0;
 	  end
@@ -337,23 +339,24 @@ input logic instruction_addr_misaligned,instruction_illegal,load_address_misalig
 		alu_resReg6 	<=  alu_res5;
 		weReg6 		    <=  weReg5;
 		U_immReg6 	  <=  U_immReg5;
-    AU_immReg6 	 <=  U_immReg5+pcReg5 ;
-    mul_divReg6 	<=  mul_div5;
+    		AU_immReg6 	 <=  U_immReg5+pcReg5 ;
+    		mul_divReg6 	<=  mul_div5;
 		pcReg6 		    <=  pcReg5;
 		csr_rdReg6	  <=  csr_rd5;
 		csrReg6		    <=  csr5;
 		csr_addrReg6	<=  csr_addrReg5;
 		instruction_addr_misalignedReg6 <= instruction_addr_misalignedReg5;
 		ecallReg6	   <=  ecallReg5;
+		illegal_instrReg6  <= illegal_instrReg5;
 	  if(exception)begin
-	  kill <=1;
+	  	kill <=1;
 	    
-	  fnReg6 	  	  <= 3'b0;
+	  	fnReg6 	  	  <= 3'b0;
 		rdReg6 		    <= 5'b0;
 		alu_resReg6 	<= 32'b0;
 		weReg6 		    <= 1'b0;
 		U_immReg6 	  <= 32'b0;
-    AU_immReg6 	 <= 32'b0;
+    		AU_immReg6 	 <= 32'b0;
 		mul_divReg6 	<= 32'b0;
 		
 		csr_rdReg6	  <= 32'b0;
@@ -361,21 +364,23 @@ input logic instruction_addr_misaligned,instruction_illegal,load_address_misalig
 		csr_addrReg6	<= 12'b0;;
 		instruction_addr_misalignedReg6 <= 0;
 		ecallReg6	   <= 0;
+		illegal_instrReg6  <= 0;
 	    end
-		else if(kill)begin
+	else if(kill)begin
 		fnReg6 	  	  <= 3'b0;
 		rdReg6 		    <= 5'b0;
 		alu_resReg6 	<= 32'b0;
 		weReg6 		    <= 1'b0;
 		U_immReg6 	  <= 32'b0;
-    AU_immReg6 	 <= 32'b0;
+    		AU_immReg6 	 <= 32'b0;
 		mul_divReg6 	<= 32'b0;
 		
 		csr_rdReg6	  <= 32'b0;
 		csrReg6		    <= 32'b0;
 		csr_addrReg6	<= 12'b0;;
 		instruction_addr_misalignedReg6 <= 0;
-		ecallReg6   	<= 0;
+		ecallReg6	  <= 0;
+		illegal_instrReg6 <=0;
 		if (killnum>4)begin
 		  kill    <=  1'b0;
 		  killnum <=  3'b0;
@@ -392,95 +397,72 @@ input logic instruction_addr_misaligned,instruction_illegal,load_address_misalig
 	// =============================================== //
 
 	logic [31:0] mcause;
-	/*assign exception = instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6;
-	assign mcause[31] = ~(instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6);
-
-	always_comb
-	  begin
-		// here will be a mux to check on the current mode and then set the cause register
-		// currently only M-mode
-		if (instruction_addr_misalignedReg6)
-			mcause[30:0] = '0;
-		else if (ecallReg6)
-		  begin
-			mcause[30:0] = 4'b1011;
-		  end
-		else // address misaligned
-			// this will be edited for load and store misaligned
-			mcause[30:0] = 4'b0100; // load exception
-
-	  end*/
-
-// =============================================== //
-	//		  Exception Logic		   //
-	// =============================================== //
-	/* Set if this is not the first cycle of an instruction. */
-/*reg stalled = 0;
-always @(posedge clk) begin
-    stalled <= stall;
-end*/
-
-wire m_timer_conditioned     =                                m_tie && m_timer;
-wire s_timer_conditioned     = (current_mode <= mode::S) &&    s_tie && s_timer;
-wire m_interrupt_conditioned =                                 m_eie && m_interrupt;
-wire s_interrupt_conditioned = (current_mode <= mode::S) &&   s_eie && s_interrupt;
+	logic m_timer_conditioned     =                                m_tie && m_timer;
+	logic s_timer_conditioned     = (current_mode <= mode::S) &&   s_tie && s_timer;
+	logic m_interrupt_conditioned =                                m_eie && m_interrupt;
+	logic s_interrupt_conditioned = (current_mode <= mode::S) &&   s_eie && s_interrupt;
 
 /* EXCEPTIONS. ********************************************************************************************************/
 
- //assign exception_pending =
-        /* Incoming exceptions. */
-       // I_ADDR_MISALIGNED || I_ILLEGAL || e_call || e_break || s_ret || m_ret
-        /* Alignment faults. */
-    //||  S_ADDR_MISALIGNED|| L_ADDR_MISALIGNED
-       
-            /* Interrupts. */
-    //||  m_timer_conditioned || s_timer_conditioned || m_interrupt_conditioned || s_interrupt_conditioned;
+	assign exception = instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6 || m_timer_conditioned
+			   || s_timer_conditioned || m_interrupt_conditioned;
 
-always_comb begin
-    m_cause[`XLEN-1] = 0;
-    m_cause[`XLEN-2:0] = 0;
-    if (m_interrupt_conditioned) begin
-        m_cause[`XLEN-1] = 1;
-        m_cause[`XLEN-2:0] = exception::M_INT_EXT;
-    end
-    else if (s_interrupt_conditioned) begin
-        m_cause[`XLEN-1] = 1;
-        m_cause[`XLEN-2:0] = exception::S_INT_EXT;
-    end
-    else if (m_timer_conditioned) begin
-        m_cause[`XLEN-1] = 1;
-        m_cause[`XLEN-2:0] = exception::M_INT_TIMER;
-    end
-    else if (s_timer_conditioned) begin
-        m_cause[`XLEN-1] = 1;
-        m_cause[`XLEN-2:0] = exception::S_INT_TIMER;
-    end
-    else if (instruction_addr_misaligned) begin
-        m_cause[`XLEN-2:0] = exception::I_ADDR_MISALIGNED;
-    end
-    else if (instruction_illegal) begin
-        m_cause[`XLEN-2:0] = exception::I_ILLEGAL;
-    end
-    /*else if (e_break) begin
-        m_cause[`XLEN-2:0] = exception::BREAKPOINT;
-    end*/
-    else if (load_address_misaligned) begin
-        m_cause[`XLEN-2:0] = exception::L_ADDR_MISALIGNED;
-    end
-    else if (store_address_misaligned) begin
-        m_cause[`XLEN-2:0] = exception::S_ADDR_MISALIGNED;
-    end
-    else if (e_call) begin
-        m_cause[`XLEN-2:0] = exception::U_CALL + {3'b0, current_mode};
-    end
-   
-    
-       
-        /*else begin
-            m_cause[`XLEN-2:0] = exception::S_TLB_MISS;
-        end*/
-    end
+	always_comb
+	  begin
+    		mcause[`XLEN-1] = 0;
+    		mcause[`XLEN-2:0] = 0;
+    		if (m_interrupt_conditioned)
+		  begin
+    			mcause[`XLEN-1] = 1;
+        		mcause[`XLEN-2:0] = exceptions::M_INT_EXT;
+		  end
+    		else if (s_interrupt_conditioned)
+		  begin
+        		mcause[`XLEN-1] = 1;
+        		mcause[`XLEN-2:0] = exceptions::S_INT_EXT;
+    		  end
+    		else if (m_timer_conditioned)
+		  begin
+    			mcause[`XLEN-1] = 1;
+    			mcause[`XLEN-2:0] = exceptions::M_INT_TIMER;
+    		  end
+    		else if (s_timer_conditioned)
+		  begin
+    			mcause[`XLEN-1] = 1;
+    		 	mcause[`XLEN-2:0] = exceptions::S_INT_TIMER;
+    		  end
+    		else if (instruction_addr_misalignedReg6)
+		  begin
+    			mcause[`XLEN-2:0] = exceptions::I_ADDR_MISALIGNED;
+    		  end
+		else if (ecallReg6)
+		  begin
+			mcause[`XLEN-2:0] = exceptions::U_CALL + {3'b0, current_mode};
+    		  end
+    		else if (illegal_instrReg6)
+		  begin
+    		    	mcause[`XLEN-2:0] = exceptions::I_ILLEGAL;
+    		  end
+    		/*else if (e_break) begin
+        		m_cause[`XLEN-2:0] = exceptions::BREAKPOINT;
+    		end*/
 
+		// addr_misaligned6 will divided to load & store exceptions
+    		else if (addr_misaligned6)
+		  begin
+        		mcause[`XLEN-2:0] = exceptions::L_ADDR_MISALIGNED;
+    		  end
+    		/*else if (store_address_misaligned)
+		  begin
+			exception = 1;
+        		mcause[`XLEN-2:0] = exception::S_ADDR_MISALIGNED;
+    		  end*/
+		else
+		  begin
+			mcause[`XLEN-1] = 0;
+    			mcause[`XLEN-2:0] = 0;
+		  end
+	  end
 
 
 	// =============================================== //
