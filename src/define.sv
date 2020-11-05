@@ -53,6 +53,21 @@ package csr;
 `define CSR_TIMEH       12'hc81			//**Machine Timer Registers (mtime and mtimecmp) p[33]
 `define CSR_INSTRETH    12'hc82
 
+//User_mode
+`define CSR_SSTATUS    12'h100
+`define CSR_SEDELEG    12'h102
+`define CSR_SIDELEG    12'h103
+`define CSR_SIE        12'h104
+`define CSR_STVEC      12'h105
+`define CSR_SCOUNTEREN 12'h106
+`define CSR_SSCRATCH   12'h140
+`define CSR_SEPC       12'h141
+`define CSR_SCAUSE     12'h142
+`define CSR_STVAL      12'h143
+`define CSR_SIP        12'h144
+`define CSR_SATP       12'h180
+
+
 endpackage
 
 
