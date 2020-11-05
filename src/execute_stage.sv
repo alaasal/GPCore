@@ -1,3 +1,4 @@
+`include "define.sv"
 module exe_stage(
 	input logic clk, nrst,
 
@@ -73,7 +74,8 @@ module exe_stage(
 	logic j5;
 	logic jr5;
 	logic [31:0] mul_div5;
-
+	
+	
 	// =============================================== //
 	//			Pipe 5			   //
 	// =============================================== //
@@ -106,13 +108,12 @@ module exe_stage(
 	logic [31:0] pcReg5;
 	logic [1:0] pcselectReg5;
 	// csr
-	logic [2:0] funct3Reg5;
+	logic [2:0]  funct3Reg5;
 	logic [31:0] csr_dataReg5, csr_immReg5;
 	logic [11:0] csr_addrReg5;
 	// exceptions
 	logic ecallReg5;
 	logic instruction_addr_misalignedReg5;
-
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
@@ -274,54 +275,87 @@ module exe_stage(
 	// exceptions
 	logic instruction_addr_misalignedReg6;
 	logic ecallReg6;
-
+	logic exception;
 	
+	// kill logic registers
+	 logic [2:0]killnum;
+	 logic kill;
 
 	always @(posedge clk)
 	begin
 	if (!nrst)
 	  begin
-		fnReg6 		<= 3'b0;
-
-		rdReg6 		<= 5'b0;
+		fnReg6 		    <= 3'b0;
+    rdReg6 	    	<= 5'b0;
 		alu_resReg6 	<= 32'b0;
-		weReg6 		<= 0;
-
-		U_immReg6 	<= 32'b0;
-                AU_immReg6 	<= 32'b0;
-
+		weReg6 		    <= 0;
+		U_immReg6 	  <= 32'b0;
+    AU_immReg6 	 <= 32'b0;
 		mul_divReg6 	<= 32'b0;
-
-		pcReg6 		<= 32'b0;
-
-		csr_rdReg6	<= '0;
-		csrReg6		<= '0;
-		csr_addrReg6	<= '0;
-
+		pcReg6 		    <= 32'b0;
+		csr_rdReg6	  <= 32'b0;
+		csrReg6		    <= 32'b0;
+		csr_addrReg6	<= 12'b0;
 		instruction_addr_misalignedReg6 <= 0;
-		ecallReg6	<= 0;
+		ecallReg6	   <= 0;
+		killnum      <= 0;
+		kill         <= 0;
 	  end
 	else
 	  begin
-		fnReg6 		<= fnReg5;
-
-		rdReg6 		<= rdReg5;
-		alu_resReg6 	<= alu_res5;
-		weReg6 		<= weReg5;
-
-		U_immReg6 	<= U_immReg5;
-                AU_immReg6 	<= U_immReg5+pcReg5 ;
-
-		mul_divReg6 	<= mul_div5;
-
-		pcReg6 		<= pcReg5;
-
-		csr_rdReg6	<= csr_rd5;
-		csrReg6		<= csr5;
-		csr_addrReg6	<= csr_addrReg5;
-
+		fnReg6 		    <=  fnReg5;
+		rdReg6 		    <=  rdReg5;
+		alu_resReg6 	<=  alu_res5;
+		weReg6 		    <=  weReg5;
+		U_immReg6 	  <=  U_immReg5;
+    AU_immReg6 	 <=  U_immReg5+pcReg5 ;
+    mul_divReg6 	<=  mul_div5;
+		pcReg6 		    <=  pcReg5;
+		csr_rdReg6	  <=  csr_rd5;
+		csrReg6		    <=  csr5;
+		csr_addrReg6	<=  csr_addrReg5;
 		instruction_addr_misalignedReg6 <= instruction_addr_misalignedReg5;
-		ecallReg6	<= ecallReg5;
+		ecallReg6	   <=  ecallReg5;
+	  if(exception)begin
+	  kill <=1;
+	    
+	  fnReg6 	  	  <= 3'b0;
+		rdReg6 		    <= 5'b0;
+		alu_resReg6 	<= 32'b0;
+		weReg6 		    <= 1'b0;
+		U_immReg6 	  <= 32'b0;
+    AU_immReg6 	 <= 32'b0;
+		mul_divReg6 	<= 32'b0;
+		
+		csr_rdReg6	  <= 32'b0;
+		csrReg6		    <= 32'b0;
+		csr_addrReg6	<= 12'b0;;
+		instruction_addr_misalignedReg6 <= 0;
+		ecallReg6	   <= 0;
+	    end
+		else if(kill)begin
+		fnReg6 	  	  <= 3'b0;
+		rdReg6 		    <= 5'b0;
+		alu_resReg6 	<= 32'b0;
+		weReg6 		    <= 1'b0;
+		U_immReg6 	  <= 32'b0;
+    AU_immReg6 	 <= 32'b0;
+		mul_divReg6 	<= 32'b0;
+		
+		csr_rdReg6	  <= 32'b0;
+		csrReg6		    <= 32'b0;
+		csr_addrReg6	<= 12'b0;;
+		instruction_addr_misalignedReg6 <= 0;
+		ecallReg6   	<= 0;
+		if (killnum>4)begin
+		  kill    <=  1'b0;
+		  killnum <=  3'b0;
+		    end
+		 else begin
+		   kill    <=  1'b1;
+		   killnum <=  killnum+1;
+		     end
+		  end
 	  end
 	end
 	// =============================================== //
