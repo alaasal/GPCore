@@ -197,10 +197,10 @@ always_ff @(posedge clk, negedge nrst) begin
 	  end
 	else
 	  begin
-	    /////////////////////////////////////////
+
 	current_mode <= next_mode;
         if (!exception_pending) begin
-          /////////////////////////////////////////////////////////////////
+
 		case(csr_address_wb)
 			`CSR_MSTATUS:
 			  begin
@@ -254,7 +254,7 @@ always_ff @(posedge clk, negedge nrst) begin
 	  end
          
 	 //Exception logic
-	else if (next_mode==mode::M && !m_ret)
+	else if (exception_pending && next_mode==mode::M && !m_ret)
 	  begin
 		mepc <= pc_exc[`XLEN-1:2];
             	status_mie  <= 0;
@@ -265,7 +265,7 @@ always_ff @(posedge clk, negedge nrst) begin
             	mcause_code      <= m_cause[`XLEN-2:0];
 
           
-		if (!m_cause[`XLEN-1]) 
+		if (!m_cause[`XLEN-1])
 		  begin
 			case (m_cause[`XLEN-2:0])
                 		exception::I_ADDR_MISALIGNED:   mtval <= {pc_exc, 1'b0};
@@ -302,7 +302,6 @@ always_ff @(posedge clk, negedge nrst) begin
 		begin
 		case (m_cause[`XLEN-2:0])
                 	exception::I_ADDR_MISALIGNED:   stval <= {pc_exc, 1'b0};
-                
                 	exception::I_ILLEGAL:           stval <= { instruction_word, 2'b11};
                 	//exception::L_ADDR_MISALIGNED,
                 	//exception::S_ADDR_MISALIGNED,
@@ -344,13 +343,13 @@ always_comb begin
 end
 
 /* Counter for time and cycle CSRs. */
-reg [63:0] cycle_counter = 0;
+logic [63:0] cycle_counter = 0;
 always @(posedge clk) begin
     cycle_counter <= cycle_counter + 1;
 end
 
 /* Supervisor's timer. */
-reg [63:0] supervisor_next_event_cycle = 0;
+logic [63:0] supervisor_next_event_cycle = 0;
 always @(posedge clk) begin
     s_timer <= (cycle_counter >= supervisor_next_event_cycle);
 end
@@ -358,9 +357,9 @@ end
 // in other code they use (assign     m_timer = 0;)
 
 /* machine's timer. */
-reg [63:0] machine_next_event_cycle = 0;
+logic [63:0] machine_next_event_cycle = 0;
 always @(posedge clk) begin
-    m_timer <= (cycle_counter >= supervisor_next_event_cycle);
+    m_timer <= (cycle_counter >= machine_next_event_cycle);
 end
 	 
 // interrupts enable signals

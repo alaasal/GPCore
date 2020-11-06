@@ -66,10 +66,10 @@ module frontend_stage(
 		pcReg		<= pcReg-1;		
 		pcReg2		<= pcReg2-1;
 
-	////////////////////////////////////////////////////////////
+
 	//instruction_addr_misalignedReg1 <= 0;
 		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
-	////////////////////////////////////////////////////////////
+
 
 	end
 	else if(stall && !(!stallnumin[1] && stallnumin[0]) ) 
@@ -77,11 +77,9 @@ module frontend_stage(
 		pcReg		<= pcReg;		
 		pcReg2		<= pcReg2;
 
-		////////////////////////////////
 		//instruction_addr_misalignedReg1 <= 0;
 		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
 
-		/////////////////////////////////
 
 	end 
 	else if(stall &&!stallnumin[1] && stallnumin[0] )
@@ -89,10 +87,9 @@ module frontend_stage(
 		pcReg		<= npc;		
 		pcReg2		<= pcReg;
 
-	////////////////////////////////////////////////
 		//instruction_addr_misalignedReg1 <= 0;
 		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
-	////////////////////////////////////////////////	
+
 
 
 	end 
@@ -101,10 +98,9 @@ module frontend_stage(
 		pcReg		<= pcReg;		
 		pcReg2		<= pcReg2;
 
-	/////////////////////////////////////////////
+
 		//instruction_addr_misalignedReg1 <= 0;
 		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
-	//////////////////////////////////////////////
 
 	end 
 	else 
@@ -131,25 +127,19 @@ module frontend_stage(
             	3'b011: npc = npc;
 		//Exception
 		3'b1??: npc = pcReg + 1;
-            	default: npc = pcReg + 1 ;
+            	default: npc = pcReg + 1;
         endcase
         
       end
-	  
 	  
 
     // output
 
 	assign pc = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg-1: pcReg;
 	assign pc2 = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg2 - 1 : pcReg2;
-	
 	assign instruction_addr_misaligned = instruction_addr_misalignedReg2;
 	
-/*
-	csr_regfile csr(
-	.pcsel_interrupt (pcsel_interrupt),
-	.mtvec_out (mtvec_out)
-	);*/
+
 
     // dummy inst mem
     instr_mem m1 (

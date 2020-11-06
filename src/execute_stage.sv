@@ -46,7 +46,7 @@ module exe_stage(
 	input logic mret4, sret4, uret4,
 	
 	input logic m_timer,s_timer,
-    	input logic [1:0] current_mode,
+    	input mode::mode_t current_mode,
 	input logic m_tie, s_tie, m_eie, s_eie,
         input logic m_interrupt, s_interrupt,
 
@@ -226,12 +226,12 @@ module exe_stage(
 
 	  //ALU
 	alu exe_alu (
-	.alu_fn(alufnReg5 ),
-	.operandA(opaReg5 ),
-	.operandB(opbReg5 ),
-	.result(alu_res5) ,
+	.alu_fn(alufnReg5),
+	.operandA(opaReg5),
+	.operandB(opbReg5),
+	.result(alu_res5),
 	.bneq(bneqReg5),
-	.btype(btypeReg5) ,
+	.btype(btypeReg5),
 	.btaken(btaken)
 	);
 
@@ -281,8 +281,8 @@ module exe_stage(
 	.m_eie(m_eie),
 	.m_tie(m_tie),
 	.s_tie(s_tie),
-    .m_interrupt(m_interrupt),
-    .s_interrupt(s_interrupt),
+    	.m_interrupt(m_interrupt),
+    	.s_interrupt(s_interrupt),
 	.m_cause(m_cause)
 	);
 
