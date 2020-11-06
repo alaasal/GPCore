@@ -6,6 +6,7 @@ module csr_regfile(
 	input logic [31:0] csr_wb,		// csr data written back from csr to the register file
 	//inputs from execute stage
 	input logic exception_pending,
+	input logic instruction_word,
 
 	
 	input logic [31:0] m_cause,
