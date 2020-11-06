@@ -281,8 +281,9 @@ module exe_stage(
 	.m_eie(m_eie),
 	.m_tie(m_tie),
 	.s_tie(s_tie),
-        .m_interrupt(m_interrupt),
-        .s_interrupt(s_interrupt)
+    .m_interrupt(m_interrupt),
+    .s_interrupt(s_interrupt),
+	.m_cause(m_cause)
 	);
 
 

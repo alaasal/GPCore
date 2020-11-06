@@ -12,13 +12,13 @@ module csr_regfile(
 	input logic [31:0] pc_exc,		// pc of instruction that caused the exception >> mepc
        // input  [`XLEN-1:0] add_result,
   
-	input logic [31:2] instruction_word,  // type of exception
  	input logic m_ret, s_ret, u_ret,
 	input logic stall,
 	input logic m_interrupt,
         input logic s_interrupt,
 
 	output logic m_timer,
+	output logic s_timer,
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
 	output logic m_eie, m_tie,s_eie, s_tie,
 	output mode::mode_t     current_mode = mode::M,
@@ -68,7 +68,7 @@ module csr_regfile(
 	logic [`XLEN-1:0] mip;
 	logic [`XLEN-1:0] mie;
 
-	logic s_timer;
+	//logic s_timer;
 
 	assign mtvec_out = {mtvec, 2'b0};
 
@@ -175,10 +175,10 @@ always_ff @(posedge clk, negedge nrst) begin
    		status_spp  	<= 0;
     		status_mpp  	<= mode::M;
     		status_sum  	<= 0;
-		mtvec	    	<= '0;
-		mscratch	<= '0;
-		mepc		<= '0;
-		mtval		<= '0;
+		mtvec	    	<= 0;
+		mscratch	<= 0;
+		mepc		<= 0;
+		mtval		<= 0;
 		meie		<= 0;
 		seie 		<= 0;
 		mtie 		<= 0;
@@ -349,11 +349,18 @@ always @(posedge clk) begin
 end
 
 /* Supervisor's timer. */
-/*reg [63:0] supervisor_next_event_cycle = 0;
+reg [63:0] supervisor_next_event_cycle = 0;
 always @(posedge clk) begin
     s_timer <= (cycle_counter >= supervisor_next_event_cycle);
-end*/
+end
 
+// in other code they use (assign     m_timer = 0;)
+
+/* machine's timer. */
+reg [63:0] machine_next_event_cycle = 0;
+always @(posedge clk) begin
+    m_timer <= (cycle_counter >= supervisor_next_event_cycle);
+end
 	 
 // interrupts enable signals
 assign m_eie = meie && status_mie;
