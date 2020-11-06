@@ -5,12 +5,13 @@ module issue_stage (
 	input logic we6,			// Write Enable
 	input logic [4:0] rdaddr6,		// Destenation Address
 	input logic [31:0] wb6,			// Data
-	
+	// signals to csr_regfile
 	input logic [31:0] csr_wb,
 	input logic [11:0] csr_wb_addr,
 	input logic [31:0] m_cause,
 	input logic exception_pending,
 	input logic [31:0] pc_exc,
+	input logic m_ret, s_ret, u_ret,
 
 	// Piped Signals from Decode to Issue
 	input logic we3,
@@ -42,6 +43,7 @@ module issue_stage (
 	input logic instruction_addr_misaligned3,
 	input logic ecall3,
 	input logic illegal_instr3,
+	input logic mret3, sret3, uret3,
 
 	input logic j3,
 	input logic jr3,
@@ -104,7 +106,8 @@ module issue_stage (
 	output logic instruction_addr_misaligned4,
 	output logic ecall4,
 	output logic illegal_instr4,
-	output logic mtvec_out
+	output logic epc,	// output to frontend
+	output logic mret4, sret4, uret4
     );
 
 	// Wires
@@ -157,6 +160,7 @@ module issue_stage (
 	logic instruction_addr_misalignedReg4;
 	logic ecallReg4;
 	logic illegal_instrReg4;
+	logic mretReg4, sretReg4, uretReg4;
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
@@ -200,6 +204,10 @@ module issue_stage (
 		instruction_addr_misalignedReg4 <= 0;
 		ecallReg4	<= 0;
 		illegal_instrReg4<= 0;
+
+		mretReg4	<= 0;
+		sretReg4	<= 0;
+		uretReg4	<= 0;
           end
         else
           begin
@@ -229,6 +237,9 @@ module issue_stage (
 		instruction_addr_misalignedReg4 <= instruction_addr_misaligned3;
 		ecallReg4	<= ecall3;
 		illegal_instrReg4<= illegal_instr3;
+		mretReg4	<= mret3;
+		sretReg4	<= sret3;
+		uretReg4	<= uret3;
 
 		if(stall )
 		begin
@@ -311,9 +322,9 @@ module issue_stage (
 	.exception_pending(exception_pending),
 	.m_cause(m_cause),
 	.pc_exc(pc_exc),
-	.m_ret(),
-	.s_ret(),
-	.u_ret(),
+	.m_ret(m_ret),
+	.s_ret(s_ret),
+	.u_ret(u_ret),
 	.stall(),
 	.m_interrupt(),
 	.m_timer(),
@@ -321,7 +332,7 @@ module issue_stage (
 	.m_eie(),
 	.m_tie(),
 	.current_mode(),
-	.mtvec_out(mtvec_out)
+	.epc(epc)
 	);
 
 
@@ -383,6 +394,10 @@ module issue_stage (
 	assign instruction_addr_misaligned4 = instruction_addr_misalignedReg4;
 	assign ecall4		= ecallReg4;
 	assign illegal_instr4	= illegal_instrReg4;
+
+	assign mret4		= mretReg4;
+	assign sret4		= sretReg4;
+	assign uret4		= uretReg4;
 	// Piped Signals ended
 
 endmodule

@@ -60,11 +60,12 @@ module core(
 	logic [2:0] funct3_3, funct3_4;
 	logic [31:0] csr_imm3, csr_imm4, csr_data, csr_wb6, m_cause6, csr_wb, pc_exc, m_cause;
 	logic instruction_addr_misaligned2, instruction_addr_misaligned3, instruction_addr_misaligned4;
-	logic ecall3, ecall4;
+	logic ecall3, ecall4, mret3, mret4, mret6, sret3, sret4, sret6, uret3, uret4, uret6;
 	logic illegal_instr3, illegal_instr4;
 	logic exception_pending, exception_pending6;
 	logic system3, system4;
-	logic mtvec;
+	logic epc;
+	logic m_ret, s_ret, u_ret;
 	
 
 	// =============================================== //
@@ -82,7 +83,7 @@ module core(
 
 	// exceptions to control pc
 	.exception_pending(exception_pending),
-	.mtvec_out(mtvec),
+	.epc		(epc),
 	
 	// Outputs to Decode Stage
 	.pc2            (pc2),		// pc at instruction mem pipe #2
@@ -162,7 +163,10 @@ module core(
 	.instruction_addr_misaligned3(instruction_addr_misaligned3),
 	.ecall3		(ecall3),
 	.illegal_instr3 (illegal_instr3),
-	.system		(system3)
+	.system		(system3),
+	.mret3		(mret3),
+	.sret3		(sret3),
+	.uret3		(uret3)
 	);
 
 	// =============================================== //
@@ -183,6 +187,9 @@ module core(
 	.m_cause	(m_cause),
 	.exception_pending(exception_pending),
 	.pc_exc		(pc_exc),
+	.m_ret		(m_ret),
+	.s_ret		(s_ret),
+	.u_ret		(u_ret),
 	
 	// Inputs from decode stage
 	.rs1          (rs1),
@@ -224,6 +231,10 @@ module core(
 	.instruction_addr_misaligned3(instruction_addr_misaligned3),
 	.ecall3		(ecall3),
 	.illegal_instr3 (illegal_instr3),
+
+	.mret3		(mret3),
+	.sret3		(sret3),
+	.uret3		(uret3),
 
 	// Outputs
 	.op_a         (opa),
@@ -271,7 +282,11 @@ module core(
 	.instruction_addr_misaligned4(instruction_addr_misaligned4),
 	.ecall4		(ecall4),
 	.illegal_instr4 (illegal_instr4),
-	.mtvec_out	(mtvec)
+	.epc		(epc),
+
+	.mret4		(mret4),
+	.sret4		(sret4),
+	.uret4		(uret4)
     );
 
 	// =============================================== //
@@ -320,6 +335,9 @@ module core(
 	.instruction_addr_misaligned4(instruction_addr_misaligned4),
 	.ecall4		(ecall4),
 	.illegal_instr4	(illegal_instr4),
+	.mret4		(mret4),
+	.sret4		(sret4),
+	.uret4		(uret4),
 
 	// Outputs
 	.rd6          		(rd6),
@@ -345,7 +363,10 @@ module core(
 	.exception_pending	(exception_pending6),
 	.m_cause		(m_cause6),
 	.csr_wb			(csr_wb6),
-	.csr_wb_addr		(csr_wb_addr6)
+	.csr_wb_addr		(csr_wb_addr6),
+	.mret6			(mret6),
+	.sret6			(sret6),
+	.uret6			(uret6)
 	);
 
 	// =============================================== //
@@ -365,6 +386,9 @@ module core(
 	.csr_wb_addr6	(csr_wb_addr6),
 	.m_cause6	(m_cause6),
 	.exception_pending6(exception_pending6),
+	.mret6		(mret6),
+	.sret6		(sret6),
+	.uret6		(uret6),
 	
 	.pc6         (pc6),
 
@@ -376,16 +400,11 @@ module core(
 	.csr_wb_addr	(csr_wb_addr),
 	.pc_exc		(pc_exc),
 	.m_cause	(m_cause),
-	.exception_pending(exception_pending)
+	.exception_pending(exception_pending),
+	.mret		(m_ret),
+	.sret		(s_ret),
+	.uret		(u_ret)
 	);
 	
-    // =============================================== //
-	//			CSR_REGFILE		   //
-	// =============================================== //
-	csr_regfile csr(
-	.clk (clk),
-	.nrst(nrst),
-	.asy_int(asy_int)
-	);
     
 endmodule

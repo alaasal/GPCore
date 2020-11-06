@@ -35,7 +35,7 @@ module instr_decoder(
 	// until Branch and Jumps target is calculated
 	output logic [1:0] pcselect,
 
-	output logic ecall, uret, sret, mret, wfh, illegal_instr,
+	output logic ecall, uret, sret, mret, wfi, illegal_instr,
 	output logic system
     );
 
@@ -71,9 +71,6 @@ module instr_decoder(
 	logic lui,aupc;
 	logic noOp;
 
-	// interrupts and exceptions instructions
-	logic e_call, m_ret, u_ret, s_ret, wfi;
-
 	assign instr_25 = (~& funct7[6:1]) & funct7[0];     //funct7 == 0000_001
 	//noOp
 	assign noOp = ~(|op); // if op code = 000000 then set opcode0 to 1
@@ -92,11 +89,12 @@ module instr_decoder(
 	assign autype = ~op[6] & op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];    //0110111 auipc
 
 	// zicsr and system instructions
+	// interrupts and exceptions instructions	
 	assign system = op[6] & op[5] & op[4] & ~op[3] & ~op[2] & op[1] & op[0];  //1110011 SYSTEM
-	assign e_call = system & (~&funct3) & ~funct12[0];
-	assign m_ret  = system & (~&funct3) & (~funct7);
-	assign u_ret  = system & (~&funct3) & (~funct7[4]) & funct7[3];
-	assign s_ret  = system & (~&funct3) & funct7[4] & funct7[3];
+	assign ecall  = system & (~&funct3) & ~funct12[0];
+	assign mret   = system & (~&funct3) & (~funct7);
+	assign uret   = system & (~&funct3) & (~funct7[4]) & funct7[3];
+	assign sret   = system & (~&funct3) & funct7[4] & funct7[3];
 	assign wfi    = system & (~&funct3) & funct12[0] & funct12[2] & funct12[8];
 	assign illegal_instr = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system);
 

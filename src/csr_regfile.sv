@@ -23,7 +23,7 @@ module csr_regfile(
 	output logic m_eie, m_tie,s_eie, s_tie,
 	output mode::mode_t     current_mode = mode::M,
 	// To front end
-	output logic [31:0] mtvec_out
+	output logic [31:0] epc
 	);
 
 	mode::mode_t  next_mode;
@@ -360,5 +360,19 @@ assign m_eie = meie && status_mie;
 assign m_tie = mtie && status_mie;
 assign s_eie = seie && status_sie;
 assign s_tie = stie && status_sie;
+
+	// epc output to pc in frontend
+	always_comb
+	  begin
+		unique case({m_ret, s_ret, u_ret})
+			3'b000: epc = mtvec_out;
+			3'b100:	epc = mepc;
+			3'b010:	epc = sepc;
+			/* to be added with user mode
+			3'b001:	out_pc = uepc;
+			*/
+			default: epc = mtvec_out;
+		endcase
+	  end
 
 endmodule

@@ -8,7 +8,7 @@ module frontend_stage(
 	input logic [1:0] stallnumin,
 	// exceptions
 	input logic exception_pending,
-	input logic mtvec_out,
+	input logic epc,
 
     	output logic [31:0] pc2,	// pc at instruction mem pipe #2
     	output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
@@ -56,7 +56,7 @@ module frontend_stage(
 		// Interrupt
 	else if (exception_pending && (!flag_ex)) 
 	  begin
-		pcReg <= mtvec_out;
+		pcReg <= epc;
 		flag_ex <= 1;
 	  end
 		

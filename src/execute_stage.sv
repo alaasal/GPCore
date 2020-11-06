@@ -43,6 +43,7 @@ module exe_stage(
 	input logic instruction_addr_misaligned4,
 	input logic ecall4,
 	input logic illegal_instr4,
+	input logic mret4, sret4, uret4,
 	
 	input logic m_timer,s_timer,
     	input logic [1:0] current_mode,
@@ -75,7 +76,8 @@ module exe_stage(
 	// exceptions
 	output logic pc_exc,
 	output logic [31:0] m_cause,
-	output logic exception_pending
+	output logic exception_pending,
+	output logic mret6, sret6, uret6
     );
 
 
@@ -128,6 +130,7 @@ module exe_stage(
 	logic ecallReg5;
 	logic instruction_addr_misalignedReg5;
 	logic illegal_instrReg5;
+	logic mretReg5, sretReg5, uretReg5;
     
 
 	always_ff @(posedge clk, negedge nrst)
@@ -171,6 +174,9 @@ module exe_stage(
 		ecallReg5	<= 0;
 		instruction_addr_misalignedReg5 <= 0;
 		illegal_instrReg5<= 0;
+		mretReg5	<= 0;
+		sretReg5	<= 0;
+		uretReg5	<= 0;
           end
         else
           begin
@@ -211,6 +217,9 @@ module exe_stage(
 		ecallReg5	<= ecall4;
 		instruction_addr_misalignedReg5 <= instruction_addr_misaligned4;
 		illegal_instrReg5 <= illegal_instr4;
+		mretReg5	<= mret4;
+		sretReg5	<= sret4;
+		uretReg5	<= uret4;
           end
       end
 
@@ -305,6 +314,7 @@ module exe_stage(
 	logic ecallReg6;
 	logic illegal_instrReg6;
 	logic exception;
+	logic mretReg6, sretReg6, uretReg6;
 	
 	
 	// kill logic registers
@@ -315,22 +325,26 @@ module exe_stage(
 	begin
 	if (!nrst)
 	  begin
-		fnReg6 		    <= 3'b0;
-    		rdReg6 	    	<= 5'b0;
-		alu_resReg6 	<= 32'b0;
-		weReg6 		    <= 0;
-		U_immReg6 	  <= 32'b0;
-    		AU_immReg6 	 <= 32'b0;
-		mul_divReg6 	<= 32'b0;
-		pcReg6 		    <= 32'b0;
-		csr_rdReg6	  <= 32'b0;
-		csrReg6		    <= 32'b0;
-		csr_addrReg6	<= 12'b0;
+		fnReg6			<= 3'b0;
+    		rdReg6 	    		<= 5'b0;
+		alu_resReg6 		<= 32'b0;
+		weReg6 			<= 0;
+		U_immReg6 	  	<= 32'b0;
+    		AU_immReg6 	 	<= 32'b0;
+		mul_divReg6 		<= 32'b0;
+		pcReg6 			<= 32'b0;
+		csr_rdReg6		<= 32'b0;
+		csrReg6			<= 32'b0;
+		csr_addrReg6		<= 12'b0;
 		instruction_addr_misalignedReg6 <= 0;
-		ecallReg6	  <= 0;
-		illegal_instrReg6 <= 0;
-		killnum      <= 0;
-		kill         <= 0;
+		ecallReg6	  	<= 0;
+		illegal_instrReg6 	<= 0;
+		mretReg6		<= 0;
+		sretReg6		<= 0;
+		uretReg6		<= 0;
+
+		killnum      		<= 0;
+		kill         		<= 0;
 	  end
 	else
 	  begin
@@ -348,6 +362,9 @@ module exe_stage(
 		instruction_addr_misalignedReg6 <= instruction_addr_misalignedReg5;
 		ecallReg6	   <=  ecallReg5;
 		illegal_instrReg6  <= illegal_instrReg5;
+		mretReg6	<= mretReg5;
+		sretReg6	<= sretReg5;
+		uretReg6	<= uretReg5;
 	  if(exception)begin
 	  	kill <=1;
 	    
@@ -405,7 +422,7 @@ module exe_stage(
 /* EXCEPTIONS. ********************************************************************************************************/
 
 	assign exception = instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6 || m_timer_conditioned
-			   || s_timer_conditioned || m_interrupt_conditioned;
+			   || s_timer_conditioned || m_interrupt_conditioned || mretReg6 || sretReg6 || uretReg6;
 
 	always_comb
 	  begin
@@ -479,11 +496,14 @@ module exe_stage(
 	assign pcselect5=pcselect4;
 
 	// to csr register file through commit stage
-	assign csr_wb = csrReg6;
-	assign csr_wb_addr = csr_addrReg6;
-	assign pc_exc = pcReg6;
-	assign m_cause = mcause;
+	assign csr_wb 		 = csrReg6;
+	assign csr_wb_addr 	 = csr_addrReg6;
+	assign pc_exc 		 = pcReg6;
+	assign m_cause 		 = mcause;
 	assign exception_pending = exception;
+	assign mret6		 = mretReg6;
+	assign sret6		 = sretReg6;
+	assign uret6		 = uretReg6;
 
 	always_comb begin
         unique case(fn6)
