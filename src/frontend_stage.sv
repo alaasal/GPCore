@@ -56,7 +56,7 @@ module frontend_stage(
 		// Interrupt
 	else if (exception_pending && (!flag_ex)) 
 	  begin
-		pcReg <= epc;
+		pcReg <= epc - 1;
 		flag_ex <= 1;
 	  end
 		

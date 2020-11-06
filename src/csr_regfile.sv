@@ -16,7 +16,7 @@ module csr_regfile(
  	input logic m_ret, s_ret, u_ret,
 	input logic stall,
 	input logic m_interrupt,
-        input logic s_interrupt,
+    input logic s_interrupt,
 
 	output logic m_timer,
 	output logic s_timer,
@@ -26,7 +26,8 @@ module csr_regfile(
 	// To front end
 	output logic [31:0] epc
 	);
-
+	
+	
 	mode::mode_t  next_mode;
 
 

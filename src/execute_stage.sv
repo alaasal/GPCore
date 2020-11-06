@@ -46,9 +46,9 @@ module exe_stage(
 	input logic mret4, sret4, uret4,
 	
 	input logic m_timer,s_timer,
-    	input mode::mode_t current_mode,
+    input mode::mode_t current_mode,
 	input logic m_tie, s_tie, m_eie, s_eie,
-        input logic m_interrupt, s_interrupt,
+    
 
 	output logic [31:0] wb_data6,
 	output logic we6,
@@ -77,7 +77,9 @@ module exe_stage(
 	output logic pc_exc,
 	output logic [31:0] m_cause,
 	output logic exception_pending,
-	output logic mret6, sret6, uret6
+	output logic mret6, sret6, uret6,
+	
+	output logic m_interrupt, s_interrupt
     );
 
 
@@ -274,16 +276,7 @@ module exe_stage(
 	.system(systemReg5),
 	.current_mode(current_mode),
 	.csr_new(csr5),
-	.csr_old(csr_rd5),
-	.s_timer(s_timer),
-	.m_timer(m_timer),
-	.s_eie(s_eie),
-	.m_eie(m_eie),
-	.m_tie(m_tie),
-	.s_tie(s_tie),
-    	.m_interrupt(m_interrupt),
-    	.s_interrupt(s_interrupt),
-	.m_cause(m_cause)
+	.csr_old(csr_rd5)
 	);
 
 

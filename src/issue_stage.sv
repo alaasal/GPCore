@@ -12,6 +12,7 @@ module issue_stage (
 	input logic exception_pending,
 	input logic [31:0] pc_exc,
 	input logic m_ret, s_ret, u_ret,
+	input logic m_interrupt, s_interrupt,
 
 	// Piped Signals from Decode to Issue
 	input logic we3,
@@ -107,7 +108,12 @@ module issue_stage (
 	output logic ecall4,
 	output logic illegal_instr4,
 	output logic epc,	// output to frontend
-	output logic mret4, sret4, uret4
+	output logic mret4, sret4, uret4,
+	
+	output logic m_timer,s_timer,
+    output mode::mode_t current_mode,
+	output logic m_tie, s_tie, m_eie, s_eie
+    
     );
 
 	// Wires
@@ -325,14 +331,18 @@ module issue_stage (
 	.m_ret(m_ret),
 	.s_ret(s_ret),
 	.u_ret(u_ret),
-	.stall(),
-	.m_interrupt(),
-	.m_timer(),
 	.csr_data(csr_data),
-	.m_eie(),
-	.m_tie(),
-	.current_mode(),
-	.epc(epc)
+	.current_mode(current_mode),
+	.epc(epc),
+	
+	.s_timer(s_timer),
+	.m_timer(m_timer),
+	.s_eie(s_eie),
+	.m_eie(m_eie),
+	.m_tie(m_tie),
+	.s_tie(s_tie),
+    .m_interrupt(m_interrupt),
+    .s_interrupt(s_interrupt)
 	);
 
 

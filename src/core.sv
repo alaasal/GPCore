@@ -66,7 +66,8 @@ module core(
 	logic system3, system4;
 	logic epc;
 	logic m_ret, s_ret, u_ret;
-	
+	mode::mode_t     current_mode;
+	logic s_timer, m_timer, m_eie, m_tie, s_eie, s_tie, m_interrupt, s_interrupt;
 
 	// =============================================== //
 	//			FrontEnd Stage		   //
@@ -190,6 +191,8 @@ module core(
 	.m_ret		(m_ret),
 	.s_ret		(s_ret),
 	.u_ret		(u_ret),
+	.m_interrupt(m_interrupt),
+    .s_interrupt(s_interrupt),
 	
 	// Inputs from decode stage
 	.rs1          (rs1),
@@ -286,7 +289,16 @@ module core(
 
 	.mret4		(mret4),
 	.sret4		(sret4),
-	.uret4		(uret4)
+	.uret4		(uret4),
+	
+	.current_mode(current_mode),
+	.s_timer(s_timer),
+	.m_timer(m_timer),
+	.s_eie(s_eie),
+	.m_eie(m_eie),
+	.m_tie(m_tie),
+	.s_tie(s_tie)
+    
     );
 
 	// =============================================== //
@@ -366,7 +378,17 @@ module core(
 	.csr_wb_addr		(csr_wb_addr6),
 	.mret6			(mret6),
 	.sret6			(sret6),
-	.uret6			(uret6)
+	.uret6			(uret6),
+	
+	.current_mode(current_mode),
+	.s_timer(s_timer),
+	.m_timer(m_timer),
+	.s_eie(s_eie),
+	.m_eie(m_eie),
+	.m_tie(m_tie),
+	.s_tie(s_tie),
+    .m_interrupt(m_interrupt),
+    .s_interrupt(s_interrupt)
 	);
 
 	// =============================================== //
