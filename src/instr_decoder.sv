@@ -36,7 +36,6 @@ module instr_decoder(
 	output logic [1:0] pcselect,
 
 	output logic ecall, uret, sret, mret, wfi, illegal_instr,
-	output logic system,
 	
 	// Write back csr_regfile Enable
 	output logic csr_we
@@ -185,18 +184,18 @@ module instr_decoder(
 	assign mem_op[2] = i_lbu | i_lhu | i_sb  | i_sh;
 	assign mem_op[3] = i_sw  | i_sb  | i_sh;
 
-    // generate control signals
-    assign pcselect[0] = 0 ; // to set pcselect to 0 (will be edited when branch and jump operations added)
-    assign pcselect[1] = btype | i_jal | i_jalr;
-
-    //00 rtype itype nop
-    //01
-    //10 branch
-    //11
-    assign we 	    = rtype | itype | jtype | jr | ltype| utype | autype | system & ~(exception_pending);
-    assign csr_we   = system | exception_pending;
-    assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr | ltype;
-    assign B_SEL[1] = i_slli | i_srli | i_srai;
+    	// generate control signals
+    	assign pcselect[0] = 0 ; // to set pcselect to 0 (will be edited when branch and jump operations added)
+    	assign pcselect[1] = btype | i_jal | i_jalr;
+	
+    	//00 rtype itype nop
+    	//01
+    	//10 branch
+    	//11
+    	assign we 	    = rtype | itype | jtype | jr | ltype| utype | autype | system & ~(exception_pending);
+    	assign csr_we   = system;
+    	assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr | ltype;
+    	assign B_SEL[1] = i_slli | i_srli | i_srai;
 
 
 	// inst signal controls the type of instruction done by the ALU {bit30, funct3}

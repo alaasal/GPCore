@@ -39,7 +39,6 @@ module issue_stage (
 	input logic [2:0] funct3_3,
 	input logic [11:0] csr_addr3,
 	input logic [31:0] csr_imm3,
-	input logic system3,
 	// write back csr_regfile enable
 	input logic csr_we3,
 	
@@ -105,7 +104,6 @@ module issue_stage (
 	output logic [2:0] funct3_4,
 	output logic [11:0] csr_addr4,
 	output logic [31:0] csr_imm4,
-	output logic system4,
 	// write back csr_regfile enable
 	output logic csr_we4,
 
@@ -117,7 +115,7 @@ module issue_stage (
 	output logic mret4, sret4, uret4,
 	
 	output logic m_timer,s_timer,
-    output mode::mode_t current_mode,
+    	output mode::mode_t current_mode,
 	output logic m_tie, s_tie, m_eie, s_eie
     
     );
@@ -163,7 +161,6 @@ module issue_stage (
 	logic [2:0] funct3Reg4;
 	logic [31:0]csr_immReg4;
 	logic [11:0] csr_addrReg4;
-	logic systemReg4;
 	logic csr_weReg4;
 
 	// Scoreboard Regs
@@ -213,7 +210,6 @@ module issue_stage (
 		funct3Reg4	<= '0;
 		csr_addrReg4	<= '0;
 		csr_immReg4	<= '0;
-		systemReg4	<= 0;
 		csr_weReg4 <= 0;
 		instruction_addr_misalignedReg4 <= 0;
 		ecallReg4	<= 0;
@@ -246,7 +242,6 @@ module issue_stage (
 		funct3Reg4	<= funct3_3;
 		csr_immReg4	<= csr_imm3;
 		csr_addrReg4	<= csr_addr3;
-		systemReg4	<= system3;
 
 		if(stall )
 		begin
@@ -312,9 +307,8 @@ module issue_stage (
 		fnReg4		<= fn3;
 		I_immdReg4	<= I_imm3;
 		rdReg4		<= rd3;
-		csr_weReg4 <= csr_we3;
+		csr_weReg4 	<= csr_we3;
 		
-		csr_weReg4		<= csr_we3;
 		// exceptions
 		instruction_addr_misalignedReg4 <= instruction_addr_misaligned3;
 		ecallReg4	<= ecall3;
@@ -378,8 +372,8 @@ module issue_stage (
 	.m_eie(m_eie),
 	.m_tie(m_tie),
 	.s_tie(s_tie),
-    .m_interrupt(m_interrupt),
-    .s_interrupt(s_interrupt)
+    	.m_interrupt(m_interrupt),
+   	.s_interrupt(s_interrupt)
 	);
 
 
@@ -435,7 +429,6 @@ module issue_stage (
 	assign funct3_4		= funct3Reg4;
 	assign csr_imm4		= csr_immReg4;
 	assign csr_addr4	= csr_addrReg4;
-	assign system4		 = systemReg4;
 	assign csr_we4 		= csr_weReg4;
 
 	// exceptions

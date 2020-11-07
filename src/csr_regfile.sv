@@ -12,12 +12,12 @@ module csr_regfile(
 	
 	input logic [31:0] m_cause,
 	input logic [31:0] pc_exc,		// pc of instruction that caused the exception >> mepc
-       // input  [`XLEN-1:0] add_result,
+       	// input  [`XLEN-1:0] add_result,
   
  	input logic m_ret, s_ret, u_ret,	//MRET or SRET instruction is used to return from a trap in M-mode or S-mode respectively
 	input logic stall,
 	input logic m_interrupt,
-    input logic s_interrupt,
+    	input logic s_interrupt,
 
 	output logic m_timer,
 	output logic s_timer,
@@ -205,7 +205,7 @@ always_ff @(posedge clk, negedge nrst) begin
 	  begin
 	current_mode <= next_mode;
         if (!exception_pending) begin
-     if(csr_we)begin
+     	  if(csr_we)begin
 		case(csr_address_wb)
 			`CSR_MSTATUS:
 			  begin

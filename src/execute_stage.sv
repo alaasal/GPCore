@@ -37,7 +37,6 @@ module exe_stage(
 	input logic [2:0] funct3_4,
 	input logic [31:0] csr_data, csr_imm4,
 	input logic [11:0] csr_addr4,
-	input logic system4,
 	input logic csr_we4,
 
 	// exceptions 
@@ -130,7 +129,6 @@ module exe_stage(
 	logic [2:0]  funct3Reg5;
 	logic [31:0] csr_dataReg5, csr_immReg5;
 	logic [11:0] csr_addrReg5;
-	logic systemReg5;
 	logic csr_weReg5;
 	// exceptions
 	logic ecallReg5;
@@ -174,8 +172,7 @@ module exe_stage(
 		csr_immReg5	<= '0;
 		csr_dataReg5	<= '0;
 		csr_addrReg5	<= '0;
-		systemReg5	<= 0;
-		csr_weReg5		<= 0;
+		csr_weReg5	<= 0;
 
 		ecallReg5	<= 0;
 		instruction_addr_misalignedReg5 <= 0;
@@ -219,7 +216,6 @@ module exe_stage(
 		csr_immReg5	<= '0;
 		csr_dataReg5	<= '0;
 		csr_addrReg5	<= '0;
-		systemReg5	<= 0;
 		csr_weReg5		<= 0;
 
 		ecallReg5	<= 0;
@@ -262,7 +258,6 @@ module exe_stage(
 		csr_immReg5	 <= csr_imm4;
 		csr_dataReg5	<= csr_data;
 		csr_addrReg5	<= csr_addr4;
-		systemReg5	  <= system4;
 		csr_weReg5	  <= csr_we4;
 
 		ecallReg5	<= ecall4;
@@ -321,16 +316,16 @@ module exe_stage(
 	.res		(mul_div5)
 	);
 
-//	csr csr_unit(
-	//.func3(funct3Reg5),
-	//.rs1(op_a),
-	//.imm(csr_immReg5),
-	//.csr_reg(csr_dataReg5),
-	//.system(systemReg5),
-	//.current_mode(current_mode),
-	//.csr_new(csr5),
-	//.csr_old(csr_rd5)
-	//);
+	csr csr_unit(
+	.func3(funct3Reg5),
+	.rs1(op_a),
+	.imm(csr_immReg5),
+	.csr_reg(csr_dataReg5),
+	.system(csr_weReg5),
+	.current_mode(current_mode),
+	.csr_new(csr5),
+	.csr_old(csr_rd5)
+	);
 
 
 

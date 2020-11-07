@@ -64,7 +64,6 @@ module core(
 	logic ecall3, ecall4, mret3, mret4, mret6, sret3, sret4, sret6, uret3, uret4, uret6;
 	logic illegal_instr3, illegal_instr4;
 	logic exception_pending, exception_pending6;
-	logic system3, system4;
 	logic epc;
 	logic m_ret, s_ret, u_ret;
 	mode::mode_t     current_mode;
@@ -166,7 +165,6 @@ module core(
 	.instruction_addr_misaligned3(instruction_addr_misaligned3),
 	.ecall3		(ecall3),
 	.illegal_instr3 (illegal_instr3),
-	.system		(system3),
 	.mret3		(mret3),
 	.sret3		(sret3),
 	.uret3		(uret3),
@@ -233,7 +231,6 @@ module core(
 	.funct3_3	(funct3_3),
 	.csr_addr3	(csr_addr3),
 	.csr_imm3	(csr_imm3),
-	.system3	(system3),
 	.csr_we3 (csr_we3),
 
 	.instruction_addr_misaligned3(instruction_addr_misaligned3),
@@ -285,7 +282,6 @@ module core(
 	.funct3_4	(funct3_4),
 	.csr_addr4	(csr_addr4),
 	.csr_imm4	(csr_imm4),
-	.system4	(system4),
 	.csr_we4  (csr_we4),
 	
 	// exceptions
@@ -349,7 +345,6 @@ module core(
 	.csr_data	(csr_data),
 	.csr_imm4	(csr_imm4),
 	.csr_addr4	(csr_addr4),
-	.system4	(system4),
 	.csr_we4  (csr_we4),
 
 	.instruction_addr_misaligned4(instruction_addr_misaligned4),
