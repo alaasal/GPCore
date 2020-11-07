@@ -22,7 +22,7 @@ module frontend_stage(
     	input logic clk_debug
     	);
 
-    // registers
+   	// registers
 	logic [31:0] pcReg; 	   // pipe #1 pc
 	logic [31:0] pcReg2;	   // pipe #2 from pc to inst mem
 	
@@ -33,11 +33,11 @@ module frontend_stage(
 	logic flag_ex;
 	
 	
-    // wires
-    logic [31:0] npc;   	   // next pc wire
-    logic [31:0] pc;
+    	// wires
+    	logic [31:0] npc;   	   // next pc wire
+   	logic [31:0] pc;
 
-	assign pc_addr_ex = 0; // will be replaced by the exceptions generation logic 
+	assign pc_addr_ex = pcReg[1] & pcReg[0]; // instruction address misaligned 
     
 
     // pipes
@@ -48,18 +48,10 @@ module frontend_stage(
         begin
 		pcReg	<= 0;
 		pcReg2 	<= 0;
-		flag_ex	<= 0;
-		
 		instruction_addr_misalignedReg2 <= 0;
 
 		end
-		// Interrupt
-	else if (exception_pending && (!flag_ex)) 
-	  begin
-		pcReg <= epc - 1;
-		flag_ex <= 1;
-	  end
-		
+
         else begin	
 	//stallnumin<=stallnuminin;
 	if ( stall&&!stallnumin[1] && !stallnumin[0]) begin 
@@ -126,7 +118,7 @@ module frontend_stage(
             	3'b010: npc = target;
             	3'b011: npc = npc;
 		//Exception
-		3'b1??: npc = pcReg + 1;
+		3'b1??: npc = epc;
             	default: npc = pcReg + 1;
         endcase
         
