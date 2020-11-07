@@ -7,6 +7,7 @@ module issue_stage (
 	input logic [31:0] wb6,			// Data
 	// signals to csr_regfile
 	input logic [31:0] csr_wb,
+	input logic csr_we6,			// Write Enable to csr_regfile
 	input logic [11:0] csr_wb_addr,
 	input logic [31:0] m_cause,
 	input logic exception_pending,
@@ -39,6 +40,8 @@ module issue_stage (
 	input logic [11:0] csr_addr3,
 	input logic [31:0] csr_imm3,
 	input logic system3,
+	// write back csr_regfile enable
+	input logic csr_we3,
 	
 	// exceptions	
 	input logic instruction_addr_misaligned3,
@@ -93,6 +96,7 @@ module issue_stage (
 	
 	// Socreboard Signals
 	input bjtaken,
+	input logic exception,
 	output logic stall,
 	output logic [1:0]stallnum,
 
@@ -102,6 +106,8 @@ module issue_stage (
 	output logic [11:0] csr_addr4,
 	output logic [31:0] csr_imm4,
 	output logic system4,
+	// write back csr_regfile enable
+	output logic csr_we4,
 
 	// exceptions
 	output logic instruction_addr_misaligned4,
@@ -158,6 +164,7 @@ module issue_stage (
 	logic [31:0]csr_immReg4;
 	logic [11:0] csr_addrReg4;
 	logic systemReg4;
+	logic csr_weReg4;
 
 	// Scoreboard Regs
 	logic [1:0]killnum;
@@ -207,6 +214,7 @@ module issue_stage (
 		csr_addrReg4	<= '0;
 		csr_immReg4	<= '0;
 		systemReg4	<= 0;
+		csr_weReg4 <= 0;
 		instruction_addr_misalignedReg4 <= 0;
 		ecallReg4	<= 0;
 		illegal_instrReg4<= 0;
@@ -239,13 +247,6 @@ module issue_stage (
 		csr_immReg4	<= csr_imm3;
 		csr_addrReg4	<= csr_addr3;
 		systemReg4	<= system3;
-		// exceptions
-		instruction_addr_misalignedReg4 <= instruction_addr_misaligned3;
-		ecallReg4	<= ecall3;
-		illegal_instrReg4<= illegal_instr3;
-		mretReg4	<= mret3;
-		sretReg4	<= sret3;
-		uretReg4	<= uret3;
 
 		if(stall )
 		begin
@@ -256,6 +257,14 @@ module issue_stage (
 		fnReg4		<= 3'b000;
 		I_immdReg4	<= 32'b0;
 		rdReg4		<= 5'b0;
+		
+		csr_weReg4		<= 0;
+		instruction_addr_misalignedReg4 <= 0;
+		ecallReg4	<= 0;
+		illegal_instrReg4<= 0;
+		mretReg4	<= 0;
+		sretReg4	<= 0;
+		uretReg4	<= 0;
 		end
 		else if(kill ) begin 
 		killnum		<=killnum+1;
@@ -266,6 +275,14 @@ module issue_stage (
 		fnReg4		<= 3'b000;
 		I_immdReg4	<= 32'b0;
 		rdReg4		<= 5'b0;
+		
+		csr_weReg4		<= 0;
+		instruction_addr_misalignedReg4 <= 0;
+		ecallReg4	<= 0;
+		illegal_instrReg4<= 0;
+		mretReg4	<= 0;
+		sretReg4	<= 0;
+		uretReg4	<= 0;
 		end 
 		else if ( killnum[1] && !killnum[0])begin 
 		killnum		<=killnum+1;
@@ -276,6 +293,14 @@ module issue_stage (
 		fnReg4		<= 3'b000;
 		I_immdReg4	<= 32'b0;
 		rdReg4		<= 5'b0;
+		
+		csr_weReg4		<= 0;
+		instruction_addr_misalignedReg4 <= 0;
+		ecallReg4	<= 0;
+		illegal_instrReg4<= 0;
+		mretReg4	<= 0;
+		sretReg4	<= 0;
+		uretReg4	<= 0;
 		end
 		else
 		begin
@@ -287,6 +312,16 @@ module issue_stage (
 		fnReg4		<= fn3;
 		I_immdReg4	<= I_imm3;
 		rdReg4		<= rd3;
+		csr_weReg4 <= csr_we3;
+		
+		csr_weReg4		<= csr_we3;
+		// exceptions
+		instruction_addr_misalignedReg4 <= instruction_addr_misaligned3;
+		ecallReg4	<= ecall3;
+		illegal_instrReg4<= illegal_instr3;
+		mretReg4	<= mret3;
+		sretReg4	<= sret3;
+		uretReg4	<= uret3;
 		end
 		
         end
@@ -308,6 +343,7 @@ module issue_stage (
  scoreboard_data_hazards scoreboard (
 	.clk(clk),
 	.nrst(nrst),
+	.exception(exception),
 	.btaken(bjtaken),
 	.rs1(rs1),
 	.rs2(rs2),
@@ -322,6 +358,7 @@ module issue_stage (
 	csr_regfile csr_registers(
 	.clk(clk),
 	.nrst(nrst),
+	.csr_we(csr_we6),
 	.csr_address_r(csr_addrReg4),
 	.csr_address_wb(csr_wb_addr),
 	.csr_wb(csr_wb),
@@ -398,7 +435,8 @@ module issue_stage (
 	assign funct3_4		= funct3Reg4;
 	assign csr_imm4		= csr_immReg4;
 	assign csr_addr4	= csr_addrReg4;
-	assign system4		= systemReg4;
+	assign system4		 = systemReg4;
+	assign csr_we4 		= csr_weReg4;
 
 	// exceptions
 	assign instruction_addr_misaligned4 = instruction_addr_misalignedReg4;

@@ -53,6 +53,7 @@ module core(
 	//Scoreboared Logic 
 	logic stall;
 	logic bjtaken;
+	logic exception;
 	logic [6:0] opcode3;
 
 	// Exceptions and CSRs
@@ -68,6 +69,7 @@ module core(
 	logic m_ret, s_ret, u_ret;
 	mode::mode_t     current_mode;
 	logic s_timer, m_timer, m_eie, m_tie, s_eie, s_tie, m_interrupt, s_interrupt;
+	logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
 
 	// =============================================== //
 	//			FrontEnd Stage		   //
@@ -167,7 +169,8 @@ module core(
 	.system		(system3),
 	.mret3		(mret3),
 	.sret3		(sret3),
-	.uret3		(uret3)
+	.uret3		(uret3),
+	.csr_we3  (csr_we3)
 	);
 
 	// =============================================== //
@@ -184,6 +187,7 @@ module core(
 	.wb6          (wb6),
 
 	.csr_wb		(csr_wb),
+	.csr_we6 (csr_we6Issue),
 	.csr_wb_addr	(csr_wb_addr),
 	.m_cause	(m_cause),
 	.exception_pending(exception_pending),
@@ -230,6 +234,7 @@ module core(
 	.csr_addr3	(csr_addr3),
 	.csr_imm3	(csr_imm3),
 	.system3	(system3),
+	.csr_we3 (csr_we3),
 
 	.instruction_addr_misaligned3(instruction_addr_misaligned3),
 	.ecall3		(ecall3),
@@ -271,6 +276,7 @@ module core(
 	// Scoreboared Signals
 	.stall          (stall),
 	.bjtaken	(bjtaken),
+	.exception (exception),
 	.opcode3	(opcode3),
 	.stallnum	(stallnum),
 	
@@ -280,6 +286,7 @@ module core(
 	.csr_addr4	(csr_addr4),
 	.csr_imm4	(csr_imm4),
 	.system4	(system4),
+	.csr_we4  (csr_we4),
 	
 	// exceptions
 	.instruction_addr_misaligned4(instruction_addr_misaligned4),
@@ -343,6 +350,7 @@ module core(
 	.csr_imm4	(csr_imm4),
 	.csr_addr4	(csr_addr4),
 	.system4	(system4),
+	.csr_we4  (csr_we4),
 
 	.instruction_addr_misaligned4(instruction_addr_misaligned4),
 	.ecall4		(ecall4),
@@ -369,13 +377,15 @@ module core(
 	.target       		(target),
 	//signal to scoreboard
 	.bjtaken6		(bjtaken),
+	.exception (exception),
 
 	// to csr_regfile
 	.pc_exc			(pc6),
 	.exception_pending	(exception_pending6),
 	.m_cause		(m_cause6),
 	.csr_wb			(csr_wb6),
-	.csr_wb_addr		(csr_wb_addr6),
+	.csr_wb_addr	(csr_wb_addr6),
+	.csr_we6     (csr_we6),
 	.mret6			(mret6),
 	.sret6			(sret6),
 	.uret6			(uret6),
@@ -406,6 +416,7 @@ module core(
 	
 	.csr_wb6	(csr_wb6),
 	.csr_wb_addr6	(csr_wb_addr6),
+	.csr_we6      (csr_we6),
 	.m_cause6	(m_cause6),
 	.exception_pending6(exception_pending6),
 	.mret6		(mret6),
@@ -420,6 +431,7 @@ module core(
 
 	.csr_wb		(csr_wb),
 	.csr_wb_addr	(csr_wb_addr),
+	.csr_we6Issue        (csr_we6Issue),
 	.pc_exc		(pc_exc),
 	.m_cause	(m_cause),
 	.exception_pending(exception_pending),

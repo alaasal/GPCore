@@ -2,6 +2,7 @@
 
 module csr_regfile(
 	input logic clk, nrst,
+	input logic csr_we,
 	input logic [11:0] csr_address_r, csr_address_wb,
 	input logic [31:0] csr_wb,		// csr data written back from csr to the register file
 	//inputs from execute stage
@@ -198,10 +199,9 @@ always_ff @(posedge clk, negedge nrst) begin
 	  end
 	else
 	  begin
-
 	current_mode <= next_mode;
         if (!exception_pending) begin
-
+     if(csr_we)begin
 		case(csr_address_wb)
 			`CSR_MSTATUS:
 			  begin
@@ -252,6 +252,7 @@ always_ff @(posedge clk, negedge nrst) begin
              		  end
 		
 		endcase
+		end
 	  end
          
 	 //Exception logic

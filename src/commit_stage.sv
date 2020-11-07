@@ -10,6 +10,7 @@ module commit_stage(
 	// csr & exceptions
 	input logic [31:0] csr_wb6,
 	input logic [11:0] csr_wb_addr6,
+	input logic csr_we6,
 	input logic [31:0] m_cause6,
 	input logic exception_pending6,
 	input logic mret6, sret6, uret6,
@@ -20,6 +21,7 @@ module commit_stage(
 
 	output logic [31:0] csr_wb,
 	output logic [11:0] csr_wb_addr,
+	output logic csr_we6Issue,
 	output logic [31:0] pc_exc,
 	output logic [31:0] m_cause,
 	output logic exception_pending,
@@ -32,6 +34,7 @@ module commit_stage(
 
 	assign csr_wb = csr_wb6;
 	assign csr_wb_addr = csr_wb_addr6;
+	assign csr_we6Issue = csr_we6;
 	assign pc_exc = pc6;
 	assign m_cause = m_cause6;
 	assign exception_pending = exception_pending;

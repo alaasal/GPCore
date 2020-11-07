@@ -36,7 +36,10 @@ module instr_decoder(
 	output logic [1:0] pcselect,
 
 	output logic ecall, uret, sret, mret, wfi, illegal_instr,
-	output logic system
+	output logic system,
+	
+	// Write back csr_regfile Enable
+	output logic csr_we
     );
 
     	// Wires
@@ -191,6 +194,7 @@ module instr_decoder(
     //10 branch
     //11
     assign we 	    = rtype | itype | jtype | jr | ltype| utype | autype | system & ~(exception_pending);
+    assign csr_we   = system | exception_pending;
     assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr | ltype;
     assign B_SEL[1] = i_slli | i_srli | i_srai;
 

@@ -63,7 +63,9 @@ module instdec_stage(
 	output logic illegal_instr3,
 	output logic system3,
 	// return instructions
-	output logic mret3, sret3, uret3
+	output logic mret3, sret3, uret3,
+	// Write back csr_regfile Enable
+	output logic csr_we3
     );
 
 	// Wires
@@ -184,7 +186,8 @@ module instdec_stage(
 	.mret        (mret3),
 	.wfi	     (),
 	.system	     (system3),
-	.illegal_instr(illegal_instr3)
+	.illegal_instr(illegal_instr3),
+	.csr_we(csr_we3)
     );
 
 endmodule
