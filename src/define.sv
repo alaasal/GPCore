@@ -66,6 +66,7 @@ package csr;
 `define CSR_STVAL      12'h143
 `define CSR_SIP        12'h144
 `define CSR_SATP       12'h180
+`define CSR_SNECYCLE   12'h5C0
 
 
 endpackage

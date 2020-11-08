@@ -56,24 +56,40 @@ module csr_regfile(
 
 
 	logic [`XLEN-1:2] mtvec;
+        logic [`XLEN-1:2] stvec;
 	logic [`XLEN-1:0] mscratch;
+        logic [`XLEN-1:0] sscratch;
 	logic [`XLEN-1:0] mcause;
+        logic [`XLEN-1:0] scause;
 	logic [`XLEN-1:0] mepc;
+        logic [`XLEN-1:0] sepc;
+
 	logic [`XLEN-1:0] mtval;
 	logic [`XLEN-1:0] medeleg;
 	logic [`XLEN-1:0] mideleg;
 
-	logic [`XLEN-1:0] sepc;
+
 	logic [`XLEN-1:0] stval;
+        logic [`XLEN-1:0] satp;
 
 	// wires
 	logic [`XLEN-1:0] mstatus;
 	logic [`XLEN-1:0] mip;
 	logic [`XLEN-1:0] mie;
+        logic [`XLEN-1:0] sstatus;
+	logic [`XLEN-1:0] sip;
+	logic [`XLEN-1:0] sie;
+
+        logic [`XLEN-1: 0]satp_en;
+        logic [`XLEN-1: 0] satp_ppn;
 
 	//logic s_timer;
 
 	assign mtvec_out = {mtvec, 2'b0};
+logic[63:0] supervisor_next_event_cycle=0;
+logic [63:0]machine_next_event_cycle=0;
+logic [63:0] cycle_counter=0;
+
 
 
 always_comb
@@ -104,8 +120,7 @@ always_comb
 		`CSR_MEDELEG: 		csr_data = medeleg;
         `CSR_MIDELEG: 		csr_data = mideleg;
 		
-		// S Mode
-		`CSR_SEPC:      	csr_data = {sepc, 2'b0};
+		
 
 /** not implemented yet **
 		`CSR_MCOUNTEREN:
@@ -117,6 +132,25 @@ always_comb
 		`CSR_TIMEH:
 		`CSR_INSTRETH:
 **			    */
+
+              // S Mode
+		`CSR_SEPC:      	csr_data = {sepc, 2'b0};
+                `CSR_SSTATUS:           csr_data = sstatus;
+                `CSR_SIE:               csr_data = sie;
+                `CSR_STVEC:             csr_data = {stvec, 2'b0};
+                              
+                `CSR_SSCRATCH:          csr_data = sscratch;
+                `CSR_SIP:               csr_data = sip;
+                `CSR_SCAUSE:            csr_data = scause;         
+                `CSR_STVAL:             csr_data = stval;
+                `CSR_SATP:              csr_data = satp;
+                `CSR_SNECYCLE:          csr_data = supervisor_next_event_cycle;
+                
+//`CSR_SCOUNTREN:
+                
+
+
+
 
 	 endcase
   end
@@ -170,7 +204,39 @@ assign mcause = {
     mcause_interrupt,
     mcause_code
 };
+assign sstatus = {
+    45'b0,
+    status_sum,
+    9'b0,
+    status_spp,
+    2'b0,
+    status_spie,
+    3'b0,
+    status_sie,
+    1'b0
+};
+assign sip = {
+    54'b0,
+    s_interrupt,
+    3'b0,
+    s_timer,
+    5'b0
+};
+assign sie = {
+    54'b0,
+    seie,
+    3'b0,
+    stie,
+    5'b0
+};
+assign scause = 
+{scause_interrupt,
+scause_code
+};
 
+assign satp = {satp_en ,
+ satp_ppn
+};
 
 always_ff @(posedge clk, negedge nrst) begin
 	if (!nrst)
@@ -192,15 +258,23 @@ always_ff @(posedge clk, negedge nrst) begin
 		stie 			<= 0;
 
 		mcause_interrupt <= 0;
-    	mcause_code      <= 0;
+    	       mcause_code      <= 0;
+
+		scause_interrupt <= 0;
+    	       scause_code      <= 0;
 
 		
 		medeleg			<= 0;
 		mideleg			<= 0;
-			
-		sepc			<= 0;
 
-	  end
+		sscratch		<= 0;	
+                stvec	    	        <= 0;
+		sepc			<= 0;
+               satp_ppn                 <= 0;
+               satp_en                  <= 0;
+             
+               
+end
 	else
 	  begin
 	current_mode <= next_mode;
@@ -349,13 +423,13 @@ always_comb begin
 end
 
 /* Counter for time and cycle CSRs. */
-logic [63:0] cycle_counter = 0;
+
 always @(posedge clk) begin
     cycle_counter <= cycle_counter + 1;
 end
 
 /* Supervisor's timer. */
-logic [63:0] supervisor_next_event_cycle = 0;
+
 always @(posedge clk) begin
     s_timer <= (cycle_counter >= supervisor_next_event_cycle);
 end
@@ -363,7 +437,7 @@ end
 // in other code they use (assign     m_timer = 0;)
 
 /* machine's timer. */
-logic [63:0] machine_next_event_cycle = 0;
+
 always @(posedge clk) begin
     m_timer <= (cycle_counter >= machine_next_event_cycle);
 end
