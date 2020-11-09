@@ -11,7 +11,7 @@ module csr_regfile(
 
 	
 	input logic [31:0] m_cause,
-	input logic [31:0] pc_exc,		// pc of instruction that caused the exception >> mepc
+	input logic [31:0] pc_exc,		// pc of instruction that caused the exception >> (mepc - sepc - uepc)
        	// input  [`XLEN-1:0] add_result,
   
  	input logic m_ret, s_ret, u_ret,	//MRET or SRET instruction is used to return from a trap in M-mode or S-mode respectively
@@ -85,24 +85,24 @@ always_comb
        			4'b0000,     // Reserved.
         		/* Extensions.
         		 *  ZYXWVUTSRQPONMLKJIHGFEDCBA */
-        		26'b00000001000001000100000001										//<<User Mode yet to be implemented>>
+        		26'b00000001000001000100000001		//<<User Mode yet to be implemented>>
     			};
 		`CSR_MVENDORID:		csr_data = '0;
 		`CSR_MARCHID:		csr_data = '0;
 		`CSR_MIMPID:		csr_data = '0;
 		`CSR_MHARTID:		csr_data = '0;
 		
-		`CSR_MSTATUS:		csr_data = mstatus;			// mstatus = sstatus
-		`CSR_MIP:			csr_data = mip;
-		`CSR_MIE:			csr_data = mie;				// Global interrupt-enable (Machine mode) -- interrupts disabled upon entry
-		`CSR_MTVEC:			csr_data = {mtvec, 2'b0}; 	// direct mode
-		`CSR_MEPC:			csr_data = {mepc, 2'b0};  	// two low bits are always zero
+		`CSR_MSTATUS:		csr_data = mstatus;		// mstatus = sstatus
+		`CSR_MIP:		csr_data = mip;
+		`CSR_MIE:		csr_data = mie;			// Global interrupt-enable (Machine mode) -- interrupts disabled upon entry
+		`CSR_MTVEC:		csr_data = {mtvec, 2'b0}; 	// direct mode
+		`CSR_MEPC:		csr_data = {mepc, 2'b0};  	// two low bits are always zero
 		`CSR_MCAUSE:		csr_data = mcause;
-		`CSR_MTVAL:			csr_data = mtval;
+		`CSR_MTVAL:		csr_data = mtval;
 		`CSR_MSCRATCH:		csr_data = mscratch;
 		
 		`CSR_MEDELEG: 		csr_data = medeleg;
-        `CSR_MIDELEG: 		csr_data = mideleg;
+        	`CSR_MIDELEG: 		csr_data = mideleg;
 		
 		// S Mode
 		`CSR_SEPC:      	csr_data = {sepc, 2'b0};
@@ -176,12 +176,12 @@ always_ff @(posedge clk, negedge nrst) begin
 	if (!nrst)
 	  begin
 		status_sie  	<= 0;
-    	status_mie  	<= 0;
-    	status_spie 	<= 0;
+    		status_mie  	<= 0;
+    		status_spie 	<= 0;
  	 	status_mpie 	<= 0;
    		status_spp  	<= 0;
-    	status_mpp  	<= mode::M;
-    	status_sum  	<= 0;
+    		status_mpp  	<= mode::M;
+    		status_sum  	<= 0;
 		mtvec	    	<= 0;
 		mscratch		<= 0;
 		mepc			<= 0;
@@ -191,8 +191,8 @@ always_ff @(posedge clk, negedge nrst) begin
 		mtie 			<= 0;
 		stie 			<= 0;
 
-		mcause_interrupt <= 0;
-    	mcause_code      <= 0;
+		mcause_interrupt 	<= 0;
+    		mcause_code      	<= 0;
 
 		
 		medeleg			<= 0;
@@ -274,7 +274,7 @@ always_ff @(posedge clk, negedge nrst) begin
 		if (!m_cause[`XLEN-1])
 		  begin
 			case (m_cause[`XLEN-2:0])
-                		exception::I_ADDR_MISALIGNED:   mtval <= {pc_exc, 1'b0};
+                		exception::I_ADDR_MISALIGNED:   mtval <= {pc_exc[31:1], 1'b0};
                 		exception::I_ILLEGAL:           mtval <= 0;			//{instruction_word, 2'b11};
                 		default:                        mtval <= 0;
 			endcase
@@ -307,7 +307,7 @@ always_ff @(posedge clk, negedge nrst) begin
             if (!m_cause[`XLEN-1])
 		begin
 		case (m_cause[`XLEN-2:0])
-                	exception::I_ADDR_MISALIGNED:   stval <= {pc_exc, 1'b0};
+                	exception::I_ADDR_MISALIGNED:   stval <= {pc_exc[31:1], 1'b0};
                 	exception::I_ILLEGAL:           stval <= 0;			//{ instruction_word, 2'b11};
                 	//exception::L_ADDR_MISALIGNED,
                 	//exception::S_ADDR_MISALIGNED,

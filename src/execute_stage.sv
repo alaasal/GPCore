@@ -46,7 +46,7 @@ module exe_stage(
 	input logic mret4, sret4, uret4,
 	
 	input logic m_timer,s_timer,
-    input mode::mode_t current_mode,
+    	input mode::mode_t current_mode,
 	input logic m_tie, s_tie, m_eie, s_eie,
     
 
@@ -69,7 +69,7 @@ module exe_stage(
 	output logic [1:0] pcselect5,
 
 	output logic bjtaken6,		//need some debug
-  output logic exception,
+  	output logic exception,
 
 	output logic [31:0] csr_wb,
 	output logic [11:0] csr_wb_addr,
@@ -183,7 +183,7 @@ module exe_stage(
           end
         else
           begin
-      if(exception)begin
+      	if(exception)begin
 		opaReg5   	<= 0;
 		opbReg5   	<= 0;
 
@@ -539,7 +539,7 @@ module exe_stage(
             3: wb_data6  = U_imm6;
             4: wb_data6  = mem_out6;
             5: wb_data6  = AU_imm6;
-	          6: wb_data6  = csr_rdReg6;
+	    6: wb_data6  = csr_rdReg6;
             default: wb_data6 = 0;
         endcase
 	end
