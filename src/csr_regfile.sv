@@ -22,7 +22,7 @@ module csr_regfile(
 	output logic m_timer,
 	output logic s_timer,
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
-	output logic m_eie, m_tie,s_eie, s_tie,
+	output logic m_eie, m_tie,s_eie, s_tie, u_eie, u_tie, u_sie,
 	output mode::mode_t     current_mode = mode::M,
 	// To front end
 	output logic [31:0] epc
@@ -71,14 +71,19 @@ module csr_regfile(
 
 	logic [`XLEN-1:2] mtvec;
     logic [`XLEN-1:2] stvec;
+	logic [`XLEN-1:2] utvec;
 	logic [`XLEN-1:0] mscratch;
     logic [`XLEN-1:0] sscratch;
+	logic [`XLEN-1:0] uscratch;
 	logic [`XLEN-1:0] mcause;
     logic [`XLEN-1:0] scause;
+	logic [`XLEN-1:0] ucause;
 	logic [`XLEN-1:0] mepc;
     logic [`XLEN-1:0] sepc;
+	logic [`XLEN-1:0] uepc;
 
 	logic [`XLEN-1:0] mtval;
+	logic [`XLEN-1:0] utval;
 	logic [`XLEN-1:0] medeleg;
 	logic [`XLEN-1:0] mideleg;
 
@@ -171,6 +176,12 @@ module csr_regfile(
 		`CSR_USTATUS:           csr_data = ustatus;
 		`CSR_UIE:               csr_data = uie;
 		`CSR_UIP:               csr_data = uip;
+		`CSR_UTVEC:				csr_data = {utvec, 2'b0}; 	// direct mode
+		`CSR_UEPC:				csr_data = {uepc, 2'b0};  	// two low bits are always zero
+		`CSR_UCAUSE:			csr_data = ucause;
+		`CSR_UTVAL:				csr_data = utval;
+		`CSR_USCRATCH:			csr_data = uscratch;
+		
 
 
 		endcase
@@ -283,6 +294,10 @@ assign uie = {
 	3'b0,
     usie
 };
+assign ucause = {
+    mcause_interrupt,
+    mcause_code
+};
 
 always_ff @(posedge clk, negedge nrst) begin
 	if (!nrst)
@@ -327,6 +342,10 @@ always_ff @(posedge clk, negedge nrst) begin
 		usie			<= 0;
         utie			<= 0;
 		ueie			<= 0;
+		utvec	    	<= 0;
+		uscratch		<= 0;
+		uepc			<= 0;
+		utval			<= 0;
 end
 	else
 	  begin
@@ -393,20 +412,31 @@ end
 					usie			<= csr_wb[0];
 					utie			<= csr_wb[4];
 					ueie			<= csr_wb[8];
-					ssie			<= csr_wb[0];
-					stie			<= csr_wb[4];
-					seie			<= csr_wb[8];
-					msie			<= csr_wb[0];
-					mtie			<= csr_wb[4];
-					meie			<= csr_wb[8];
+					//stie			<= csr_wb[4];
+					//seie			<= csr_wb[8];
+					//mtie			<= csr_wb[4];
+					//meie			<= csr_wb[8];
 					
 				end
 			`CSR_UIP:
 				begin
 					usip			<= csr_wb[0];
-					ssip			<= csr_wb[0];
-					msip			<= csr_wb[0];
+					//ssip			<= csr_wb[0];
+					//msip			<= csr_wb[0];
 				end
+			`CSR_USCRATCH: 
+				uscratch <= csr_wb;
+			`CSR_UEPC:
+				uepc <= csr_wb[31:2];
+			`CSR_UCAUSE:
+			  begin
+				mcause_code      <= csr_wb[5:0];
+				mcause_interrupt <= csr_wb[31];
+			  end
+			`CSR_UTVAL:
+				utval <= csr_wb;
+			`CSR_UTVEC:
+				utvec <= csr_wb[`XLEN-1:2];
 		
 		endcase
 		end
@@ -560,6 +590,9 @@ assign m_eie = meie && status_mie;
 assign m_tie = mtie && status_mie;
 assign s_eie = seie && status_sie;
 assign s_tie = stie && status_sie;
+assign u_tie = utie && status_uie;
+assign u_eie = ueie && status_uie;
+assign u_sie = usie && status_uie;
 
 	// epc output to pc in frontend
 	always_comb
@@ -574,5 +607,5 @@ assign s_tie = stie && status_sie;
 			default: epc = mtvec_out;
 		endcase
 	  end
-//	USER MODE (satp , URET instruction
+//	USER MODE (satp , URET instruction, sedeleg, sideleg
 endmodule
