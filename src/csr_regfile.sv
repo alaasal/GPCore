@@ -17,7 +17,7 @@ module csr_regfile(
  	input logic m_ret, s_ret, u_ret,	//MRET or SRET instruction is used to return from a trap in M-mode or S-mode respectively
 	input logic stall,
 	input logic m_interrupt,
-    	input logic s_interrupt,
+    input logic s_interrupt,
 
 	output logic m_timer,
 	output logic s_timer,
@@ -41,11 +41,25 @@ module csr_regfile(
 	logic status_spp;
 	mode::mode_t status_mpp  = mode::U;
 	logic status_sum;
+	
+	// ustatus
+	logic status_upie;
+    logic status_uie;
+	
 	// mie
 	logic meie;
 	logic seie;
 	logic mtie;
 	logic stie;
+	
+	// uip
+	logic usip;
+	logic utip;
+	logic ueip;
+	// uie
+	logic usie;
+	logic utie;
+	logic ueie;
 
 	// mcause
 	logic mcause_interrupt;
@@ -56,13 +70,13 @@ module csr_regfile(
 
 
 	logic [`XLEN-1:2] mtvec;
-        logic [`XLEN-1:2] stvec;
+    logic [`XLEN-1:2] stvec;
 	logic [`XLEN-1:0] mscratch;
-        logic [`XLEN-1:0] sscratch;
+    logic [`XLEN-1:0] sscratch;
 	logic [`XLEN-1:0] mcause;
-        logic [`XLEN-1:0] scause;
+    logic [`XLEN-1:0] scause;
 	logic [`XLEN-1:0] mepc;
-        logic [`XLEN-1:0] sepc;
+    logic [`XLEN-1:0] sepc;
 
 	logic [`XLEN-1:0] mtval;
 	logic [`XLEN-1:0] medeleg;
@@ -70,31 +84,35 @@ module csr_regfile(
 
 
 	logic [`XLEN-1:0] stval;
-        logic [`XLEN-1:0] satp;
+    logic [`XLEN-1:0] satp;
 
 	// wires
 	logic [`XLEN-1:0] mstatus;
 	logic [`XLEN-1:0] mip;
 	logic [`XLEN-1:0] mie;
-        logic [`XLEN-1:0] sstatus;
+    logic [`XLEN-1:0] sstatus;
 	logic [`XLEN-1:0] sip;
 	logic [`XLEN-1:0] sie;
+	
+	logic [`XLEN-1:0] ustatus;
+	logic [`XLEN-1:0] uip;
+	logic [`XLEN-1:0] uie;
 
-        logic [`XLEN-1: 0]satp_en;
-        logic [`XLEN-1: 0] satp_ppn;
+    logic [`XLEN-1: 0]satp_en;
+    logic [`XLEN-1: 0] satp_ppn;
 
 	//logic s_timer;
 
 	assign mtvec_out = {mtvec, 2'b0};
-logic[63:0] supervisor_next_event_cycle=0;
-logic [63:0]machine_next_event_cycle=0;
-logic [63:0] cycle_counter=0;
+	logic[63:0] supervisor_next_event_cycle=0;
+	logic [63:0]machine_next_event_cycle=0;
+	logic [63:0] cycle_counter=0;
 
 
-
-always_comb
-  begin
-	case(csr_address_r)
+ 
+	always_comb
+	begin
+		case(csr_address_r)
 		// System ID Registers
 		`CSR_MISA: csr_data = {
         		2'b00,       // MXL = 32
@@ -146,17 +164,20 @@ always_comb
                 `CSR_SATP:              csr_data = satp;
                 `CSR_SNECYCLE:          csr_data = supervisor_next_event_cycle;
                 
-//`CSR_SCOUNTREN:
+			//`CSR_SCOUNTREN:
                 
 
+		// 	USER MODE
+		`CSR_USTATUS:           csr_data = ustatus;
+		`CSR_UIE:               csr_data = uie;
+		`CSR_UIP:               csr_data = uip;
 
 
+		endcase
+	end
 
-	 endcase
-  end
 
-
-assign mstatus = {
+	assign mstatus = {
     14'b0,
     status_sum,
     1'b0,
@@ -172,11 +193,11 @@ assign mstatus = {
     1'b0,
     status_sie,			// Global interrupt-enable (Supervisor mode) -- interrupts disabled upon entry
     1'b0
-};
+	};
 
-// For user mode we need to add to mstatus (MPRV , 
+	// For user mode we need to add to mstatus (MPRV , 
 
-assign mip = {
+	assign mip = {
     20'b0,
     m_interrupt,
     1'b0,
@@ -186,9 +207,9 @@ assign mip = {
     1'b0,
     s_timer,
     5'b0
-};
+	};
 
-assign mie = {
+	assign mie = {
     20'b0,
     meie,
     1'b0,
@@ -198,7 +219,7 @@ assign mie = {
     1'b0,
     stie,
     5'b0
-};
+	};
 
 assign mcause = {
     mcause_interrupt,
@@ -238,6 +259,31 @@ assign satp = {satp_en ,
  satp_ppn
 };
 
+// USER MODE
+
+assign ustatus = {
+    27'b0,
+    status_upie,
+    3'b0,
+    status_uie,
+};
+assign uip = {
+    24'b0,
+    ueip,
+    3'b0,
+    utip,
+	3'b0,
+    usip
+};
+assign uie = {
+    24'b0,
+    ueie,
+    3'b0,
+    utie,
+	3'b0,
+    usie
+};
+
 always_ff @(posedge clk, negedge nrst) begin
 	if (!nrst)
 	  begin
@@ -258,22 +304,29 @@ always_ff @(posedge clk, negedge nrst) begin
 		stie 			<= 0;
 
 		mcause_interrupt <= 0;
-    	       mcause_code      <= 0;
+    	mcause_code      <= 0;
 
 		scause_interrupt <= 0;
-    	       scause_code      <= 0;
+    	scause_code      <= 0;
 
 		
 		medeleg			<= 0;
 		mideleg			<= 0;
 
 		sscratch		<= 0;	
-                stvec	    	        <= 0;
+        stvec  	        <= 0;
 		sepc			<= 0;
-               satp_ppn                 <= 0;
-               satp_en                  <= 0;
-             
-               
+        satp_ppn                 <= 0;
+        satp_en                  <= 0;
+        
+		status_upie		<= 0;
+		status_uie		<= 0;
+		usip			<= 0;
+		utip			<= 0;
+		ueip			<= 0;
+		usie			<= 0;
+        utie			<= 0;
+		ueie			<= 0;
 end
 	else
 	  begin
@@ -328,6 +381,32 @@ end
                			scause_code <= csr_wb[5:0];
                 		scause_interrupt <= csr_wb[31];
              		  end
+					  
+			// USER MODE
+			`CSR_USTATUS:           
+				begin
+					status_upie		<= csr_wb[4];
+					status_uie		<= csr_wb[0];
+				end
+			`CSR_UIE:
+				begin			
+					usie			<= csr_wb[0];
+					utie			<= csr_wb[4];
+					ueie			<= csr_wb[8];
+					ssie			<= csr_wb[0];
+					stie			<= csr_wb[4];
+					seie			<= csr_wb[8];
+					msie			<= csr_wb[0];
+					mtie			<= csr_wb[4];
+					meie			<= csr_wb[8];
+					
+				end
+			`CSR_UIP:
+				begin
+					usip			<= csr_wb[0];
+					ssip			<= csr_wb[0];
+					msip			<= csr_wb[0];
+				end
 		
 		endcase
 		end
@@ -337,27 +416,27 @@ end
 	else if (exception_pending && next_mode==mode::M && !m_ret)
 	  begin
 		mepc <= pc_exc[`XLEN-1:2];
-            	status_mie  <= 0;
-            	status_mpie <= status_mie;
-            	status_mpp  <= current_mode;
+        status_mie  <= 0;
+        status_mpie <= status_mie;
+        status_mpp  <= current_mode;
 
-            	mcause_interrupt <= m_cause[`XLEN-1];
-            	mcause_code      <= m_cause[`XLEN-2:0];
+        mcause_interrupt <= m_cause[`XLEN-1];
+        mcause_code      <= m_cause[`XLEN-2:0];
 
           
 		if (!m_cause[`XLEN-1])
 		  begin
 			case (m_cause[`XLEN-2:0])
-                		exception::I_ADDR_MISALIGNED:   mtval <= {pc_exc, 1'b0};
-                		exception::I_ILLEGAL:           mtval <= 0;			//{instruction_word, 2'b11};
-                		default:                        mtval <= 0;
+            exception::I_ADDR_MISALIGNED:   mtval <= {pc_exc};
+            exception::I_ILLEGAL:           mtval <= 0;			//{instruction_word, 2'b11};
+            default:                        mtval <= 0;
 			endcase
 		  end
 				
 		else
 		  begin
-                	mtval <= 0;
-           	  end
+            mtval <= 0;
+          end
 	  end	
 		
     // return from interrupt 
@@ -369,7 +448,7 @@ end
 	  end
 		
         else if (exception_pending && next_mode==mode::S && !s_ret)
-	  begin
+		begin
             sepc <= pc_exc[`XLEN-1:2];
             status_sie  <= 0;
             status_spie <= status_sie;
@@ -379,27 +458,61 @@ end
 
 
             if (!m_cause[`XLEN-1])
-		begin
-		case (m_cause[`XLEN-2:0])
-                	exception::I_ADDR_MISALIGNED:   stval <= {pc_exc, 1'b0};
-                	exception::I_ILLEGAL:           stval <= 0;			//{ instruction_word, 2'b11};
-                	//exception::L_ADDR_MISALIGNED,
-                	//exception::S_ADDR_MISALIGNED,
-                	default:                        stval <= 0;
-            	endcase
-         	end
+			begin
+				case (m_cause[`XLEN-2:0])
+					exception::I_ADDR_MISALIGNED:   stval <= {pc_exc};	//pc_exc, 1'b0
+					exception::I_ILLEGAL:           stval <= 0;			//{ instruction_word, 2'b11};
+					//exception::L_ADDR_MISALIGNED,
+					//exception::S_ADDR_MISALIGNED,
+					default:                        stval <= 0;
+				endcase
+			end
             else
-		begin
+			begin
                 stval <= 0;
-            	end
-          end
+            end
+		end
 		
-        else if (s_ret) begin
+        else if (s_ret) 
+		begin
             status_sie  <= status_spie;
             status_spie <= 1;
             status_spp  <= 0;
-        end
+		end
     end
+	
+	// USER MODE
+	else if (exception_pending && next_mode==mode::U && !u_ret)
+	  begin
+		uepc <= pc_exc[`XLEN-1:2];
+        status_uie  <= 0;
+        status_upie <= status_uie;
+
+        ucause_interrupt <= m_cause[`XLEN-1];
+        ucause_code      <= m_cause[`XLEN-2:0];
+
+          
+		if (!m_cause[`XLEN-1])
+		  begin
+			case (m_cause[`XLEN-2:0])
+            exception::I_ADDR_MISALIGNED:   utval <= {pc_exc};
+            exception::I_ILLEGAL:           utval <= 0;			//{instruction_word, 2'b11};
+            default:                        utval <= 0;
+			endcase
+		  end
+				
+		else
+		  begin
+            utval <= 0;
+          end
+	  end	
+		
+    // return from interrupt 
+        else if (u_ret)
+	  begin
+            status_uie  <= status_upie;
+            status_upie <= 1;
+	  end
 end
 
 
@@ -461,5 +574,5 @@ assign s_tie = stie && status_sie;
 			default: epc = mtvec_out;
 		endcase
 	  end
-
+//	USER MODE (satp , URET instruction
 endmodule
