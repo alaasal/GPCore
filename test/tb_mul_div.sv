@@ -32,14 +32,15 @@ module tb_mul_div ;
 
     string op_type = "mul";
 
+    logic signed [63:0] real_res_reg;
+    logic [31:0] real_res;
+    packet pkt;
+
     //instantiation of DUTs
     mul_div dut(.a(a),.b(b),.mulDiv_op(mulDiv_op),.res(res));
 
     //stimulus generation 
     initial begin 
-      logic signed [63:0] real_res_reg;
-      logic [31:0] real_res;
-      packet pkt;
       pkt = new(); 
       $display("-------------------------------------------------TESTING------------------------------------------------");
       $display("| %6s | %13s | %13s | %13s | %13s | %20s | %4s |", "OpCode", "A", "B", "DUT", "Real Result", "Full Result", "Pass");
@@ -76,7 +77,6 @@ module tb_mul_div ;
                   (mulDiv_op == 3'b111)? "REM":
                   (mulDiv_op == 3'b110)? "REMU": "INVAL";
         
-        
         real_res_reg = (mulDiv_op == 3'b000)? a * b:
                        (mulDiv_op == 3'b001)? a * b:
                        (mulDiv_op == 3'b010)? a * b:
@@ -86,7 +86,6 @@ module tb_mul_div ;
                        (mulDiv_op == 3'b111)? a % b:
                        (mulDiv_op == 3'b110)? a % b: 64'hx;
 
-        
         real_res = (mulDiv_op == 3'b000)? real_res_reg[31:0]:
                    (mulDiv_op == 3'b001)? real_res_reg[63:32]:
                    (mulDiv_op == 3'b010)? real_res_reg[63:32]:
@@ -97,7 +96,7 @@ module tb_mul_div ;
                    (mulDiv_op == 3'b110)? real_res_reg[31:0]: 64'hx;
         #1;
         //$display("\top_type = %5s\t \tA = %d \tB = %d \tDUT_res = %d \treal_res = %d \tfull_res = %d \tpass = %d ", op_type, a, b, res, real_res, real_res_reg, real_res == res);
-        $display("| %6s | %13d | %13d | %13d | %13d | %20d | %4d |", op_type, a, b, res, real_res, real_res_reg, real_res == res);
+        $display("| %6s | %13h | %13h | %13h | %13h | %20h | %4d |", op_type, a, b, res, real_res, real_res_reg, real_res == res);
         $display("--------------------------------------------------------------------------------------------------------");
       end
     end   
