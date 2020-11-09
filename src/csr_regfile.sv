@@ -9,26 +9,26 @@ module csr_regfile(
 	input logic exception_pending,
 	input logic instruction_word,
 
-	
+
 	input logic [31:0] m_cause,
 	input logic [31:0] pc_exc,		// pc of instruction that caused the exception >> (mepc - sepc - uepc)
        	// input  [`XLEN-1:0] add_result,
-  
+
  	input logic m_ret, s_ret, u_ret,	//MRET or SRET instruction is used to return from a trap in M-mode or S-mode respectively
 	input logic stall,
 	input logic m_interrupt,
-    	input logic s_interrupt,
+    input logic s_interrupt,
 
 	output logic m_timer,
 	output logic s_timer,
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
-	output logic m_eie, m_tie,s_eie, s_tie,
+	output logic m_eie, m_tie,s_eie, s_tie, u_eie, u_tie, u_sie,
 	output mode::mode_t     current_mode = mode::M,
 	// To front end
 	output logic [31:0] epc
 	);
-	
-	
+
+
 	mode::mode_t  next_mode;
 
 
@@ -41,11 +41,25 @@ module csr_regfile(
 	logic status_spp;
 	mode::mode_t status_mpp  = mode::U;
 	logic status_sum;
+
+	// ustatus
+	logic status_upie;
+    logic status_uie;
+
 	// mie
 	logic meie;
 	logic seie;
 	logic mtie;
 	logic stie;
+
+	// uip
+	logic usip;
+	logic utip;
+	logic ueip;
+	// uie
+	logic usie;
+	logic utie;
+	logic ueie;
 
 	// mcause
 	logic mcause_interrupt;
@@ -56,29 +70,54 @@ module csr_regfile(
 
 
 	logic [`XLEN-1:2] mtvec;
+    logic [`XLEN-1:2] stvec;
+	logic [`XLEN-1:2] utvec;
 	logic [`XLEN-1:0] mscratch;
+    logic [`XLEN-1:0] sscratch;
+	logic [`XLEN-1:0] uscratch;
 	logic [`XLEN-1:0] mcause;
+    logic [`XLEN-1:0] scause;
+	logic [`XLEN-1:0] ucause;
 	logic [`XLEN-1:0] mepc;
+    logic [`XLEN-1:0] sepc;
+	logic [`XLEN-1:0] uepc;
+
 	logic [`XLEN-1:0] mtval;
+	logic [`XLEN-1:0] utval;
 	logic [`XLEN-1:0] medeleg;
 	logic [`XLEN-1:0] mideleg;
 
-	logic [`XLEN-1:0] sepc;
+
 	logic [`XLEN-1:0] stval;
+    logic [`XLEN-1:0] satp;
 
 	// wires
 	logic [`XLEN-1:0] mstatus;
 	logic [`XLEN-1:0] mip;
 	logic [`XLEN-1:0] mie;
+    logic [`XLEN-1:0] sstatus;
+	logic [`XLEN-1:0] sip;
+	logic [`XLEN-1:0] sie;
+
+	logic [`XLEN-1:0] ustatus;
+	logic [`XLEN-1:0] uip;
+	logic [`XLEN-1:0] uie;
+
+    logic [`XLEN-1: 0]satp_en;
+    logic [`XLEN-1: 0] satp_ppn;
 
 	//logic s_timer;
 
 	assign mtvec_out = {mtvec, 2'b0};
+	logic[63:0] supervisor_next_event_cycle=0;
+	logic [63:0]machine_next_event_cycle=0;
+	logic [63:0] cycle_counter=0;
 
 
-always_comb
-  begin
-	case(csr_address_r)
+
+	always_comb
+	begin
+		case(csr_address_r)
 		// System ID Registers
 		`CSR_MISA: csr_data = {
         		2'b00,       // MXL = 32
@@ -91,7 +130,7 @@ always_comb
 		`CSR_MARCHID:		csr_data = '0;
 		`CSR_MIMPID:		csr_data = '0;
 		`CSR_MHARTID:		csr_data = '0;
-		
+
 		`CSR_MSTATUS:		csr_data = mstatus;		// mstatus = sstatus
 		`CSR_MIP:		csr_data = mip;
 		`CSR_MIE:		csr_data = mie;			// Global interrupt-enable (Machine mode) -- interrupts disabled upon entry
@@ -100,12 +139,11 @@ always_comb
 		`CSR_MCAUSE:		csr_data = mcause;
 		`CSR_MTVAL:		csr_data = mtval;
 		`CSR_MSCRATCH:		csr_data = mscratch;
-		
+
 		`CSR_MEDELEG: 		csr_data = medeleg;
         	`CSR_MIDELEG: 		csr_data = mideleg;
-		
-		// S Mode
-		`CSR_SEPC:      	csr_data = {sepc, 2'b0};
+
+
 
 /** not implemented yet **
 		`CSR_MCOUNTEREN:
@@ -118,11 +156,39 @@ always_comb
 		`CSR_INSTRETH:
 **			    */
 
-	 endcase
-  end
+              // S Mode
+		`CSR_SEPC:      	csr_data = {sepc, 2'b0};
+                `CSR_SSTATUS:           csr_data = sstatus;
+                `CSR_SIE:               csr_data = sie;
+                `CSR_STVEC:             csr_data = {stvec, 2'b0};
+
+                `CSR_SSCRATCH:          csr_data = sscratch;
+                `CSR_SIP:               csr_data = sip;
+                `CSR_SCAUSE:            csr_data = scause;
+                `CSR_STVAL:             csr_data = stval;
+                `CSR_SATP:              csr_data = satp;
+                `CSR_SNECYCLE:          csr_data = supervisor_next_event_cycle;
+
+			//`CSR_SCOUNTREN:
 
 
-assign mstatus = {
+		// 	USER MODE
+		`CSR_USTATUS:           csr_data = ustatus;
+		`CSR_UIE:               csr_data = uie;
+		`CSR_UIP:               csr_data = uip;
+		`CSR_UTVEC:				csr_data = {utvec, 2'b0}; 	// direct mode
+		`CSR_UEPC:				csr_data = {uepc, 2'b0};  	// two low bits are always zero
+		`CSR_UCAUSE:			csr_data = ucause;
+		`CSR_UTVAL:				csr_data = utval;
+		`CSR_USCRATCH:			csr_data = uscratch;
+
+
+
+		endcase
+	end
+
+
+	assign mstatus = {
     14'b0,
     status_sum,
     1'b0,
@@ -138,11 +204,11 @@ assign mstatus = {
     1'b0,
     status_sie,			// Global interrupt-enable (Supervisor mode) -- interrupts disabled upon entry
     1'b0
-};
+	};
 
-// For user mode we need to add to mstatus (MPRV , 
+	// For user mode we need to add to mstatus (MPRV ,
 
-assign mip = {
+	assign mip = {
     20'b0,
     m_interrupt,
     1'b0,
@@ -152,9 +218,9 @@ assign mip = {
     1'b0,
     s_timer,
     5'b0
-};
+	};
 
-assign mie = {
+	assign mie = {
     20'b0,
     meie,
     1'b0,
@@ -164,13 +230,74 @@ assign mie = {
     1'b0,
     stie,
     5'b0
-};
+	};
 
 assign mcause = {
     mcause_interrupt,
     mcause_code
 };
+assign sstatus = {
+    45'b0,
+    status_sum,
+    9'b0,
+    status_spp,
+    2'b0,
+    status_spie,
+    3'b0,
+    status_sie,
+    1'b0
+};
+assign sip = {
+    54'b0,
+    s_interrupt,
+    3'b0,
+    s_timer,
+    5'b0
+};
+assign sie = {
+    54'b0,
+    seie,
+    3'b0,
+    stie,
+    5'b0
+};
+assign scause =
+{scause_interrupt,
+scause_code
+};
 
+assign satp = {satp_en ,
+ satp_ppn
+};
+
+// USER MODE
+
+assign ustatus = {
+    27'b0,
+    status_upie,
+    3'b0,
+    status_uie,
+};
+assign uip = {
+    24'b0,
+    ueip,
+    3'b0,
+    utip,
+	3'b0,
+    usip
+};
+assign uie = {
+    24'b0,
+    ueie,
+    3'b0,
+    utie,
+	3'b0,
+    usie
+};
+assign ucause = {
+    mcause_interrupt,
+    mcause_code
+};
 
 always_ff @(posedge clk, negedge nrst) begin
 	if (!nrst)
@@ -194,13 +321,32 @@ always_ff @(posedge clk, negedge nrst) begin
 		mcause_interrupt 	<= 0;
     		mcause_code      	<= 0;
 
-		
+		scause_interrupt <= 0;
+    	scause_code      <= 0;
+
+
 		medeleg			<= 0;
 		mideleg			<= 0;
-			
-		sepc			<= 0;
 
-	  end
+		sscratch		<= 0;
+        stvec  	        <= 0;
+		sepc			<= 0;
+        satp_ppn                 <= 0;
+        satp_en                  <= 0;
+
+		status_upie		<= 0;
+		status_uie		<= 0;
+		usip			<= 0;
+		utip			<= 0;
+		ueip			<= 0;
+		usie			<= 0;
+        utie			<= 0;
+		ueie			<= 0;
+		utvec	    	<= 0;
+		uscratch		<= 0;
+		uepc			<= 0;
+		utval			<= 0;
+end
 	else
 	  begin
 	current_mode <= next_mode;
@@ -230,7 +376,7 @@ always_ff @(posedge clk, negedge nrst) begin
                         	seie <= csr_wb[9];
                         	meie <= csr_wb[11];
 			  end
-			`CSR_MSCRATCH: 
+			`CSR_MSCRATCH:
 				mscratch <= csr_wb;
 			`CSR_MEPC:
 				mepc <= csr_wb[31:2];
@@ -245,7 +391,7 @@ always_ff @(posedge clk, negedge nrst) begin
 				medeleg <= csr_wb[15:0];
 			`CSR_MIDELEG:
 				mideleg <= csr_wb[11:0];
-				
+
 			// S Mode
 			`CSR_SEPC:
                     		sepc <= csr_wb[31:2];
@@ -254,23 +400,60 @@ always_ff @(posedge clk, negedge nrst) begin
                			scause_code <= csr_wb[5:0];
                 		scause_interrupt <= csr_wb[31];
              		  end
-		
+
+			// USER MODE
+			`CSR_USTATUS:
+				begin
+					status_upie		<= csr_wb[4];
+					status_uie		<= csr_wb[0];
+				end
+			`CSR_UIE:
+				begin
+					usie			<= csr_wb[0];
+					utie			<= csr_wb[4];
+					ueie			<= csr_wb[8];
+					//stie			<= csr_wb[4];
+					//seie			<= csr_wb[8];
+					//mtie			<= csr_wb[4];
+					//meie			<= csr_wb[8];
+
+				end
+			`CSR_UIP:
+				begin
+					usip			<= csr_wb[0];
+					//ssip			<= csr_wb[0];
+					//msip			<= csr_wb[0];
+				end
+			`CSR_USCRATCH:
+				uscratch <= csr_wb;
+			`CSR_UEPC:
+				uepc <= csr_wb[31:2];
+			`CSR_UCAUSE:
+			  begin
+				mcause_code      <= csr_wb[5:0];
+				mcause_interrupt <= csr_wb[31];
+			  end
+			`CSR_UTVAL:
+				utval <= csr_wb;
+			`CSR_UTVEC:
+				utvec <= csr_wb[`XLEN-1:2];
+
 		endcase
 		end
 	  end
-         
+
 	 //Exception logic
 	else if (exception_pending && next_mode==mode::M && !m_ret)
 	  begin
 		mepc <= pc_exc[`XLEN-1:2];
-            	status_mie  <= 0;
-            	status_mpie <= status_mie;
-            	status_mpp  <= current_mode;
+        status_mie  <= 0;
+        status_mpie <= status_mie;
+        status_mpp  <= current_mode;
 
-            	mcause_interrupt <= m_cause[`XLEN-1];
-            	mcause_code      <= m_cause[`XLEN-2:0];
+        mcause_interrupt <= m_cause[`XLEN-1];
+        mcause_code      <= m_cause[`XLEN-2:0];
 
-          
+
 		if (!m_cause[`XLEN-1])
 		  begin
 			case (m_cause[`XLEN-2:0])
@@ -279,23 +462,23 @@ always_ff @(posedge clk, negedge nrst) begin
                 		default:                        mtval <= 0;
 			endcase
 		  end
-				
+
 		else
 		  begin
-                	mtval <= 0;
-           	  end
-	  end	
-		
-    // return from interrupt 
+            mtval <= 0;
+          end
+	  end
+
+    // return from interrupt
         else if (m_ret)
 	  begin
             status_mie  <= status_mpie;
             status_mpie <= 1;
             status_mpp  <= mode::U;
 	  end
-		
+
         else if (exception_pending && next_mode==mode::S && !s_ret)
-	  begin
+		begin
             sepc <= pc_exc[`XLEN-1:2];
             status_sie  <= 0;
             status_spie <= status_sie;
@@ -315,17 +498,51 @@ always_ff @(posedge clk, negedge nrst) begin
             	endcase
          	end
             else
-		begin
+			begin
                 stval <= 0;
-            	end
-          end
-		
-        else if (s_ret) begin
+            end
+		end
+
+        else if (s_ret)
+		begin
             status_sie  <= status_spie;
             status_spie <= 1;
             status_spp  <= 0;
-        end
+		end
     end
+
+	// USER MODE
+	else if (exception_pending && next_mode==mode::U && !u_ret)
+	  begin
+		uepc <= pc_exc[`XLEN-1:2];
+        status_uie  <= 0;
+        status_upie <= status_uie;
+
+        ucause_interrupt <= m_cause[`XLEN-1];
+        ucause_code      <= m_cause[`XLEN-2:0];
+
+
+		if (!m_cause[`XLEN-1])
+		  begin
+			case (m_cause[`XLEN-2:0])
+            exception::I_ADDR_MISALIGNED:   utval <= {pc_exc};
+            exception::I_ILLEGAL:           utval <= 0;			//{instruction_word, 2'b11};
+            default:                        utval <= 0;
+			endcase
+		  end
+
+		else
+		  begin
+            utval <= 0;
+          end
+	  end
+
+    // return from interrupt
+        else if (u_ret)
+	  begin
+            status_uie  <= status_upie;
+            status_upie <= 1;
+	  end
 end
 
 
@@ -349,13 +566,13 @@ always_comb begin
 end
 
 /* Counter for time and cycle CSRs. */
-logic [63:0] cycle_counter = 0;
+
 always @(posedge clk) begin
     cycle_counter <= cycle_counter + 1;
 end
 
 /* Supervisor's timer. */
-logic [63:0] supervisor_next_event_cycle = 0;
+
 always @(posedge clk) begin
     s_timer <= (cycle_counter >= supervisor_next_event_cycle);
 end
@@ -363,16 +580,19 @@ end
 // in other code they use (assign     m_timer = 0;)
 
 /* machine's timer. */
-logic [63:0] machine_next_event_cycle = 0;
+
 always @(posedge clk) begin
     m_timer <= (cycle_counter >= machine_next_event_cycle);
 end
-	 
+
 // interrupts enable signals
 assign m_eie = meie && status_mie;
 assign m_tie = mtie && status_mie;
 assign s_eie = seie && status_sie;
 assign s_tie = stie && status_sie;
+assign u_tie = utie && status_uie;
+assign u_eie = ueie && status_uie;
+assign u_sie = usie && status_uie;
 
 	// epc output to pc in frontend
 	always_comb
@@ -387,5 +607,5 @@ assign s_tie = stie && status_sie;
 			default: epc = mtvec_out;
 		endcase
 	  end
-
+//	USER MODE (satp , URET instruction, sedeleg, sideleg
 endmodule
