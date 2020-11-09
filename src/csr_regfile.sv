@@ -17,7 +17,7 @@ module csr_regfile(
  	input logic m_ret, s_ret, u_ret,	//MRET or SRET instruction is used to return from a trap in M-mode or S-mode respectively
 	input logic stall,
 	input logic m_interrupt,
-    input logic s_interrupt,
+    	input logic s_interrupt,
 
 	output logic m_timer,
 	output logic s_timer,
@@ -44,7 +44,7 @@ module csr_regfile(
 
 	// ustatus
 	logic status_upie;
-    logic status_uie;
+    	logic status_uie;
 
 	// mie
 	logic meie;
@@ -70,16 +70,16 @@ module csr_regfile(
 
 
 	logic [`XLEN-1:2] mtvec;
-    logic [`XLEN-1:2] stvec;
+    	logic [`XLEN-1:2] stvec;
 	logic [`XLEN-1:2] utvec;
 	logic [`XLEN-1:0] mscratch;
-    logic [`XLEN-1:0] sscratch;
+    	logic [`XLEN-1:0] sscratch;
 	logic [`XLEN-1:0] uscratch;
 	logic [`XLEN-1:0] mcause;
-    logic [`XLEN-1:0] scause;
+    	logic [`XLEN-1:0] scause;
 	logic [`XLEN-1:0] ucause;
 	logic [`XLEN-1:0] mepc;
-    logic [`XLEN-1:0] sepc;
+    	logic [`XLEN-1:0] sepc;
 	logic [`XLEN-1:0] uepc;
 
 	logic [`XLEN-1:0] mtval;
@@ -89,22 +89,18 @@ module csr_regfile(
 
 
 	logic [`XLEN-1:0] stval;
-    logic [`XLEN-1:0] satp;
 
 	// wires
 	logic [`XLEN-1:0] mstatus;
 	logic [`XLEN-1:0] mip;
 	logic [`XLEN-1:0] mie;
-    logic [`XLEN-1:0] sstatus;
+    	logic [`XLEN-1:0] sstatus;
 	logic [`XLEN-1:0] sip;
 	logic [`XLEN-1:0] sie;
 
 	logic [`XLEN-1:0] ustatus;
 	logic [`XLEN-1:0] uip;
 	logic [`XLEN-1:0] uie;
-
-    logic [`XLEN-1: 0]satp_en;
-    logic [`XLEN-1: 0] satp_ppn;
 
 	//logic s_timer;
 
@@ -166,7 +162,6 @@ module csr_regfile(
                 `CSR_SIP:               csr_data = sip;
                 `CSR_SCAUSE:            csr_data = scause;
                 `CSR_STVAL:             csr_data = stval;
-                `CSR_SATP:              csr_data = satp;
                 `CSR_SNECYCLE:          csr_data = supervisor_next_event_cycle;
 
 			//`CSR_SCOUNTREN:
@@ -176,7 +171,7 @@ module csr_regfile(
 		`CSR_USTATUS:           csr_data = ustatus;
 		`CSR_UIE:               csr_data = uie;
 		`CSR_UIP:               csr_data = uip;
-		`CSR_UTVEC:				csr_data = {utvec, 2'b0}; 	// direct mode
+		`CSR_UTVEC:			csr_data = {utvec, 2'b0}; 	// direct mode
 		`CSR_UEPC:				csr_data = {uepc, 2'b0};  	// two low bits are always zero
 		`CSR_UCAUSE:			csr_data = ucause;
 		`CSR_UTVAL:				csr_data = utval;
@@ -209,66 +204,64 @@ module csr_regfile(
 	// For user mode we need to add to mstatus (MPRV ,
 
 	assign mip = {
-    20'b0,
-    m_interrupt,
-    1'b0,
-    s_interrupt,
-    1'b0,
-    m_timer,
-    1'b0,
-    s_timer,
-    5'b0
+		20'b0,
+	    	m_interrupt,
+	    	1'b0,
+	    	s_interrupt,
+	    	1'b0,
+	    	m_timer,
+	    	1'b0,
+	    	s_timer,
+	    	5'b0
 	};
 
 	assign mie = {
-    20'b0,
-    meie,
-    1'b0,
-    seie,
-    1'b0,
-    mtie,
-    1'b0,
-    stie,
-    5'b0
+    		20'b0,
+    		meie,
+    		1'b0,
+    		seie,
+    		1'b0,
+    		mtie,
+    		1'b0,
+    		stie,
+    		5'b0
 	};
 
-assign mcause = {
-    mcause_interrupt,
-    mcause_code
-};
-assign sstatus = {
-    45'b0,
-    status_sum,
-    9'b0,
-    status_spp,
-    2'b0,
-    status_spie,
-    3'b0,
-    status_sie,
-    1'b0
-};
-assign sip = {
-    54'b0,
-    s_interrupt,
-    3'b0,
-    s_timer,
-    5'b0
-};
-assign sie = {
-    54'b0,
-    seie,
-    3'b0,
-    stie,
-    5'b0
-};
-assign scause =
-{scause_interrupt,
-scause_code
-};
+	assign mcause = {
+    		mcause_interrupt,
+    		mcause_code
+	};
 
-assign satp = {satp_en ,
- satp_ppn
-};
+	assign sstatus = {
+		13'b0,
+  		status_sum,
+  		9'b0,
+    		status_spp,
+    		2'b0,
+    		status_spie,
+    		3'b0,
+    		status_sie,
+    		1'b0
+	};
+	assign sip = {
+		22'b0,
+    		s_interrupt,
+    		3'b0,
+    		s_timer,
+    		5'b0
+	};
+	assign sie = {
+    		22'b0,
+    		seie,
+    		3'b0,
+    		stie,
+    		5'b0
+	};
+	assign scause = {
+		scause_interrupt,
+		scause_code
+	};
+
 
 // USER MODE
 
@@ -302,14 +295,14 @@ assign ucause = {
 always_ff @(posedge clk, negedge nrst) begin
 	if (!nrst)
 	  begin
-		status_sie  	<= 0;
-    		status_mie  	<= 0;
-    		status_spie 	<= 0;
- 	 	status_mpie 	<= 0;
-   		status_spp  	<= 0;
-    		status_mpp  	<= mode::M;
-    		status_sum  	<= 0;
-		mtvec	    	<= 0;
+		status_sie  		<= 0;
+    		status_mie  		<= 0;
+    		status_spie 		<= 0;
+ 	 	status_mpie 		<= 0;
+   		status_spp  		<= 0;
+    		status_mpp  		<= mode::M;
+    		status_sum  		<= 0;
+		mtvec	    		<= 0;
 		mscratch		<= 0;
 		mepc			<= 0;
 		mtval			<= 0;
@@ -321,18 +314,16 @@ always_ff @(posedge clk, negedge nrst) begin
 		mcause_interrupt 	<= 0;
     		mcause_code      	<= 0;
 
-		scause_interrupt <= 0;
-    	scause_code      <= 0;
+		scause_interrupt 	<= 0;
+    		scause_code      	<= 0;
 
 
 		medeleg			<= 0;
 		mideleg			<= 0;
 
 		sscratch		<= 0;
-        stvec  	        <= 0;
+        	stvec  	        	<= 0;
 		sepc			<= 0;
-        satp_ppn                 <= 0;
-        satp_en                  <= 0;
 
 		status_upie		<= 0;
 		status_uie		<= 0;
@@ -340,9 +331,9 @@ always_ff @(posedge clk, negedge nrst) begin
 		utip			<= 0;
 		ueip			<= 0;
 		usie			<= 0;
-        utie			<= 0;
+        	utie			<= 0;
 		ueie			<= 0;
-		utvec	    	<= 0;
+		utvec	    		<= 0;
 		uscratch		<= 0;
 		uepc			<= 0;
 		utval			<= 0;
@@ -446,12 +437,12 @@ end
 	else if (exception_pending && next_mode==mode::M && !m_ret)
 	  begin
 		mepc <= pc_exc[`XLEN-1:2];
-        status_mie  <= 0;
-        status_mpie <= status_mie;
-        status_mpp  <= current_mode;
+        	status_mie  <= 0;
+        	status_mpie <= status_mie;
+        	status_mpp  <= current_mode;
 
-        mcause_interrupt <= m_cause[`XLEN-1];
-        mcause_code      <= m_cause[`XLEN-2:0];
+        	mcause_interrupt <= m_cause[`XLEN-1];
+        	mcause_code      <= m_cause[`XLEN-2:0];
 
 
 		if (!m_cause[`XLEN-1])
@@ -602,10 +593,10 @@ assign u_sie = usie && status_uie;
 			3'b100:	epc = mepc;
 			3'b010:	epc = sepc;
 			/* to be added with user mode
-			3'b001:	out_pc = uepc;
+			3'b001:	epc = uepc;
 			*/
 			default: epc = mtvec_out;
 		endcase
 	  end
-//	USER MODE (satp , URET instruction, sedeleg, sideleg
+//	USER MODE (sedeleg, sideleg)
 endmodule

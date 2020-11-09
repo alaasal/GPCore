@@ -77,7 +77,7 @@ module exe_stage(
 
 	// exceptions
 	output logic pc_exc,
-	output logic [31:0] m_cause,
+	output logic [31:0] cause6,
 	output logic exception_pending,
 	output logic mret6, sret6, uret6,
 	
@@ -438,7 +438,7 @@ module exe_stage(
 	//		  Exception Logic		   //
 	// =============================================== //
 
-	logic [31:0] mcause;
+	logic [31:0] cause;
 	logic m_timer_conditioned     =                                m_tie && m_timer;
 	logic s_timer_conditioned     = (current_mode <= mode::S) &&   s_tie && s_timer;
 	logic m_interrupt_conditioned =                                m_eie && m_interrupt;
@@ -451,58 +451,58 @@ module exe_stage(
 
 	always_comb
 	  begin
-    		mcause[`XLEN-1] = 0;
-    		mcause[`XLEN-2:0] = 0;
+    		cause[`XLEN-1] = 0;
+    		cause[`XLEN-2:0] = 0;
     		if (m_interrupt_conditioned)
 		  begin
-    			mcause[`XLEN-1] = 1;
-        		mcause[`XLEN-2:0] = exceptions::M_INT_EXT;
+    			cause[`XLEN-1] = 1;
+        		cause[`XLEN-2:0] = exceptions::M_INT_EXT;
 		  end
     		else if (s_interrupt_conditioned)
 		  begin
-        		mcause[`XLEN-1] = 1;
-        		mcause[`XLEN-2:0] = exceptions::S_INT_EXT;
+        		cause[`XLEN-1] = 1;
+        		cause[`XLEN-2:0] = exceptions::S_INT_EXT;
     		  end
     		else if (m_timer_conditioned)
 		  begin
-    			mcause[`XLEN-1] = 1;
-    			mcause[`XLEN-2:0] = exceptions::M_INT_TIMER;
+    			cause[`XLEN-1] = 1;
+    			cause[`XLEN-2:0] = exceptions::M_INT_TIMER;
     		  end
     		else if (s_timer_conditioned)
 		  begin
-    			mcause[`XLEN-1] = 1;
-    		 	mcause[`XLEN-2:0] = exceptions::S_INT_TIMER;
+    			cause[`XLEN-1] = 1;
+    		 	cause[`XLEN-2:0] = exceptions::S_INT_TIMER;
     		  end
     		else if (instruction_addr_misalignedReg6)
 		  begin
-    			mcause[`XLEN-2:0] = exceptions::I_ADDR_MISALIGNED;
+    			cause[`XLEN-2:0] = exceptions::I_ADDR_MISALIGNED;
     		  end
 		else if (ecallReg6)
 		  begin
-			mcause[`XLEN-2:0] = exceptions::U_CALL + {3'b0, current_mode};
+			cause[`XLEN-2:0] = exceptions::U_CALL + {3'b0, current_mode};
     		  end
     		else if (illegal_instrReg6)
 		  begin
-    		    	mcause[`XLEN-2:0] = exceptions::I_ILLEGAL;
+    		    	cause[`XLEN-2:0] = exceptions::I_ILLEGAL;
     		  end
     		/*else if (e_break) begin
-        		m_cause[`XLEN-2:0] = exceptions::BREAKPOINT;
+        		cause[`XLEN-2:0] = exceptions::BREAKPOINT;
     		end*/
 
 		// addr_misaligned6 will divided to load & store exceptions
     		else if (addr_misaligned6)
 		  begin
-        		mcause[`XLEN-2:0] = exceptions::L_ADDR_MISALIGNED;
+        		cause[`XLEN-2:0] = exceptions::L_ADDR_MISALIGNED;
     		  end
     		/*else if (store_address_misaligned)
 		  begin
 			exception = 1;
-        		mcause[`XLEN-2:0] = exception::S_ADDR_MISALIGNED;
+        		cause[`XLEN-2:0] = exception::S_ADDR_MISALIGNED;
     		  end*/
 		else
 		  begin
-			mcause[`XLEN-1] = 0;
-    			mcause[`XLEN-2:0] = 0;
+			cause[`XLEN-1] = 0;
+    			cause[`XLEN-2:0] = 0;
 		  end
 	  end
 
@@ -523,9 +523,9 @@ module exe_stage(
 	// to csr register file through commit stage
 	assign csr_wb 		 = csrReg6;
 	assign csr_wb_addr 	 = csr_addrReg6;
-	assign csr_we6 = csr_weReg6;
+	assign csr_we6 		 = csr_weReg6;
 	assign pc_exc 		 = pcReg6;
-	assign m_cause 		 = mcause;
+	assign cause6 		 = cause;
 	assign exception_pending = exception;
 	assign mret6		 = mretReg6;
 	assign sret6		 = sretReg6;

@@ -9,7 +9,7 @@ module issue_stage (
 	input logic [31:0] csr_wb,
 	input logic csr_we6,			// Write Enable to csr_regfile
 	input logic [11:0] csr_wb_addr,
-	input logic [31:0] m_cause,
+	input logic [31:0] cause,
 	input logic exception_pending,
 	input logic [31:0] pc_exc,
 	input logic m_ret, s_ret, u_ret,
@@ -357,7 +357,7 @@ module issue_stage (
 	.csr_address_wb(csr_wb_addr),
 	.csr_wb(csr_wb),
 	.exception_pending(exception_pending),
-	.m_cause(m_cause),
+	.cause(cause),
 	.pc_exc(pc_exc),
 	.m_ret(m_ret),
 	.s_ret(s_ret),
