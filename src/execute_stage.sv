@@ -129,6 +129,7 @@ module exe_stage(
 	// csr
 	logic [2:0]  funct3Reg5;
 	logic [31:0] csr_dataReg5, csr_immReg5;
+        logic [31:0] csr5; 
 	logic [11:0] csr_addrReg5;
 	logic csr_weReg5;
 	// exceptions
@@ -174,6 +175,7 @@ module exe_stage(
 		csr_dataReg5	<= '0;
 		csr_addrReg5	<= '0;
 		csr_weReg5	<= 0;
+                csr5            <= 0;
 
 		ecallReg5	<= 0;
 		instruction_addr_misalignedReg5 <= 0;
@@ -317,9 +319,9 @@ module exe_stage(
 	.res		(mul_div5)
 	);
 
-	csr csr_unit(
+	csr_unit csr_1(
 	.func3(funct3Reg5),
-	.rs1(op_a),
+	.rs1(opaReg5),
 	.imm(csr_immReg5),
 	.csr_reg(csr_dataReg5),
 	.system(csr_weReg5),
@@ -411,6 +413,7 @@ module exe_stage(
 		
 	   end
 		  else begin
+                 
 		    fnReg6 		    <=  fnReg5;
 		    rdReg6 		    <=  rdReg5;
 		    alu_resReg6 	<=  alu_res5;
@@ -422,8 +425,8 @@ module exe_stage(
     		  
     		  csr_weReg6 		<=  csr_weReg5;
     		  
-    	//	  csr_rdReg6	  <=  csr_rd5;
-		    //csrReg6		    <=  csr5;
+    		  csr_rdReg6	  <=  csr_rd5;
+		    csrReg6		    <=  csr5;
 		    csr_addrReg6	<=  csr_addrReg5;
     		  
 		    instruction_addr_misalignedReg6 <= instruction_addr_misalignedReg5;

@@ -270,7 +270,7 @@ module csr_regfile(
 		16'b0,
 		medeleg
 	};
-	
+
 	assign mideleg_w = {
 		20'b0,
 		mideleg

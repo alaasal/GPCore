@@ -344,8 +344,8 @@ module issue_stage (
 	.rd(rd3),
 	.op_code(opcode3),
 	.stall(stall),
-	.kill(kill),
-	.stallnum(stallnum)
+	.kill(kill)
+	//.stallnum(stallnum)
 	);
 
 	// csr register file
