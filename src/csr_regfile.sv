@@ -87,6 +87,9 @@ module csr_regfile(
 
 	logic [15:0] medeleg;
 	logic [11:0] mideleg;
+	
+	logic [15:0] sedeleg;
+	logic [11:0] sideleg;
 
 
 	logic [`XLEN-1:0] stval;
@@ -105,6 +108,10 @@ module csr_regfile(
 
 	logic [`XLEN-1:0] medeleg_w;
 	logic [`XLEN-1:0] mideleg_w;
+	
+	logic [`XLEN-1:0] sedeleg_w;
+	logic [`XLEN-1:0] sideleg_w;
+	
 
 	//logic s_timer;
 
@@ -167,6 +174,8 @@ module csr_regfile(
                 `CSR_SCAUSE:            csr_data = scause;
                 `CSR_STVAL:             csr_data = stval;
                 `CSR_SNECYCLE:          csr_data = supervisor_next_event_cycle;
+				`CSR_SEDELEG: 		csr_data = sedeleg_w;
+				`CSR_SIDELEG: 		csr_data = sideleg_w;
 
 			//`CSR_SCOUNTREN:
 
@@ -235,6 +244,16 @@ module csr_regfile(
     		mcause_interrupt,
     		mcause_code
 	};
+	
+	assign medeleg_w = {
+		16'b0,
+		medeleg
+	};
+
+	assign mideleg_w = {
+		20'b0,
+		mideleg
+	};
 
 	assign sstatus = {
 		13'b0,
@@ -266,14 +285,16 @@ module csr_regfile(
 		scause_code
 	};
 
-	assign medeleg_w = {
+	
+	
+	assign sedeleg_w = {
 		16'b0,
-		medeleg
+		sedeleg
 	};
 
-	assign mideleg_w = {
+	assign sideleg_w = {
 		20'b0,
-		mideleg
+		sideleg
 	};
 
 
@@ -334,6 +355,9 @@ always_ff @(posedge clk, negedge nrst) begin
 
 		medeleg			<= 0;
 		mideleg			<= 0;
+		
+		sedeleg			<= 0;
+		sideleg			<= 0;
 
 		sscratch		<= 0;
         	stvec  	        	<= 0;
@@ -401,6 +425,10 @@ end
                			scause_code <= csr_wb[5:0];
                 		scause_interrupt <= csr_wb[31];
              		  end
+			`CSR_SEDELEG:
+				sedeleg <= csr_wb[15:0];
+			`CSR_SIDELEG:
+				sideleg <= csr_wb[11:0];
 
 			// USER MODE
 			`CSR_USTATUS:
@@ -564,6 +592,13 @@ always_comb begin
             next_mode = medeleg[cause[`XLEN-2:0]] ? mode::S : mode::M;
         end
     end
+    else if (cause[`XLEN-1]) begin
+            next_mode = sideleg[cause[`XLEN-2:0]] ? mode::U : mode::S;
+        end
+        else begin
+            next_mode = sedeleg[cause[`XLEN-2:0]] ? mode::U : mode::S;
+        end
+    end
 end
 
 /* Counter for time and cycle CSRs. */
@@ -606,5 +641,4 @@ assign u_sie = usie && status_uie;
 			default: epc = mtvec_out;
 		endcase
 	  end
-//	USER MODE (sedeleg, sideleg)
 endmodule

@@ -53,21 +53,35 @@ package csr;
 `define CSR_TIMEH       12'hc81			//**Machine Timer Registers (mtime and mtimecmp) p[33]
 `define CSR_INSTRETH    12'hc82
 
-//User_mode
-`define CSR_SSTATUS    12'h100
-`define CSR_SEDELEG    12'h102
-`define CSR_SIDELEG    12'h103
-`define CSR_SIE        12'h104
-`define CSR_STVEC      12'h105
-`define CSR_SCOUNTEREN 12'h106
-`define CSR_SSCRATCH   12'h140
-`define CSR_SEPC       12'h141
-`define CSR_SCAUSE     12'h142
-`define CSR_STVAL      12'h143
-`define CSR_SIP        12'h144
-`define CSR_SATP       12'h180
-`define CSR_SNECYCLE   12'h5C0
+// User-Mode
+`define CSR_USTATUS     12'h000
+`define CSR_FFLAGS      12'h001
+`define CSR_FRM         12'h002
+`define CSR_FCSR        12'h003
+`define CSR_UIE         12'h004
+`define CSR_UTVEC       12'h005
+`define CSR_USCRATCH    12'h040
+`define CSR_UEPC        12'h041
+`define CSR_UCAUSE      12'h042
+`define CSR_UTVAL       12'h043
+`define CSR_UIP         12'h044
+`define CSR_CYCLE       12'hc00
+`define CSR_TIME        12'hc01
+`define CSR_INSTRET     12'hc02
 
+// Superviser-Mode
+`define CSR_SSTATUS     12'h100
+`define CSR_SEDELEG     12'h102
+`define CSR_SIDELEG     12'h103
+`define CSR_SIE         12'h104
+`define CSR_STVEC       12'h105
+`define CSR_SCOUNTEREN  12'h106
+`define CSR_SSCRATCH    12'h140
+`define CSR_SEPC        12'h141
+`define CSR_SCAUSE      12'h142
+`define CSR_STVAL       12'h143
+`define CSR_SIP         12'h144
+`define CSR_SATP        12'h180
 
 endpackage
 
