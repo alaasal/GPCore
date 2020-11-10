@@ -2,12 +2,12 @@
 module core(
 	input logic clk, nrst,
 
-	input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
+	input logic DEBUG_SIG,				// DEBUG Signals from debug module to load a program
 	input logic [31:0] DEBUG_addr,
 	input logic [31:0] DEBUG_instr,
 	input logic clk_debug,
 	
-	input logic asy_int			//Asynchronus interrupt 
+	input logic external_interrupt			// Asynchronus interrupt 
     );
 
 	// Wires
@@ -69,6 +69,7 @@ module core(
 	mode::mode_t     current_mode;
 	logic s_timer, m_timer, m_eie, m_tie, s_eie, s_tie, m_interrupt, s_interrupt;
 	logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
+	logic external_interrupt_w;
 
 	// =============================================== //
 	//			FrontEnd Stage		   //
@@ -353,6 +354,7 @@ module core(
 	.mret4		(mret4),
 	.sret4		(sret4),
 	.uret4		(uret4),
+	.external_interrupt(external_interrupt_w),
 
 	// Outputs
 	.rd6          		(rd6),

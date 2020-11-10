@@ -10,7 +10,7 @@ module csr_regfile(
 	input logic instruction_word,
 
 
-	input logic [31:0] m_cause,
+	input logic [31:0] cause,
 	input logic [31:0] pc_exc,		// pc of instruction that caused the exception >> (mepc - sepc - uepc)
        	// input  [`XLEN-1:0] add_result,
 
@@ -84,8 +84,9 @@ module csr_regfile(
 
 	logic [`XLEN-1:0] mtval;
 	logic [`XLEN-1:0] utval;
-	logic [`XLEN-1:0] medeleg;
-	logic [`XLEN-1:0] mideleg;
+
+	logic [15:0] medeleg;
+	logic [11:0] mideleg;
 
 
 	logic [`XLEN-1:0] stval;
@@ -101,6 +102,9 @@ module csr_regfile(
 	logic [`XLEN-1:0] ustatus;
 	logic [`XLEN-1:0] uip;
 	logic [`XLEN-1:0] uie;
+
+	logic [`XLEN-1:0] medeleg_w;
+	logic [`XLEN-1:0] mideleg_w;
 
 	//logic s_timer;
 
@@ -136,8 +140,8 @@ module csr_regfile(
 		`CSR_MTVAL:		csr_data = mtval;
 		`CSR_MSCRATCH:		csr_data = mscratch;
 
-		`CSR_MEDELEG: 		csr_data = medeleg;
-        	`CSR_MIDELEG: 		csr_data = mideleg;
+		`CSR_MEDELEG: 		csr_data = medeleg_w;
+        	`CSR_MIDELEG: 		csr_data = mideleg_w;
 
 
 
@@ -171,11 +175,11 @@ module csr_regfile(
 		`CSR_USTATUS:           csr_data = ustatus;
 		`CSR_UIE:               csr_data = uie;
 		`CSR_UIP:               csr_data = uip;
-		`CSR_UTVEC:			csr_data = {utvec, 2'b0}; 	// direct mode
-		`CSR_UEPC:				csr_data = {uepc, 2'b0};  	// two low bits are always zero
-		`CSR_UCAUSE:			csr_data = ucause;
-		`CSR_UTVAL:				csr_data = utval;
-		`CSR_USCRATCH:			csr_data = uscratch;
+		`CSR_UTVEC:		csr_data = {utvec, 2'b0}; 	// direct mode
+		`CSR_UEPC:		csr_data = {uepc, 2'b0};  	// two low bits are always zero
+		`CSR_UCAUSE:		csr_data = ucause;
+		`CSR_UTVAL:		csr_data = utval;
+		`CSR_USCRATCH:		csr_data = uscratch;
 
 
 
@@ -260,6 +264,16 @@ module csr_regfile(
 	assign scause = {
 		scause_interrupt,
 		scause_code
+	};
+
+	assign medeleg_w = {
+		16'b0,
+		medeleg
+	};
+	
+	assign mideleg_w = {
+		20'b0,
+		mideleg
 	};
 
 
@@ -356,10 +370,6 @@ end
 			  end
 			`CSR_MTVEC:
 				mtvec <= csr_wb[`XLEN-1:2];
-			`CSR_MEDELEG:
-				begin end
-			`CSR_MIDELEG:
-				begin end
 			`CSR_MIE:
 			  begin
 				stie <= csr_wb[5];
@@ -441,13 +451,13 @@ end
         	status_mpie <= status_mie;
         	status_mpp  <= current_mode;
 
-        	mcause_interrupt <= m_cause[`XLEN-1];
-        	mcause_code      <= m_cause[`XLEN-2:0];
+        	mcause_interrupt <= cause[`XLEN-1];
+        	mcause_code      <= cause[`XLEN-2:0];
 
 
-		if (!m_cause[`XLEN-1])
+		if (!cause[`XLEN-1])
 		  begin
-			case (m_cause[`XLEN-2:0])
+			case (cause[`XLEN-2:0])
                 		exception::I_ADDR_MISALIGNED:   mtval <= {pc_exc[31:1], 1'b0};
                 		exception::I_ILLEGAL:           mtval <= 0;			//{instruction_word, 2'b11};
                 		default:                        mtval <= 0;
@@ -474,13 +484,13 @@ end
             status_sie  <= 0;
             status_spie <= status_sie;
             status_spp  <= current_mode[0];
-            scause_interrupt <= m_cause[`XLEN-1];  //interrupt_exception
-            scause_code      <= m_cause[`XLEN-2:0];//exception_code
+            scause_interrupt <= cause[`XLEN-1];  //interrupt_exception
+            scause_code      <= cause[`XLEN-2:0];//exception_code
 
 
-            if (!m_cause[`XLEN-1])
+            if (!cause[`XLEN-1])
 		begin
-		case (m_cause[`XLEN-2:0])
+		case (cause[`XLEN-2:0])
                 	exception::I_ADDR_MISALIGNED:   stval <= {pc_exc[31:1], 1'b0};
                 	exception::I_ILLEGAL:           stval <= 0;			//{ instruction_word, 2'b11};
                 	//exception::L_ADDR_MISALIGNED,
@@ -509,13 +519,13 @@ end
         status_uie  <= 0;
         status_upie <= status_uie;
 
-        ucause_interrupt <= m_cause[`XLEN-1];
-        ucause_code      <= m_cause[`XLEN-2:0];
+        ucause_interrupt <= cause[`XLEN-1];
+        ucause_code      <= cause[`XLEN-2:0];
 
 
-		if (!m_cause[`XLEN-1])
+		if (!cause[`XLEN-1])
 		  begin
-			case (m_cause[`XLEN-2:0])
+			case (cause[`XLEN-2:0])
             exception::I_ADDR_MISALIGNED:   utval <= {pc_exc};
             exception::I_ILLEGAL:           utval <= 0;			//{instruction_word, 2'b11};
             default:                        utval <= 0;
@@ -547,11 +557,11 @@ always_comb begin
 	else if (s_ret) begin
             next_mode = status_spp ? mode::S : mode::U;
         end
-        else if (m_cause[`XLEN-1]) begin
-            next_mode = mideleg[m_cause[`XLEN-2:0]] ? mode::S : mode::M;
+        else if (cause[`XLEN-1]) begin
+            next_mode = mideleg[cause[`XLEN-2:0]] ? mode::S : mode::M;
         end
         else begin
-            next_mode = medeleg[m_cause[`XLEN-2:0]] ? mode::S : mode::M;
+            next_mode = medeleg[cause[`XLEN-2:0]] ? mode::S : mode::M;
         end
     end
 end
@@ -592,9 +602,7 @@ assign u_sie = usie && status_uie;
 			3'b000: epc = mtvec_out;
 			3'b100:	epc = mepc;
 			3'b010:	epc = sepc;
-			/* to be added with user mode
 			3'b001:	epc = uepc;
-			*/
 			default: epc = mtvec_out;
 		endcase
 	  end

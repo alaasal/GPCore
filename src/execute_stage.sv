@@ -48,6 +48,7 @@ module exe_stage(
 	input logic m_timer,s_timer,
     	input mode::mode_t current_mode,
 	input logic m_tie, s_tie, m_eie, s_eie,
+	input logic external_interrupt,
     
 
 	output logic [31:0] wb_data6,
@@ -57,7 +58,7 @@ module exe_stage(
 	output logic [4:0] rd6,
 
 	output logic [31:0] U_imm6,
-	output logic [31:0] AU_imm6 ,
+	output logic [31:0] AU_imm6,
 
 	output logic [31:0] mem_out6,
 	output logic addr_misaligned6,
@@ -441,8 +442,8 @@ module exe_stage(
 	logic [31:0] cause;
 	logic m_timer_conditioned     =                                m_tie && m_timer;
 	logic s_timer_conditioned     = (current_mode <= mode::S) &&   s_tie && s_timer;
-	logic m_interrupt_conditioned =                                m_eie && m_interrupt;
-	logic s_interrupt_conditioned = (current_mode <= mode::S) &&   s_eie && s_interrupt;
+	logic m_interrupt_conditioned =                                m_eie && external_interrupt;
+	logic s_interrupt_conditioned = (current_mode <= mode::S) &&   s_eie && external_interrupt;
 
 /* EXCEPTIONS. ********************************************************************************************************/
 
