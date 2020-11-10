@@ -1,4 +1,4 @@
-module csr(
+module csr_unit(
 	input logic [2:0] func3,
 	input logic [31:0] rs1, imm,
 	input logic [31:0] csr_reg,	// csr data that instruction will perform on it

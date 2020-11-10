@@ -102,7 +102,7 @@ module core(
 	.stallnumin      (stallnum),
 	
 	// Exceptions
-	.instruction_addr_misaligned	(instruction_addr_misaligned2)
+	.instruction_addr_misaligned2	(instruction_addr_misaligned2)
 	);
 
 	// =============================================== //

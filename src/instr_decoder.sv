@@ -192,7 +192,7 @@ module instr_decoder(
     	//01
     	//10 branch
     	//11
-    	assign we 	= rtype | itype | jtype | jr | ltype| utype | autype | system & ~(exception_pending);
+    	assign we 	= rtype | itype | jtype | jr | ltype| utype | autype |system  |system & ~(exception_pending);
     	assign csr_we   = system;
     	assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr | ltype;
     	assign B_SEL[1] = i_slli | i_srli | i_srai;

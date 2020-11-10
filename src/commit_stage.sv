@@ -25,7 +25,7 @@ module commit_stage(
 	output logic [31:0] pc_exc,
 	output logic [31:0] cause,
 	output logic exception_pending,
-	output logic m_ret, s_ret, u_ret
+	output logic mret, sret, uret
     );
 	
 	assign rd6Issue = rd6;
@@ -38,7 +38,7 @@ module commit_stage(
 	assign pc_exc = pc6;
 	assign cause = cause6;
 	assign exception_pending = exception_pending;
-	assign m_ret	= mret6;
-	assign s_ret	= sret6;
-	assign u_ret	= uret6;
+	assign mret	= mret6;
+	assign sret	= sret6;
+	assign uret	= uret6;
 endmodule
