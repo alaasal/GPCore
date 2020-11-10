@@ -67,6 +67,9 @@ module csr_regfile(
 	//SCAUSE
 	logic scause_interrupt;
 	logic [`XLEN-2:0]scause_code;
+	// ucause
+	logic ucause_interrupt;
+	logic [`XLEN-2:0]ucause_code;
 
 
 	logic [`XLEN-1:2] mtvec;
@@ -174,8 +177,8 @@ module csr_regfile(
                 `CSR_SCAUSE:            csr_data = scause;
                 `CSR_STVAL:             csr_data = stval;
                 `CSR_SNECYCLE:          csr_data = supervisor_next_event_cycle;
-				`CSR_SEDELEG: 		csr_data = sedeleg_w;
-				`CSR_SIDELEG: 		csr_data = sideleg_w;
+		`CSR_SEDELEG: 		csr_data = sedeleg_w;
+		`CSR_SIDELEG: 		csr_data = sideleg_w;
 
 			//`CSR_SCOUNTREN:
 
@@ -304,7 +307,7 @@ assign ustatus = {
     27'b0,
     status_upie,
     3'b0,
-    status_uie,
+    status_uie
 };
 assign uip = {
     24'b0,
@@ -351,7 +354,9 @@ always_ff @(posedge clk, negedge nrst) begin
 
 		scause_interrupt 	<= 0;
     		scause_code      	<= 0;
-
+		
+		ucause_interrupt 	<= 0;
+    		ucause_code      	<= 0;
 
 		medeleg			<= 0;
 		mideleg			<= 0;
@@ -538,17 +543,17 @@ end
             status_spie <= 1;
             status_spp  <= 0;
 		end
-    end
+    //end
 
 	// USER MODE
 	else if (exception_pending && next_mode==mode::U && !u_ret)
 	  begin
 		uepc <= pc_exc[`XLEN-1:2];
-        status_uie  <= 0;
-        status_upie <= status_uie;
+        	status_uie  <= 0;
+        	status_upie <= status_uie;
 
-        ucause_interrupt <= cause[`XLEN-1];
-        ucause_code      <= cause[`XLEN-2:0];
+        	ucause_interrupt <= cause[`XLEN-1];
+        	ucause_code      <= cause[`XLEN-2:0];
 
 
 		if (!cause[`XLEN-1])
@@ -563,7 +568,7 @@ end
 		else
 		  begin
             utval <= 0;
-          end
+          	end
 	  end
 
     // return from interrupt
@@ -573,7 +578,7 @@ end
             status_upie <= 1;
 	  end
 end
-
+end
 
 // Figure out what mode we are switching to
 always_comb begin
@@ -585,19 +590,21 @@ always_comb begin
 	else if (s_ret) begin
             next_mode = status_spp ? mode::S : mode::U;
         end
-        else if (cause[`XLEN-1]) begin
-            next_mode = mideleg[cause[`XLEN-2:0]] ? mode::S : mode::M;
-        end
-        else begin
-            next_mode = medeleg[cause[`XLEN-2:0]] ? mode::S : mode::M;
-        end
-    end
-    else if (cause[`XLEN-1]) begin
-            next_mode = sideleg[cause[`XLEN-2:0]] ? mode::U : mode::S;
-        end
-        else begin
-            next_mode = sedeleg[cause[`XLEN-2:0]] ? mode::U : mode::S;
-        end
+	if (current_mode == mode::S)
+	  begin
+		if (cause[`XLEN-1])
+            		next_mode = mideleg[cause[`XLEN-2:0]] ? mode::S : mode::M;
+		else 
+			next_mode = medeleg[cause[`XLEN-2:0]] ? mode::S : mode::M;
+	  end
+        
+        else if (current_mode == mode::U)
+	  begin
+		if (cause[`XLEN-1])
+            		next_mode = sideleg[cause[`XLEN-2:0]] ? mode::U : mode::S;
+		else
+			next_mode = sedeleg[cause[`XLEN-2:0]] ? mode::U : mode::S;
+	end
     end
 end
 
