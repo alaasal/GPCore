@@ -14,7 +14,7 @@ module mul_div (
         unique case(m_op[1:0])
             1: begin
                 sign_a = 1;
-                sign_a = 1;
+                sign_b = 1;
             end 2: begin
                 sign_a = 1;
                 sign_b = 0;
