@@ -450,8 +450,8 @@ module exe_stage(
 
 /* EXCEPTIONS. ********************************************************************************************************/
 
-	assign exception = instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6 || m_timer_conditioned
-			   || s_timer_conditioned || m_interrupt_conditioned || mretReg6 || sretReg6 || uretReg6;
+	assign exception = instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6 || m_timer_conditioned||illegal_instrReg6
+			   || s_timer_conditioned || m_interrupt_conditioned||s_interrupt_conditioned || mretReg6 || sretReg6 || uretReg6;
 
 	always_comb
 	  begin
