@@ -2,12 +2,12 @@
 module core(
 	input logic clk, nrst,
 
-	input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
+	input logic DEBUG_SIG,				// DEBUG Signals from debug module to load a program
 	input logic [31:0] DEBUG_addr,
 	input logic [31:0] DEBUG_instr,
 	input logic clk_debug,
 	
-	input logic asy_int			//Asynchronus interrupt 
+	input logic external_interrupt			// Asynchronus interrupt 
     );
 
 	// Wires
@@ -59,17 +59,17 @@ module core(
 	// Exceptions and CSRs
 	logic [11:0] csr_addr3, csr_addr4, csr_wb_addr, csr_wb_addr6;
 	logic [2:0] funct3_3, funct3_4;
-	logic [31:0] csr_imm3, csr_imm4, csr_data, csr_wb6, m_cause6, csr_wb, pc_exc, m_cause;
+	logic [31:0] csr_imm3, csr_imm4, csr_data, csr_wb6, m_cause6, csr_wb, pc_exc, cause6;
 	logic instruction_addr_misaligned2, instruction_addr_misaligned3, instruction_addr_misaligned4;
 	logic ecall3, ecall4, mret3, mret4, mret6, sret3, sret4, sret6, uret3, uret4, uret6;
 	logic illegal_instr3, illegal_instr4;
 	logic exception_pending, exception_pending6;
-	logic system3, system4;
-	logic epc;
+	logic [31:0] epc, cause;
 	logic m_ret, s_ret, u_ret;
 	mode::mode_t     current_mode;
 	logic s_timer, m_timer, m_eie, m_tie, s_eie, s_tie, m_interrupt, s_interrupt;
 	logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
+	logic external_interrupt_w;
 
 	// =============================================== //
 	//			FrontEnd Stage		   //
@@ -103,7 +103,7 @@ module core(
 	.stallnumin      (stallnum),
 	
 	// Exceptions
-	.instruction_addr_misaligned	(instruction_addr_misaligned2)
+	.instruction_addr_misaligned2	(instruction_addr_misaligned2)
 	);
 
 	// =============================================== //
@@ -166,11 +166,10 @@ module core(
 	.instruction_addr_misaligned3(instruction_addr_misaligned3),
 	.ecall3		(ecall3),
 	.illegal_instr3 (illegal_instr3),
-	.system		(system3),
 	.mret3		(mret3),
 	.sret3		(sret3),
 	.uret3		(uret3),
-	.csr_we3  (csr_we3)
+	.csr_we3  	(csr_we3)
 	);
 
 	// =============================================== //
@@ -189,7 +188,7 @@ module core(
 	.csr_wb		(csr_wb),
 	.csr_we6 (csr_we6Issue),
 	.csr_wb_addr	(csr_wb_addr),
-	.m_cause	(m_cause),
+	.cause		(cause),
 	.exception_pending(exception_pending),
 	.pc_exc		(pc_exc),
 	.m_ret		(m_ret),
@@ -233,7 +232,6 @@ module core(
 	.funct3_3	(funct3_3),
 	.csr_addr3	(csr_addr3),
 	.csr_imm3	(csr_imm3),
-	.system3	(system3),
 	.csr_we3 (csr_we3),
 
 	.instruction_addr_misaligned3(instruction_addr_misaligned3),
@@ -285,7 +283,6 @@ module core(
 	.funct3_4	(funct3_4),
 	.csr_addr4	(csr_addr4),
 	.csr_imm4	(csr_imm4),
-	.system4	(system4),
 	.csr_we4  (csr_we4),
 	
 	// exceptions
@@ -349,7 +346,6 @@ module core(
 	.csr_data	(csr_data),
 	.csr_imm4	(csr_imm4),
 	.csr_addr4	(csr_addr4),
-	.system4	(system4),
 	.csr_we4  (csr_we4),
 
 	.instruction_addr_misaligned4(instruction_addr_misaligned4),
@@ -358,6 +354,7 @@ module core(
 	.mret4		(mret4),
 	.sret4		(sret4),
 	.uret4		(uret4),
+	.external_interrupt(external_interrupt_w),
 
 	// Outputs
 	.rd6          		(rd6),
@@ -382,7 +379,7 @@ module core(
 	// to csr_regfile
 	.pc_exc			(pc6),
 	.exception_pending	(exception_pending6),
-	.m_cause		(m_cause6),
+	.cause6			(cause6),
 	.csr_wb			(csr_wb6),
 	.csr_wb_addr	(csr_wb_addr6),
 	.csr_we6     (csr_we6),
@@ -416,24 +413,24 @@ module core(
 	
 	.csr_wb6	(csr_wb6),
 	.csr_wb_addr6	(csr_wb_addr6),
-	.csr_we6      (csr_we6),
-	.m_cause6	(m_cause6),
+	.csr_we6      	(csr_we6),
+	.cause6		(cause6),
 	.exception_pending6(exception_pending6),
 	.mret6		(mret6),
 	.sret6		(sret6),
 	.uret6		(uret6),
 	
-	.pc6         (pc6),
+	.pc6         	(pc6),
 
-	.we6Issue        (we6Issue),
-	.rd6Issue   (rd6Issue),
-	.result6(wb_data6),
+	.we6Issue       (we6Issue),
+	.rd6Issue   	(rd6Issue),
+	.result6	(wb_data6),
 
 	.csr_wb		(csr_wb),
 	.csr_wb_addr	(csr_wb_addr),
-	.csr_we6Issue        (csr_we6Issue),
+	.csr_we6Issue   (csr_we6Issue),
 	.pc_exc		(pc_exc),
-	.m_cause	(m_cause),
+	.cause		(cause),
 	.exception_pending(exception_pending),
 	.mret		(m_ret),
 	.sret		(s_ret),

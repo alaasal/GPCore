@@ -11,7 +11,7 @@ module commit_stage(
 	input logic [31:0] csr_wb6,
 	input logic [11:0] csr_wb_addr6,
 	input logic csr_we6,
-	input logic [31:0] m_cause6,
+	input logic [31:0] cause6,
 	input logic exception_pending6,
 	input logic mret6, sret6, uret6,
 
@@ -23,9 +23,9 @@ module commit_stage(
 	output logic [11:0] csr_wb_addr,
 	output logic csr_we6Issue,
 	output logic [31:0] pc_exc,
-	output logic [31:0] m_cause,
+	output logic [31:0] cause,
 	output logic exception_pending,
-	output logic m_ret, s_ret, u_ret
+	output logic mret, sret, uret
     );
 	
 	assign rd6Issue = rd6;
@@ -36,9 +36,9 @@ module commit_stage(
 	assign csr_wb_addr = csr_wb_addr6;
 	assign csr_we6Issue = csr_we6;
 	assign pc_exc = pc6;
-	assign m_cause = m_cause6;
+	assign cause = cause6;
 	assign exception_pending = exception_pending;
-	assign m_ret	= mret6;
-	assign s_ret	= sret6;
-	assign u_ret	= uret6;
+	assign mret	= mret6;
+	assign sret	= sret6;
+	assign uret	= uret6;
 endmodule

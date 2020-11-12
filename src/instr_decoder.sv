@@ -14,7 +14,7 @@ module instr_decoder(
 	output logic we,
 
 	// Function Control Signals
-	output logic [2:0]fn,		// select result to be written back in regfile
+	output logic [2:0] fn,		// select result to be written back in regfile
 	output logic [3:0] alu_fn,	// select alu operation
 
 	// Branch, Jumps decode signals
@@ -36,7 +36,6 @@ module instr_decoder(
 	output logic [1:0] pcselect,
 
 	output logic ecall, uret, sret, mret, wfi, illegal_instr,
-	output logic system,
 	
 	// Write back csr_regfile Enable
 	output logic csr_we
@@ -185,18 +184,18 @@ module instr_decoder(
 	assign mem_op[2] = i_lbu | i_lhu | i_sb  | i_sh;
 	assign mem_op[3] = i_sw  | i_sb  | i_sh;
 
-    // generate control signals
-    assign pcselect[0] = 0 ; // to set pcselect to 0 (will be edited when branch and jump operations added)
-    assign pcselect[1] = btype | i_jal | i_jalr;
-
-    //00 rtype itype nop
-    //01
-    //10 branch
-    //11
-    assign we 	    = rtype | itype | jtype | jr | ltype| utype | autype | system & ~(exception_pending);
-    assign csr_we   = system | exception_pending;
-    assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr | ltype;
-    assign B_SEL[1] = i_slli | i_srli | i_srai;
+    	// generate control signals
+    	assign pcselect[0] = 0 ; // to set pcselect to 0 (will be edited when branch and jump operations added)
+    	assign pcselect[1] = btype | i_jal | i_jalr;
+	
+    	//00 rtype itype nop
+    	//01
+    	//10 branch
+    	//11
+    	assign we 	= rtype | itype | jtype | jr | ltype| utype | autype |system  |system & ~(exception_pending);
+    	assign csr_we   = system;
+    	assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr | ltype;
+    	assign B_SEL[1] = i_slli | i_srli | i_srai;
 
 
 	// inst signal controls the type of instruction done by the ALU {bit30, funct3}
@@ -251,9 +250,4 @@ module instr_decoder(
 	assign fn[0] = i_jal | i_jalr | lui | aupc;
 	assign fn[1] = i_mul | i_mulh | i_mulhsu | i_mulhu | i_rem | i_remu | i_div | i_divu | lui | system;
 	assign fn[2] = ltype| aupc | system;
-
-	// =============================================== //
-	//		Exceptions		   	   //
-	// =============================================== //
-
 endmodule
