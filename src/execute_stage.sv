@@ -274,8 +274,7 @@ module exe_stage(
 		
 		  end
       end
-    end
-
+  end 
 
 	  //ALU
 	alu exe_alu (
@@ -362,7 +361,7 @@ module exe_stage(
 	//logic exception;
 	logic mretReg6, sretReg6, uretReg6;
 
-	always @(posedge clk)
+	always @(posedge clk, negedge nrst)
 	begin
 	if (!nrst)
 	  begin
@@ -443,15 +442,19 @@ module exe_stage(
 	// =============================================== //
 
 	logic [31:0] cause;
-	logic m_timer_conditioned     =                                m_tie && m_timer;
-	logic s_timer_conditioned     = (current_mode <= mode::S) &&   s_tie && s_timer;
-	logic m_interrupt_conditioned =                                m_eie && external_interrupt;
-	logic s_interrupt_conditioned = (current_mode <= mode::S) &&   s_eie && external_interrupt;
+	logic m_timer_conditioned  ;
+	logic s_timer_conditioned     ;
+	logic m_interrupt_conditioned ;
+	logic s_interrupt_conditioned ;
+	assign m_timer_conditioned     =                                m_tie && m_timer;
+	assign s_timer_conditioned     = (current_mode <= 2'b01) &&   s_tie && s_timer;
+	assign m_interrupt_conditioned =                                m_eie && external_interrupt;
+	assign s_interrupt_conditioned = (current_mode <= 2'b01) &&   s_eie && external_interrupt;
 
 /* EXCEPTIONS. ********************************************************************************************************/
 
-	assign exception = instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6 || m_timer_conditioned||illegal_instrReg6
-			   || s_timer_conditioned || m_interrupt_conditioned||s_interrupt_conditioned || mretReg6 || sretReg6 || uretReg6;
+	assign exception = instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6 || m_timer_conditioned || s_interrupt_conditioned
+			|| illegal_instrReg6   || s_timer_conditioned || m_interrupt_conditioned || mretReg6 || sretReg6 || uretReg6;
 
 	always_comb
 	  begin

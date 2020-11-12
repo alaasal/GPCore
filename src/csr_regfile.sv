@@ -117,7 +117,7 @@ module csr_regfile(
 	
 
 	//logic s_timer;
-
+	logic [31:0] mtvec_out ;
 	assign mtvec_out = {mtvec, 2'b0};
 	logic[63:0] supervisor_next_event_cycle=0;
 	logic [63:0]machine_next_event_cycle=0;
@@ -490,10 +490,8 @@ end
 
 		if (!cause[`XLEN-1])
 		  begin
-
 			case (cause[`XLEN-2:0])
                 		exceptions::I_ADDR_MISALIGNED:   mtval <= {pc_exc[31:1], 1'b0};
-
                 		exceptions::I_ILLEGAL:           mtval <= 0;			//{instruction_word, 2'b11};
                 		default:                        mtval <= 0;
 			endcase
@@ -525,7 +523,6 @@ end
 
             if (!cause[`XLEN-1])
 		begin
-
 		case (cause[`XLEN-2:0])
                 	exceptions::I_ADDR_MISALIGNED:   stval <= {pc_exc[31:1], 1'b0};
                 	exceptions::I_ILLEGAL:           stval <= 0;			//{ instruction_word, 2'b11};
@@ -619,16 +616,26 @@ end
 
 /* Supervisor's timer. */
 
-always @(posedge clk) begin
-    s_timer <= (cycle_counter >= supervisor_next_event_cycle);
+always @(posedge clk,negedge nrst) begin
+	if (!nrst) begin
+	s_timer <= 0;
+	end
+	else begin
+        s_timer <= (cycle_counter >= supervisor_next_event_cycle);
+	end
 end
 
 // in other code they use (assign     m_timer = 0;)
 
 /* machine's timer. */
 
-always @(posedge clk) begin
-    m_timer <= (cycle_counter >= machine_next_event_cycle);
+always @(posedge clk ,negedge nrst) begin
+	if (!nrst)  begin
+	m_timer	<= 0;
+	end
+	else begin
+    	m_timer <= (cycle_counter >= machine_next_event_cycle);
+	end
 end
 
 // interrupts enable signals

@@ -242,6 +242,12 @@ module issue_stage (
 		funct3Reg4	<= funct3_3;
 		csr_immReg4	<= csr_imm3;
 		csr_addrReg4	<= csr_addr3;
+		instruction_addr_misalignedReg4 <= instruction_addr_misaligned3;
+		ecallReg4	<= ecall3;
+		illegal_instrReg4<= illegal_instr3;
+		mretReg4	<= mret3;
+		sretReg4	<= sret3;
+		uretReg4	<= uret3;
 
 		if(stall )
 		begin

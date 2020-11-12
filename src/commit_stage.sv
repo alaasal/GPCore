@@ -37,7 +37,7 @@ module commit_stage(
 	assign csr_we6Issue = csr_we6;
 	assign pc_exc = pc6;
 	assign cause = cause6;
-	assign exception_pending = exception_pending;
+	assign exception_pending = exception_pending6;
 	assign mret	= mret6;
 	assign sret	= sret6;
 	assign uret	= uret6;

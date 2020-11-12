@@ -129,7 +129,7 @@ module frontend_stage(
 
 	assign pc = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg-1: pcReg;
 	assign pc2 = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg2 - 1 : pcReg2;
-	assign instruction_addr_misaligned = instruction_addr_misalignedReg2;
+	assign instruction_addr_misaligned2 = instruction_addr_misalignedReg2;
 	
 
 

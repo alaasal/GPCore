@@ -151,6 +151,7 @@ module instdec_stage(
 	assign opcode   = instrReg3[6:0];
 	assign funct7   = instrReg3[31:25];
 	assign funct12	= instrReg3[31:20];
+	assign funct3   = instrReg3[14:12];
 	assign instr_30 = instrReg3[30];
 	assign opcode3  = opcode;
 	// to csr_unit

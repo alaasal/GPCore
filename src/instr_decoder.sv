@@ -93,11 +93,11 @@ module instr_decoder(
 	// zicsr and system instructions
 	// interrupts and exceptions instructions	
 	assign system = op[6] & op[5] & op[4] & ~op[3] & ~op[2] & op[1] & op[0];  //1110011 SYSTEM
-	assign ecall  = system & (~&funct3) & ~funct12[0];
-	assign mret   = system & (~&funct3) & (~funct7);
-	assign uret   = system & (~&funct3) & (~funct7[4]) & funct7[3];
-	assign sret   = system & (~&funct3) & funct7[4] & funct7[3];
-	assign wfi    = system & (~&funct3) & funct12[0] & funct12[2] & funct12[8];
+	assign ecall  = system & (~|funct3) & ~funct12[0];
+	assign uret   = system & (~|funct3) & (~|funct7);  
+	assign sret   = system & (~|funct3) & (~funct7[4]) & funct7[3]; 
+	assign mret   = system & (~|funct3) & funct7[4] & funct7[3];
+	assign wfi    = system & (~|funct3) & funct12[0] & funct12[2] & funct12[8];
 	assign illegal_instr = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system);
 
 	// rtype op								  // instr[30] funct3
