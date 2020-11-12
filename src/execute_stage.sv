@@ -49,6 +49,7 @@ module exe_stage(
     	input mode::mode_t current_mode,
 	input logic m_tie, s_tie, m_eie, s_eie,
 	input logic external_interrupt,
+	input logic excep6,
     
 
 	output logic [31:0] wb_data6,
@@ -77,7 +78,7 @@ module exe_stage(
 	output logic csr_we6,
 
 	// exceptions
-	output logic pc_exc,
+	//output logic pc_exc,
 	output logic [31:0] cause6,
 	output logic exception_pending,
 	output logic mret6, sret6, uret6,
@@ -186,7 +187,7 @@ module exe_stage(
           end
         else
           begin
-      	if(exception)begin
+      	if(excep6)begin
 		opaReg5   	<= 0;
 		opbReg5   	<= 0;
 
@@ -219,7 +220,7 @@ module exe_stage(
 		csr_immReg5	<= '0;
 		csr_dataReg5	<= '0;
 		csr_addrReg5	<= '0;
-		csr_weReg5		<= 0;
+		csr_weReg5	<= 0;
 
 		ecallReg5	<= 0;
 		instruction_addr_misalignedReg5 <= 0;
@@ -386,7 +387,7 @@ module exe_stage(
 	  end
 	else
 	  begin
-	  if(exception)begin
+	  if(excep6)begin
 	   pcReg6 		    <=  pcReg5;
 	    
 	  	fnReg6 	  	  <= 3'b0;
@@ -452,8 +453,8 @@ module exe_stage(
 	assign s_interrupt_conditioned = (current_mode <= 2'b01) &&   s_eie && external_interrupt;
 
 /* EXCEPTIONS. ********************************************************************************************************/
-
-	assign exception = instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6 || m_timer_conditioned || s_interrupt_conditioned
+//delete instruction_addr_misalignedReg6 
+	assign exception =  ecallReg6 || addr_misaligned6 || m_timer_conditioned || s_interrupt_conditioned
 			|| illegal_instrReg6   || s_timer_conditioned || m_interrupt_conditioned || mretReg6 || sretReg6 || uretReg6;
 
 	always_comb
@@ -531,12 +532,13 @@ module exe_stage(
 	assign csr_wb 		 = csrReg6;
 	assign csr_wb_addr 	 = csr_addrReg6;
 	assign csr_we6 		 = csr_weReg6;
-	assign pc_exc 		 = pcReg6;
+	//assign pc_exc 	 = pcReg6;
 	assign cause6 		 = cause;
 	assign exception_pending = exception;
 	assign mret6		 = mretReg6;
 	assign sret6		 = sretReg6;
 	assign uret6		 = uretReg6;
+	assign pc6		 = pcReg6;
 
 	always_comb begin
         unique case(fn6)

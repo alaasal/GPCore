@@ -156,7 +156,7 @@ module instdec_stage(
 	assign opcode3  = opcode;
 	// to csr_unit
 	assign csr_addr3 = instrReg3[31:20];
-	assign csr_imm3	 = instrReg3[19:15];
+	assign csr_imm3	 = {27'b0, instrReg3[19:15]};
 	assign funct3_3  = instrReg3[14:12];
 
 	instr_decoder c1 (
@@ -166,6 +166,7 @@ module instdec_stage(
 	.funct12     (funct12),
 	.instr_30    (instr_30),		// instr[30]
 	.exception_pending(exception_pending),
+	//.nrst(nrst),
 
 	.pcselect    (pcselect3),		// Select pc source
 	.we          (we3),				// Regfile write enable

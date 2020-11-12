@@ -7,6 +7,8 @@ module instr_decoder(
 	// from commit stage
 	input logic exception_pending,
 
+
+	//input logic nrst,
 	// Operands Select Sginals
 	output logic [1:0] B_SEL,	// select op b
 
@@ -98,8 +100,8 @@ module instr_decoder(
 	assign sret   = system & (~|funct3) & (~funct7[4]) & funct7[3]; 
 	assign mret   = system & (~|funct3) & funct7[4] & funct7[3];
 	assign wfi    = system & (~|funct3) & funct12[0] & funct12[2] & funct12[8];
-	assign illegal_instr = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system);
-
+	assign illegal_instr = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system || (~|op));
+	
 	// rtype op								  // instr[30] funct3
 	assign i_add  = rtype & ~instr_30 & (~&funct3);				  //   	0	000
 	assign i_sub  = rtype &  instr_30 & (~&funct3);				  //   	1	000

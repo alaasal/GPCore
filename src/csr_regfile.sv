@@ -200,7 +200,7 @@ module csr_regfile(
 
 
 	assign mstatus = {
-    14'b0,
+    13'b0,
     status_sum,
     1'b0,
     4'b0,

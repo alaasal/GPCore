@@ -355,6 +355,7 @@ module core(
 	.sret4		(sret4),
 	.uret4		(uret4),
 	.external_interrupt(external_interrupt_w),
+	.excep6(exception_pending),
 
 	// Outputs
 	.rd6          		(rd6),
@@ -377,7 +378,7 @@ module core(
 	.exception (exception),
 
 	// to csr_regfile
-	.pc_exc			(pc6),
+	//.pc_exc			(pc6),
 	.exception_pending	(exception_pending6),
 	.cause6			(cause6),
 	.csr_wb			(csr_wb6),

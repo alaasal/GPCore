@@ -35,7 +35,7 @@ external_interrupt =0;
 #10
 nrst = 1;
 nrst_core = 1;
-external_interrupt = 1;
+external_interrupt = 0;
 end
 
 core testCore(
