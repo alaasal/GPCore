@@ -3,26 +3,26 @@ module frontend_stage(
 	input logic nrst,
 	input logic stall,
 	
-	input logic [1:0] PCSEL,		// pc select control signal
-	input logic [31:0] target,
+    input logic [1:0] PCSEL,		// pc select control signal
+    input logic [31:0] target,
 	input logic [1:0] stallnumin,
 
-	output logic [31:0] pc2,	// pc at instruction mem pipe #2
-	output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
+    output logic [31:0] pc2,	// pc at instruction mem pipe #2
+    output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
     
  
 
 	//DEBUG Signals from debug module to load a program
-	input logic DEBUG_SIG,				
-	input logic [31:0] DEBUG_addr,
-	input logic [31:0] DEBUG_instr,
-	input logic clk_debug
+    input logic DEBUG_SIG,				
+    input logic [31:0] DEBUG_addr,
+    input logic [31:0] DEBUG_instr,
+    input logic clk_debug
     );
 
     // registers
 	logic [31:0] pcReg; 	   // pipe #1 pc
 	logic [31:0] pcReg2;	   // pipe #2 from pc to inst mem
-
+	logic [1:0] stallnum;
     // wires
     logic [31:0] npc;   	   // next pc wire
     logic [31:0] pc; 
@@ -34,7 +34,7 @@ module frontend_stage(
 	begin
         if (!nrst)
         begin
-		pcReg		<= 0;
+		pcReg		<=  32'h0;
 		pcReg2 		<= 0;
 
 		end
@@ -73,7 +73,7 @@ module frontend_stage(
       begin
         // npc logic
         unique case(PCSEL)
-            0: npc = pcReg + 1;
+            0: npc = pcReg +1;
             1: npc = 0;
             2: npc = target;
             3: npc = npc;
