@@ -410,7 +410,7 @@ end
 			`CSR_MSCRATCH:
 				mscratch <= csr_wb;
 			`CSR_MEPC:
-				mepc <= csr_wb[31:2];
+				mepc <= csr_wb[`XLEN-1:2];
 			`CSR_MCAUSE:
 			  begin
 				mcause_code      <= csr_wb[5:0];
@@ -431,13 +431,24 @@ end
     				status_spie <= csr_wb[5];
     				status_sie <= csr_wb[1];
 			  end
+                        `CSR_STVEC:
+				stvec <= csr_wb[`XLEN-1:2];
 			`CSR_SEPC:
-                    		sepc <= csr_wb[31:2];
+                    		sepc <= csr_wb[`XLEN-1:2];
 			`CSR_SCAUSE:
               		  begin
                			scause_code <= csr_wb[5:0];
                 		scause_interrupt <= csr_wb[31];
-             		  end
+                                   		  end
+                        `CSR_STVAL:
+				stval <= csr_wb;
+                        `CSR_SIE:
+			  begin
+				stie <= csr_wb[5];
+                             	seie <= csr_wb[9];
+                           end
+                        `CSR_SSCRATCH:
+				sscratch <= csr_wb;
 			`CSR_SEDELEG:
 				sedeleg <= csr_wb[15:0];
 			`CSR_SIDELEG:
