@@ -7,7 +7,7 @@ module csr_regfile(
 	input logic [31:0] csr_wb,		// csr data written back from csr to the register file
 	//inputs from execute stage
 	input logic exception_pending,
-	input logic instruction_word,
+	//input logic instruction_word,
 
 
 	input logic [31:0] cause,
@@ -15,14 +15,15 @@ module csr_regfile(
        	// input  [`XLEN-1:0] add_result,
 
  	input logic m_ret, s_ret, u_ret,	//MRET or SRET instruction is used to return from a trap in M-mode or S-mode respectively
-	input logic stall,
+	// input logic stall,
 	input logic m_interrupt,
     	input logic s_interrupt,
 
 	output logic m_timer,
 	output logic s_timer,
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
-	output logic m_eie, m_tie,s_eie, s_tie, u_eie, u_tie, u_sie,
+	output logic m_eie, m_tie,s_eie, s_tie,
+	// output logic u_eie, u_tie, u_sie,
 	output mode::mode_t     current_mode = mode::M,
 	// To front end
 	output logic [31:0] epc
@@ -423,6 +424,13 @@ end
 				mideleg <= csr_wb[11:0];
 
 			// S Mode
+			`CSR_SSTATUS:
+			  begin
+  				status_sum <= csr_wb[18];
+    				status_spp <= csr_wb[8];
+    				status_spie <= csr_wb[5];
+    				status_sie <= csr_wb[1];
+			  end
 			`CSR_SEPC:
                     		sepc <= csr_wb[31:2];
 			`CSR_SCAUSE:

@@ -8,7 +8,7 @@ module frontend_stage(
 	input logic [1:0] stallnumin,
 	// exceptions
 	input logic exception_pending,
-	input logic epc,
+	input logic [31:0] epc,
 
     	output logic [31:0] pc2,	// pc at instruction mem pipe #2
     	output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
@@ -29,8 +29,6 @@ module frontend_stage(
 	// Exceptions at forntend
 	//logic instruction_addr_misalignedReg1;
 	logic instruction_addr_misalignedReg2;
-	// Exception pending
-	logic flag_ex;
 	
 	
     	// wires
@@ -112,7 +110,7 @@ module frontend_stage(
     always_comb
       begin
         // npc logic
-	unique case({exception_pending, PCSEL})
+	casez({exception_pending, PCSEL})
 		3'b000: npc = pcReg + 1;
             	3'b001: npc = 0;
             	3'b010: npc = target;

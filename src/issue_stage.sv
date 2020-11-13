@@ -111,7 +111,7 @@ module issue_stage (
 	output logic instruction_addr_misaligned4,
 	output logic ecall4,
 	output logic illegal_instr4,
-	output logic epc,	// output to frontend
+	output logic [31:0] epc,	// output to frontend
 	output logic mret4, sret4, uret4,
 	
 	output logic m_timer,s_timer,

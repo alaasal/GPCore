@@ -7,7 +7,7 @@ module core(
 	input logic [31:0] DEBUG_instr,
 	input logic clk_debug,
 	
-	input logic external_interrupt			// Asynchronus interrupt 
+	input logic external_interrupt	// Asynchronus interrupt 
     );
 
 	// Wires
@@ -354,7 +354,7 @@ module core(
 	.mret4		(mret4),
 	.sret4		(sret4),
 	.uret4		(uret4),
-	.external_interrupt(external_interrupt_w),
+	.external_interrupt(external_interrupt),
 	.excep6(exception_pending),
 
 	// Outputs

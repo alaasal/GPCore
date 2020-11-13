@@ -107,7 +107,7 @@ package exceptions;
 
 // synchronous (interrupt = 0) values are defined here.
 
-typedef enum logic[4:0] {
+typedef enum logic[30:0] {
     /* Instruction address misaligned. */
     I_ADDR_MISALIGNED = 0,
     /* Instruction access fault. */
@@ -134,7 +134,7 @@ typedef enum logic[4:0] {
 
  // asynchronous (interrupt = 1) values are defined here.
 
-typedef enum logic[4:0] {
+typedef enum logic[30:0] {
     /* User software interrupt. */
     U_INT_SW = 0,
     /* Supervisor software interrupt. */
@@ -157,20 +157,3 @@ typedef enum logic[4:0] {
 
 endpackage
 
-//------------------------------------------------------------------
-/* Internal register file insterface types. ***************************************************************************/
-package ireg_file;
-
-/* Operations supported by internal register file. */
-typedef enum logic [1:0] {
-    /* Do nothing. */
-    NOP = 2'b00,
-    /* Read/Write. */
-    RW  = 2'b01,
-    /* Read and set bits. */
-    RS  = 2'b10,
-    /* Read and clear bits. */
-    RC  = 2'b11
-} op_t;
-
-endpackage

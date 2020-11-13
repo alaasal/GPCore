@@ -133,6 +133,7 @@ module exe_stage(
         logic [31:0] csr5; 
 	logic [11:0] csr_addrReg5;
 	logic csr_weReg5;
+	logic [31:0] csr_rd5;
 	// exceptions
 	logic ecallReg5;
 	logic instruction_addr_misalignedReg5;
@@ -176,7 +177,6 @@ module exe_stage(
 		csr_dataReg5	<= '0;
 		csr_addrReg5	<= '0;
 		csr_weReg5	<= 0;
-                csr5            <= 0;
 
 		ecallReg5	<= 0;
 		instruction_addr_misalignedReg5 <= 0;
@@ -481,10 +481,11 @@ module exe_stage(
     			cause[`XLEN-1] = 1;
     		 	cause[`XLEN-2:0] = exceptions::S_INT_TIMER;
     		  end
-    		else if (instruction_addr_misalignedReg6)
+    		/* pc need to be increamented by 4 to detect the misalignment
+		else if (instruction_addr_misalignedReg6)
 		  begin
     			cause[`XLEN-2:0] = exceptions::I_ADDR_MISALIGNED;
-    		  end
+    		  end*/
 		else if (ecallReg6)
 		  begin
 			cause[`XLEN-2:0] = exceptions::U_CALL + {3'b0, current_mode};

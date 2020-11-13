@@ -71,6 +71,7 @@ module instdec_stage(
 	logic [6:0] opcode;
 	logic [2:0] funct3;
 	logic [6:0] funct7;
+	logic [11:0] funct12;
 	logic instr_30;
 
 	// Registers
