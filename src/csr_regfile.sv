@@ -177,7 +177,7 @@ module csr_regfile(
                 `CSR_SIP:               csr_data = sip;
                 `CSR_SCAUSE:            csr_data = scause;
                 `CSR_STVAL:             csr_data = stval;
-                `CSR_SNECYCLE:          csr_data = supervisor_next_event_cycle;
+                `CSR_SNECYCLE:          csr_data = supervisor_next_event_cycle;//we should add M
 		`CSR_SEDELEG: 		csr_data = sedeleg_w;
 		`CSR_SIDELEG: 		csr_data = sideleg_w;
 
@@ -452,7 +452,10 @@ end
 			`CSR_SEDELEG:
 				sedeleg <= csr_wb[15:0];
 			`CSR_SIDELEG:
-				sideleg <= csr_wb[11:0];
+				sideleg <= csr_wb[11:0];  
+                         `CSR_SNECYCLE:
+                                       supervisor_next_event_cycle <= csr_wb;
+ 
 
 			// USER MODE
 			`CSR_USTATUS:
