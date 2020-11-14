@@ -127,6 +127,7 @@ module exe_stage(
 
 	logic [31:0] pcReg5;
 	logic [1:0] pcselectReg5;
+	logic [31:0] mem_out6;
 	// csr
 	logic [2:0]  funct3Reg5;
 	logic [31:0] csr_dataReg5, csr_immReg5;
@@ -347,7 +348,6 @@ module exe_stage(
 	logic [31:0] AU_immReg6;
 
 	logic [31:0] pcReg6;
-	logic [31:0] mem_out6;
 
 	logic [2:0] fn6;
 	// csr
@@ -515,13 +515,6 @@ module exe_stage(
     			cause[`XLEN-2:0] = 0;
 		  end
 	  end
-
-	mul_div mul1(
-	.a		(opaReg5),
-	.b		(opbReg5),
-	.mulDiv_op	(mulDiv_opReg5),
-	.res		(mul_div5)
-	);
 
 
 	// =============================================== //
