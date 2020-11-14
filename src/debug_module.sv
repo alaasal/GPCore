@@ -1,7 +1,7 @@
 module debug(
 	input logic clk,
 	input logic nrst,
-	
+
 
 	output logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
 	output logic [31:0] DEBUG_addr,
@@ -18,7 +18,7 @@ logic [31:0] instrs[9:0] = {{12'h7,5'b0, 3'b111,5'b111,7'b0010011},{12'h8,5'b0, 
 /*{7'h0,5'h13,5'h14, 3'h0,5'h15 , 7'b0110011},
 {7'h0,5'h10,5'h14, 3'h0,5'h12 , 7'b0110011},
 {7'h0,5'ha,5'hb, 3'h0,5'hc , 7'b0110011},
-{7'h0,5'h3,5'h9, 3'h0,5'h4 , 7'b0110011}, 
+{7'h0,5'h3,5'h9, 3'h0,5'h4 , 7'b0110011},
 {7'h0,5'h10,5'h7, 3'h0,5'h6 , 7'b0110011}, // make rs1 or rs2 = 3
 //{7'h0,5'h10,5'h4, 3'h0,5'h3 , 7'b0110011},
 
@@ -42,14 +42,12 @@ logic [9:0] instrs_index;
 		else
 		  begin
 			DEBUG_instr <= instrs[instrs_index];
-			instrs_index <= instrs_index + 1;		
+			instrs_index <= instrs_index + 1;
 			DEBUG_addr <= DEBUG_addr + 1'b1;
 			START <= (instrs_index > (NUM_Of_INSTRS) ) ;
 			DEBUG_SIG <= ~(instrs_index == (NUM_Of_INSTRS));
 		  end
 	  end
-	
+
 
 endmodule
-
-	

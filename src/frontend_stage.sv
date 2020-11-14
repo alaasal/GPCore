@@ -1,8 +1,8 @@
 module frontend_stage(
-	input logic clk, 
+	input logic clk,
 	input logic nrst,
 	input logic stall,
-	
+
     	input logic [1:0] PCSEL,		// pc select control signal
     	input logic [31:0] target,
 	input logic [1:0] stallnumin,
@@ -16,7 +16,7 @@ module frontend_stage(
 	output logic instruction_addr_misaligned2, // output from front_end to decode_stage
 
 	//DEBUG Signals from debug module to load a program
-    	input logic DEBUG_SIG,				
+    	input logic DEBUG_SIG,
     	input logic [31:0] DEBUG_addr,
     	input logic [31:0] DEBUG_instr,
     	input logic clk_debug
@@ -25,18 +25,18 @@ module frontend_stage(
    	// registers
 	logic [31:0] pcReg; 	   // pipe #1 pc
 	logic [31:0] pcReg2;	   // pipe #2 from pc to inst mem
-	
+
 	// Exceptions at forntend
 	//logic instruction_addr_misalignedReg1;
 	logic instruction_addr_misalignedReg2;
-	
-	
+
+
     	// wires
     	logic [31:0] npc;   	   // next pc wire
    	logic [31:0] pc;
 
-	assign pc_addr_ex = pcReg[1] & pcReg[0]; // instruction address misaligned 
-    
+	assign pc_addr_ex = pcReg[1] & pcReg[0]; // instruction address misaligned
+
 
     // pipes
 
@@ -50,10 +50,10 @@ module frontend_stage(
 
 		end
 
-        else begin	
+        else begin
 	//stallnumin<=stallnuminin;
-	if ( stall&&!stallnumin[1] && !stallnumin[0]) begin 
-		pcReg		<= pcReg-1;		
+	if ( stall&&!stallnumin[1] && !stallnumin[0]) begin
+		pcReg		<= pcReg-1;
 		pcReg2		<= pcReg2-1;
 
 
@@ -62,19 +62,19 @@ module frontend_stage(
 
 
 	end
-	else if(stall && !(!stallnumin[1] && stallnumin[0]) ) 
-	begin 
-		pcReg		<= pcReg;		
+	else if(stall && !(!stallnumin[1] && stallnumin[0]) )
+	begin
+		pcReg		<= pcReg;
 		pcReg2		<= pcReg2;
 
 		//instruction_addr_misalignedReg1 <= 0;
 		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
 
 
-	end 
+	end
 	else if(stall &&!stallnumin[1] && stallnumin[0] )
-	begin 
-		pcReg		<= npc;		
+	begin
+		pcReg		<= npc;
 		pcReg2		<= pcReg;
 
 		//instruction_addr_misalignedReg1 <= 0;
@@ -82,30 +82,30 @@ module frontend_stage(
 
 
 
-	end 
-	else if(stall ) 
-	begin 
-		pcReg		<= pcReg;		
+	end
+	else if(stall )
+	begin
+		pcReg		<= pcReg;
 		pcReg2		<= pcReg2;
 
 
 		//instruction_addr_misalignedReg1 <= 0;
 		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
 
-	end 
-	else 
-	begin 
+	end
+	else
+	begin
 		pcReg		<= npc;		// PIPE1
 		pcReg2		<= pcReg;
-		
+
 		//instruction_addr_misalignedReg1 <= pc_addr_ex;
 		instruction_addr_misalignedReg2 <= pc_addr_ex;
 		// Exceptions logic here
 	end
 
-	end 
+	end
 
-	end 
+	end
 
     always_comb
       begin
@@ -119,27 +119,27 @@ module frontend_stage(
 		3'b1??: npc = epc;
             	default: npc = pcReg + 1;
         endcase
-        
+
       end
-	  
+
 
     // output
 
 	assign pc = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg-1: pcReg;
 	assign pc2 = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg2 - 1 : pcReg2;
 	assign instruction_addr_misaligned2 = instruction_addr_misalignedReg2;
-	
+
 
 
     // dummy inst mem
     instr_mem m1 (
 	.clk(clk ),
 	.addr(pc),
-	.instr(instr2), 		
+	.instr(instr2),
 	.DEBUG_SIG(DEBUG_SIG),				//DEBUG Signals from debug module to load a program
 	.DEBUG_addr(DEBUG_addr),
 	.DEBUG_instr(DEBUG_instr),
 	.clk_debug(clk_debug)
-	); 
+	);
 
 endmodule

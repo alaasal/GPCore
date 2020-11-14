@@ -21,7 +21,7 @@ module core(
 	logic we3, we4, we5, we6;
 	logic [31:0] wb6;	   // data output from commit stage to regfile to be written
 
-	logic [2:0] fn3, fn4, fn5, fn6;
+	logic [2:0] fn3, fn4;
 	logic [3:0] alu_fn3, alu_fn4;
 	
 	logic [31:0] I_imm3, B_imm3, J_imm3, S_imm3,U_imm3;
@@ -364,7 +364,7 @@ module core(
 	.U_imm6       		(U_imm6),
 	.AU_imm6       		(AU_imm6),
 	
-	.mem_out6     		(mem_out6),
+	//.mem_out6     		(mem_out6),
 	.addr_misaligned6 	(addr_misaligned6),
 
 	.mul_divReg6         	(mul_div6),

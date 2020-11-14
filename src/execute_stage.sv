@@ -1,5 +1,5 @@
 `include "define.sv"
- 
+
 
 module exe_stage(
 
@@ -39,18 +39,18 @@ module exe_stage(
 	input logic [11:0] csr_addr4,
 	input logic csr_we4,
 
-	// exceptions 
+	// exceptions
 	input logic instruction_addr_misaligned4,
 	input logic ecall4,
 	input logic illegal_instr4,
 	input logic mret4, sret4, uret4,
-	
+
 	input logic m_timer,s_timer,
     	input mode::mode_t current_mode,
 	input logic m_tie, s_tie, m_eie, s_eie,
 	input logic external_interrupt,
 	input logic excep6,
-    
+
 
 	output logic [31:0] wb_data6,
 	output logic we6,
@@ -59,9 +59,9 @@ module exe_stage(
 	output logic [4:0] rd6,
 
 	output logic [31:0] U_imm6,
-	output logic [31:0] AU_imm6,
+	output logic [31:0] AU_imm6 ,
 
-	output logic [31:0] mem_out6,
+	//output logic [31:0] mem_out6,
 	output logic addr_misaligned6,
 
 	output logic [31:0] mul_divReg6,
@@ -82,7 +82,7 @@ module exe_stage(
 	output logic [31:0] cause6,
 	output logic exception_pending,
 	output logic mret6, sret6, uret6,
-	
+
 	output logic m_interrupt, s_interrupt
     );
 
@@ -94,8 +94,8 @@ module exe_stage(
 	logic j5;
 	logic jr5;
 	logic [31:0] mul_div5;
-	
-	
+
+
 	// =============================================== //
 	//			Pipe 5			   //
 	// =============================================== //
@@ -130,7 +130,7 @@ module exe_stage(
 	// csr
 	logic [2:0]  funct3Reg5;
 	logic [31:0] csr_dataReg5, csr_immReg5;
-        logic [31:0] csr5; 
+        logic [31:0] csr5;
 	logic [11:0] csr_addrReg5;
 	logic csr_weReg5;
 	logic [31:0] csr_rd5;
@@ -139,7 +139,7 @@ module exe_stage(
 	logic instruction_addr_misalignedReg5;
 	logic illegal_instrReg5;
 	logic mretReg5, sretReg5, uretReg5;
-	   
+
 	always_ff @(posedge clk, negedge nrst)
 	begin
         if (!nrst)
@@ -228,7 +228,7 @@ module exe_stage(
 		mretReg5	<= 0;
 		sretReg5	<= 0;
 		uretReg5	<= 0;
-		end 
+		end
 		else begin
 		 opaReg5   	<= op_a;
 		opbReg5   	<= op_b;
@@ -270,12 +270,12 @@ module exe_stage(
 		mretReg5	<= mret4;
 		sretReg5	<= sret4;
 		uretReg5	<= uret4;
-		  
-		 
-		
+
+
+
 		  end
       end
-  end 
+  end
 
 	  //ALU
 	alu exe_alu (
@@ -347,6 +347,7 @@ module exe_stage(
 	logic [31:0] AU_immReg6;
 
 	logic [31:0] pcReg6;
+	logic [31:0] mem_out6;
 
 	logic [2:0] fn6;
 	// csr
@@ -354,7 +355,7 @@ module exe_stage(
 	logic [31:0] csrReg6;		// this will be written back in csr regfile
 	logic [11:0] csr_addrReg6;	// csr address that new data will be written in
 	logic csr_weReg6;
-	
+
 	// exceptions
 	logic instruction_addr_misalignedReg6;
 	logic ecallReg6;
@@ -389,7 +390,7 @@ module exe_stage(
 	  begin
 	  if(excep6)begin
 	   pcReg6 		    <=  pcReg5;
-	    
+
 	  	fnReg6 	  	  <= 3'b0;
 		rdReg6 		    <= 5'b0;
 		alu_resReg6 	<= 32'b0;
@@ -397,23 +398,23 @@ module exe_stage(
 		U_immReg6 	  <= 32'b0;
     		AU_immReg6 	 <= 32'b0;
 		mul_divReg6 	<= 32'b0;
-		
+
 		csr_weReg6 		<=  0;
-		
+
 		csr_rdReg6	  <=  32'b0;
 		csrReg6		    <=  32'b0;
 		csr_addrReg6	<=  12'b0;
-		
+
 		instruction_addr_misalignedReg6 <= 0;
 		ecallReg6	   <=  0;
 		illegal_instrReg6  <= 0;
 		mretReg6	<= 0;
 		sretReg6	<= 0;
 		uretReg6	<= 0;
-		
+
 	   end
 		  else begin
-                 
+
 		    fnReg6 		    <=  fnReg5;
 		    rdReg6 		    <=  rdReg5;
 		    alu_resReg6 	<=  alu_res5;
@@ -422,13 +423,13 @@ module exe_stage(
    		   AU_immReg6 	 <=  U_immReg5+pcReg5 ;
     		  mul_divReg6 	<=  mul_div5;
     		  pcReg6 		    <=  pcReg5;
-    		  
+
     		  csr_weReg6 		<=  csr_weReg5;
-    		  
+
     		  csr_rdReg6	  <=  csr_rd5;
 		    csrReg6		    <=  csr5;
 		    csr_addrReg6	<=  csr_addrReg5;
-    		  
+
 		    instruction_addr_misalignedReg6 <= instruction_addr_misalignedReg5;
 		    ecallReg6	   <=  ecallReg5;
 		    illegal_instrReg6  <= illegal_instrReg5;
@@ -453,7 +454,7 @@ module exe_stage(
 	assign s_interrupt_conditioned = (current_mode <= 2'b01) &&   s_eie && external_interrupt;
 
 /* EXCEPTIONS. ********************************************************************************************************/
-//delete instruction_addr_misalignedReg6 
+//delete instruction_addr_misalignedReg6
 	assign exception =  ecallReg6 || addr_misaligned6 || m_timer_conditioned || s_interrupt_conditioned
 			|| illegal_instrReg6   || s_timer_conditioned || m_interrupt_conditioned || mretReg6 || sretReg6 || uretReg6;
 
@@ -515,18 +516,25 @@ module exe_stage(
 		  end
 	  end
 
+	mul_div mul1(
+	.a		(opaReg5),
+	.b		(opbReg5),
+	.mulDiv_op	(mulDiv_opReg5),
+	.res		(mul_div5)
+	);
+
 
 	// =============================================== //
 	//			 Outputs		   //
 	// =============================================== //
 	assign fn6 = fnReg6;
 	assign rd6 = rdReg6;
-	assign we6 = weReg6; 
+	assign we6 = weReg6;
 
 	assign U_imm6 		= U_immReg6;
 	assign AU_imm6 		= AU_immReg6;
 
-	assign bjtaken6 = btaken | jr4 |j4; 
+	assign bjtaken6 = btaken | jr4 |j4;
 	assign pcselect5=pcselect4;
 
 	// to csr register file through commit stage

@@ -9,7 +9,8 @@ input logic [4:0] rd,
 
 input logic [6:0] op_code,
 
-output logic stall,kill
+output logic stall,kill,
+output logic [1:0] stallnum
 );
 
 
@@ -18,6 +19,8 @@ logic [5:0] scoreboard[0:31];
 logic [2:0] function_unit;
 
 logic stallReg,killReg;
+logic [1:0] killnum;
+
 
 //assign stall = scoreboard[rd][5] /*in commit stage */ ? 1'b1 : 1'b0;  // zeroing pending 
 
@@ -28,8 +31,12 @@ logic stallReg,killReg;
        		for(int i=0;i<32;i=i+1)
 		begin 
 			scoreboard[i]<=7'b0;
-			stallReg<=0;
+			
 		end
+	killnum<=2'b0;
+	stallReg<=0;
+	killReg <=0;
+	stallnum<=0;
           end
           else 
 	  begin 
@@ -37,20 +44,19 @@ logic stallReg,killReg;
 		4'b001: 
 
 			begin 	   // pending & write 
-				if ((scoreboard[rd][5])   && (|rd) && !kill)  stallReg <= 1; //assign stallo=stallreg
-				else if( (|rd) && !kill)   
-					begin 
-					scoreboard[rd][5]<=1; 
-					scoreboard[rd][3]<=1; 
-					scoreboard[rd][4]<=1;
-   					end 
-				else begin end 
+				
 				
 			end 
 		4'b010: 
 			begin 
-				if ((scoreboard[rd][5] ||scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4] && !kill)  stallReg <= 1; //assign stallo=stallreg
-				else if( (|rd)&& scoreboard[rs1][4] && !kill)   
+				if ((scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4] && !kill)   
+				begin
+				stallReg <= 1; 
+				if (!stallnum[1] && stallnum[0]) stallnum<= 2'b00;
+				else begin end
+
+				end
+				else if( (|rd)&&  !stall  && !kill)   
 					begin 
 					scoreboard[rd][5]<=1; scoreboard[rd][4]<=1;
 					scoreboard[rd][3]<=1; 
@@ -60,15 +66,27 @@ logic stallReg,killReg;
 			end 
 		4'b011: 
 			begin 
-				if (  (scoreboard[rs1][5] || scoreboard[rs2][5]) &&(scoreboard[rs1][4] || scoreboard[rs2][4]) && !kill  )  stallReg <= 1; //assign stallo=stallreg
+				if (  (scoreboard[rs1][5] || scoreboard[rs2][5]) &&(scoreboard[rs1][4] || scoreboard[rs2][4]) && !kill  )   
+				begin
+				stallReg <= 1; 
+				if (!stallnum[1] && stallnum[0]) stallnum<= 2'b00;
+				else begin end
+
+				end
 				
 				else begin end 
 				
 			end 
 		4'b100: 
 			begin 
-				if ((scoreboard[rd][5] ||scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4] && !kill)  stallReg <= 1; //assign stallo=stallreg
-				else if( (|rd) && scoreboard[rs1][4] && !kill)   
+				if ((scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4] && !kill)  
+				begin
+				stallReg <= 1; 
+				if (!stallnum[1] && stallnum[0]) stallnum<= 2'b00;
+				else begin end
+
+				end
+				else if( (|rd) && !stall && !kill)   
 					begin 
 					scoreboard[rd][5]<=1; scoreboard[rd][4]<=1;
 					scoreboard[rd][3]<=1;
@@ -78,20 +96,36 @@ logic stallReg,killReg;
 			end 
 		4'b101: 
 			begin 
-				if (( scoreboard[rs1][5] || scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4]) && !kill  )  stallReg <= 1; //assign stallo=stallreg
+				if ((  scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4]) && !kill  )  
+				begin
+				stallReg <= 1; 
+				if (!stallnum[1] && stallnum[0]) stallnum<= 2'b00;
+				else begin end
+
+
+				end
 				
 				else begin end 
 				
 			end 
 		4'b110: 
 			begin 
-				if ((scoreboard[rd][5] || scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4])&& (|rd) && !kill)  stallReg <= 1; //assign stallo=stallreg
-				else if( (|rd) && !kill)
+				if (( scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4])&& (|rd) && !kill)  
+				begin
+				stallReg <= 1; 
+				if (!stallnum[1] && stallnum[0]) stallnum<= 2'b00;
+				else begin end
+
+
+				end
+				else if( !stall && (|rd) && !kill)
 					begin 
-					scoreboard[rd][5]<=1; ;scoreboard[rd][4]<=1;
+					scoreboard[rd][5]<=1;scoreboard[rd][4]<=1;
 					scoreboard[rd][3]<=1; 
    					end 
-				else begin end 
+				else begin end
+				
+					
 				
 			end 
 		default :
@@ -128,22 +162,34 @@ assign kill=killReg;
       	scoreboard[j][3:0]<={1'b0,scoreboard[j][3:1]};
 	end
 	if (stallReg) begin 
-	if (!scoreboard[rd][5] && !scoreboard[rs1][5] && !scoreboard[rs2][5]) //depends on instruction
+	if ( !scoreboard[rs1][5] && !scoreboard[rs2][5]&& !scoreboard[rs1][0] && !scoreboard[rs2][0]) //depends on instruction
 		begin 
 		stallReg<=0;
 		
 		end
-	else begin end 
-
-			end
 	else begin end
+				
+				 if(scoreboard[rs1][2]) stallnum<= 2'b11;
+				else if(scoreboard[rs1][1]) stallnum<= 2'b10;
+				else if(scoreboard[rs1][0]) stallnum<= 2'b01;
+				else begin end
+				
+				
+				 if(scoreboard[rs2][2]) stallnum<= 2'b11;
+				else if(scoreboard[rs2][1]) stallnum<= 2'b10;
+				else if(scoreboard[rs2][0]) stallnum<= 2'b01;
+				else begin end
+
+		end
+	else begin end
+	
       end
 
- always_ff @(negedge clk)
+ always_ff @(posedge clk)
       begin
        for(int j=0;j<32;j=j+1)
 	begin 
-      	if(scoreboard[j][0])  begin scoreboard[j][5]<=0;   scoreboard[j][4]<=0;  end 
+      	if(scoreboard[j][0] && !scoreboard[j][1])  begin scoreboard[j][5]<=0;   scoreboard[j][4]<=0;  end 
 	else  begin end    
 	end
       end
@@ -152,14 +198,24 @@ if (btaken | exception)
 begin 
 	stallReg<=0;
 	killReg<=1;
+	killnum=killnum+1;
 	scoreboard[rd][5]<=0; scoreboard[rd][4]<=0;
 	scoreboard[rd][3]<=0;
 
 end
+else if (!killnum[1] && killnum[0])
+begin 
+	stallReg<=0;
+	killReg<=1;
+	killnum=killnum+1;
+
+end 
 else 
 begin 
-killReg<=0;
-end 
+
+	killReg<=0;
+
+end
 
 end 
 
