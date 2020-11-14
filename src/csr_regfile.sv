@@ -21,10 +21,13 @@ module csr_regfile(
 
 	output logic m_timer,
 	output logic s_timer,
+	output logic u_timer,
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
 	output logic m_eie, m_tie,s_eie, s_tie,
-	// output logic u_eie, u_tie, u_sie,
-	output mode::mode_t     current_mode = mode::U,
+
+	 output logic u_eie, u_tie, u_sie,
+	output mode::mode_t     current_mode = mode::M,
+
 	// To front end
 	output logic [31:0] epc
 	);
@@ -123,6 +126,7 @@ module csr_regfile(
 
 
 	logic[63:0] stimecmp;
+        logic[63:0] utimecmp;
 	logic [63:0]mtimecmp;
 	logic [63:0] mtime;
 
@@ -152,7 +156,7 @@ module csr_regfile(
 		`CSR_MCAUSE:		csr_data = mcause;
 		`CSR_MTVAL:		csr_data = mtval;
 		`CSR_MSCRATCH:		csr_data = mscratch;
-        `CSR_MNECYCLE:           csr_data = mtimecmp;
+                `CSR_MNECYCLE:           csr_data = mtimecmp;
 
 		`CSR_MEDELEG: 		csr_data = medeleg_w;
         	`CSR_MIDELEG: 		csr_data = mideleg_w;
@@ -197,6 +201,7 @@ module csr_regfile(
 		`CSR_UCAUSE:		csr_data = ucause;
 		`CSR_UTVAL:		csr_data = utval;
 		`CSR_USCRATCH:		csr_data = uscratch;
+                `CSR_UNECYCLE:           csr_data = utimecmp;
 
 
 
@@ -387,6 +392,7 @@ always_ff @(posedge clk, negedge nrst) begin
 		utval			<= 0;
         mtimecmp <=0;
         stimecmp <=0;
+        utimecmp  <=0;
 end
 	else
 	  begin
@@ -501,6 +507,9 @@ end
 				utval <= csr_wb;
 			`CSR_UTVEC:
 				utvec <= csr_wb[`XLEN-1:2];
+                        `CSR_UNECYCLE:
+                                       utimecmp <= csr_wb;
+ 
 
 		endcase
 		end
@@ -674,6 +683,16 @@ always @(posedge clk,negedge nrst) begin
 	end
 	else begin
         s_timer <= (mtime >= stimecmp);
+	end
+end
+/* User's timer. */
+
+always @(posedge clk,negedge nrst) begin
+	if (!nrst) begin
+	u_timer <= 0;
+	end
+	else begin
+        u_timer <= (mtime >= utimecmp);
 	end
 end
 

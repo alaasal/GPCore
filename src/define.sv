@@ -69,6 +69,7 @@ package csr;
 `define CSR_CYCLE       12'hc00
 `define CSR_TIME        12'hc01
 `define CSR_INSTRET     12'hc02
+`define CSR_UNECYCLE    12'h8ff
 
 // Superviser-Mode
 `define CSR_SSTATUS     12'h100
