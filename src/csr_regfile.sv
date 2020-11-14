@@ -120,9 +120,11 @@ module csr_regfile(
 	//logic s_timer;
 	logic [31:0] mtvec_out ;
 	assign mtvec_out = {mtvec, 2'b0};
-	logic[63:0] supervisor_next_event_cycle=0;
-	logic [63:0]machine_next_event_cycle=0;
-	logic [63:0] cycle_counter=0;
+
+
+	logic[63:0] stimecmp;
+	logic [63:0]mtimecmp;
+	logic [63:0] mtime;
 
 
 
@@ -150,6 +152,7 @@ module csr_regfile(
 		`CSR_MCAUSE:		csr_data = mcause;
 		`CSR_MTVAL:		csr_data = mtval;
 		`CSR_MSCRATCH:		csr_data = mscratch;
+                `CSR_MNECYCLE           csr_data = mtimecmp;
 
 		`CSR_MEDELEG: 		csr_data = medeleg_w;
         	`CSR_MIDELEG: 		csr_data = mideleg_w;
@@ -177,7 +180,8 @@ module csr_regfile(
                 `CSR_SIP:               csr_data = sip;
                 `CSR_SCAUSE:            csr_data = scause;
                 `CSR_STVAL:             csr_data = stval;
-                `CSR_SNECYCLE:          csr_data = supervisor_next_event_cycle;//we should add M
+                `CSR_SNECYCLE:          csr_data = stimecmp;
+
 		`CSR_SEDELEG: 		csr_data = sedeleg_w;
 		`CSR_SIDELEG: 		csr_data = sideleg_w;
 
@@ -381,6 +385,9 @@ always_ff @(posedge clk, negedge nrst) begin
 		uscratch		<= 0;
 		uepc			<= 0;
 		utval			<= 0;
+               mtimecmp <=0;
+              mtime              <=0;
+              stimecmp <=0;
 end
 	else
 	  begin
@@ -409,6 +416,8 @@ end
 			  end
 			`CSR_MSCRATCH:
 				mscratch <= csr_wb;
+                        `CSR_MNECYCLE:
+                                       mtimecmp <= csr_wb;
 			`CSR_MEPC:
 				mepc <= csr_wb[`XLEN-1:2];
 			`CSR_MCAUSE:
@@ -454,7 +463,7 @@ end
 			`CSR_SIDELEG:
 				sideleg <= csr_wb[11:0];  
                          `CSR_SNECYCLE:
-                                       supervisor_next_event_cycle <= csr_wb;
+                                       stimecmp <= csr_wb;
  
 
 			// USER MODE
@@ -633,7 +642,19 @@ end
 /* Counter for time and cycle CSRs. */
 
 always @(posedge clk) begin
-    cycle_counter <= cycle_counter + 1;
+    mtime <= mtime + 1;
+end
+
+
+/* machine's timer. */
+
+always @(posedge clk ,negedge nrst) begin
+	if (!nrst)  begin
+	m_timer	<= 0;
+	end
+	else begin
+    	m_timer <= (mtime >= mtimecmp);
+	end
 end
 
 /* Supervisor's timer. */
@@ -643,20 +664,7 @@ always @(posedge clk,negedge nrst) begin
 	s_timer <= 0;
 	end
 	else begin
-        s_timer <= (cycle_counter >= supervisor_next_event_cycle);
-	end
-end
-
-// in other code they use (assign     m_timer = 0;)
-
-/* machine's timer. */
-
-always @(posedge clk ,negedge nrst) begin
-	if (!nrst)  begin
-	m_timer	<= 0;
-	end
-	else begin
-    	m_timer <= (cycle_counter >= machine_next_event_cycle);
+        s_timer <= (mtime >= stimecmp);
 	end
 end
 

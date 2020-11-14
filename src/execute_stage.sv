@@ -447,9 +447,9 @@ module exe_stage(
 	logic s_timer_conditioned     ;
 	logic m_interrupt_conditioned ;
 	logic s_interrupt_conditioned ;
-	assign m_timer_conditioned     =                                m_tie && m_timer;
+	assign m_timer_conditioned     =                              m_tie && m_timer;
 	assign s_timer_conditioned     = (current_mode <= 2'b01) &&   s_tie && s_timer;
-	assign m_interrupt_conditioned =                                m_eie && external_interrupt;
+	assign m_interrupt_conditioned =                              m_eie && external_interrupt;
 	assign s_interrupt_conditioned = (current_mode <= 2'b01) &&   s_eie && external_interrupt;
 
 /* EXCEPTIONS. ********************************************************************************************************/
