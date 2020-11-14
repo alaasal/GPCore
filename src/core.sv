@@ -355,7 +355,7 @@ module core(
 	.sret4		(sret4),
 	.uret4		(uret4),
 	.external_interrupt(external_interrupt),
-	.excep6(exception_pending),
+	//.excep6(exception_pending),
 
 	// Outputs
 	.rd6          		(rd6),

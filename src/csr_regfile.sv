@@ -24,7 +24,7 @@ module csr_regfile(
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
 	output logic m_eie, m_tie,s_eie, s_tie,
 	// output logic u_eie, u_tie, u_sie,
-	output mode::mode_t     current_mode = mode::M,
+	output mode::mode_t     current_mode = mode::U,
 	// To front end
 	output logic [31:0] epc
 	);
@@ -620,7 +620,12 @@ always_comb begin
 	else if (s_ret) begin
             next_mode = status_spp ? mode::S : mode::U;
         end
-	if (current_mode == mode::S)
+        else if (u_ret)	  begin	
+        	next_mode = mode::U;	  
+        end
+
+        
+	else if (current_mode == mode::S)
 	  begin
 		if (cause[`XLEN-1])
             		next_mode = mideleg[cause[`XLEN-2:0]] ? mode::S : mode::M;

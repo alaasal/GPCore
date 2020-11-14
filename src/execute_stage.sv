@@ -49,7 +49,7 @@ module exe_stage(
     	input mode::mode_t current_mode,
 	input logic m_tie, s_tie, m_eie, s_eie,
 	input logic external_interrupt,
-	input logic excep6,
+	//input logic excep6,
 
 
 	output logic [31:0] wb_data6,
@@ -188,7 +188,7 @@ module exe_stage(
           end
         else
           begin
-      	if(excep6)begin
+      	if(exception)begin
 		opaReg5   	<= 0;
 		opbReg5   	<= 0;
 
@@ -388,7 +388,7 @@ module exe_stage(
 	  end
 	else
 	  begin
-	  if(excep6)begin
+	  if(exception)begin
 	   pcReg6 		    <=  pcReg5;
 
 	  	fnReg6 	  	  <= 3'b0;

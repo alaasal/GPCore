@@ -157,7 +157,7 @@ module mem_wrap(
 
     data_mem dmem (
     .clk        (clk),
-	.nrst	(nrst),
+//	.nrst	(nrst),
     .gwe        (gwe6),
     .rd         (rd6),
     .bw0        (bw06),         
