@@ -446,17 +446,17 @@ module exe_stage(
 	logic [31:0] cause            ;
 	logic m_timer_conditioned     ;
 	logic s_timer_conditioned     ;
-  logic u_timer_conditioned     ;
+  	logic u_timer_conditioned     ;
 	logic m_interrupt_conditioned ;
 	logic s_interrupt_conditioned ;
-  logic u_interrupt_conditioned ;
+  	logic u_interrupt_conditioned ;
 
 	assign m_timer_conditioned     =                                m_tie && m_timer;
-	assign s_timer_conditioned     = ((current_mode != 2'b11)) &&   s_tie && s_timer;
+	assign s_timer_conditioned     = (current_mode != 2'b11)   &&   s_tie && s_timer;
 	assign m_interrupt_conditioned =                                m_eie && external_interrupt;
-	assign s_interrupt_conditioned = ((current_mode != 2'b11)) &&   s_eie && external_interrupt;
-  assign u_timer_conditioned     = (current_mode == 2'b00)   &&   u_tie && u_timer;
-  assign u_interrupt_conditioned = (current_mode == 2'b00)   &&   u_eie && external_interrupt;
+	assign s_interrupt_conditioned = (current_mode != 2'b11)   &&   s_eie && external_interrupt;
+  	assign u_timer_conditioned     = (current_mode == 2'b00)   &&   u_tie && u_timer;
+  	assign u_interrupt_conditioned = (current_mode == 2'b00)   &&   u_eie && external_interrupt;
 
 /* EXCEPTIONS. ********************************************************************************************************/
 //delete instruction_addr_misalignedReg6
@@ -539,7 +539,8 @@ module exe_stage(
 	assign csr_wb 		 = csrReg6;
 	assign csr_wb_addr 	 = csr_addrReg6;
 	assign csr_we6 		 = csr_weReg6;
-	//assign pc_exc 	 = pcReg6;
+	assign m_interrupt	 = m_interrupt_conditioned;
+	assign s_interrupt	 = s_interrupt_conditioned;
 	assign cause6 		 = cause;
 	assign exception_pending = exception;
 	assign mret6		 = mretReg6;
