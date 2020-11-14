@@ -24,7 +24,7 @@ end
 assign clk_core = (START == 1'b1) ? clk : 0;
 assign clk_debug = (START == 1'b0) ? clk : 0;
 
-assign external_interrupt = 0;
+assign external_interrupt = 1;
 initial 
 begin 
 nrst = 0;

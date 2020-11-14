@@ -47,7 +47,7 @@ module exe_stage(
 
 	input logic m_timer,s_timer, u_timer,
     	input mode::mode_t current_mode,
-	input logic m_tie, s_tie, m_eie, s_eie,u_eie,u_tie,
+	input logic m_tie, s_tie, m_eie, s_eie,u_eie,u_tie,u_sie,
 	input logic external_interrupt,
 	//input logic excep6,
 
@@ -446,17 +446,17 @@ module exe_stage(
 	logic [31:0] cause            ;
 	logic m_timer_conditioned     ;
 	logic s_timer_conditioned     ;
-        logic u_timer_conditioned     ;
+  logic u_timer_conditioned     ;
 	logic m_interrupt_conditioned ;
 	logic s_interrupt_conditioned ;
-        logic u_interrupt_conditioned ;
+  logic u_interrupt_conditioned ;
 
-	assign m_timer_conditioned     =                               m_tie && m_timer;
-	assign s_timer_conditioned     = (~(current_mode <= 2'b11)) &&   s_tie && s_timer;
-	assign m_interrupt_conditioned =                              m_eie && external_interrupt;
-	assign s_interrupt_conditioned = (~(current_mode <= 2'b11)) &&   s_eie && external_interrupt;
-        assign u_timer_conditioned     = (current_mode <= 2'b00)    &&      u_tie && u_timer;
-        assign u_interrupt_conditioned = (current_mode <= 2'b00)       &&  u_eie && external_interrupt;
+	assign m_timer_conditioned     =                                m_tie && m_timer;
+	assign s_timer_conditioned     = ((current_mode != 2'b11)) &&   s_tie && s_timer;
+	assign m_interrupt_conditioned =                                m_eie && external_interrupt;
+	assign s_interrupt_conditioned = ((current_mode != 2'b11)) &&   s_eie && external_interrupt;
+  assign u_timer_conditioned     = (current_mode == 2'b00)   &&   u_tie && u_timer;
+  assign u_interrupt_conditioned = (current_mode == 2'b00)   &&   u_eie && external_interrupt;
 
 /* EXCEPTIONS. ********************************************************************************************************/
 //delete instruction_addr_misalignedReg6

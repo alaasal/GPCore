@@ -301,7 +301,12 @@ module core(
 	.s_eie(s_eie),
 	.m_eie(m_eie),
 	.m_tie(m_tie),
-	.s_tie(s_tie)
+	.s_tie(s_tie),
+	
+	.u_timer(u_timer),
+  .u_eie(u_eie),
+	.u_tie(u_tie),
+	.u_sie(u_sie)
     
     );
 
@@ -395,8 +400,13 @@ module core(
 	.m_eie(m_eie),
 	.m_tie(m_tie),
 	.s_tie(s_tie),
-    .m_interrupt(m_interrupt),
-    .s_interrupt(s_interrupt)
+  .m_interrupt(m_interrupt),
+  .s_interrupt(s_interrupt),
+    
+  .u_timer(u_timer),
+  .u_eie(u_eie),
+	.u_tie(u_tie),
+	.u_sie(u_sie)
 	);
 
 	// =============================================== //

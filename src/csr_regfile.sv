@@ -629,8 +629,11 @@ always_comb begin
 	else if (s_ret) begin
             next_mode = status_spp ? mode::S : mode::U;
         end
-        else if (u_ret)	  begin	
-        	next_mode = mode::U;	  
+        else if (u_ret)
+	  begin
+	
+        	next_mode = mode::U;
+	  
         end
 
         
