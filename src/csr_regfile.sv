@@ -152,7 +152,7 @@ module csr_regfile(
 		`CSR_MCAUSE:		csr_data = mcause;
 		`CSR_MTVAL:		csr_data = mtval;
 		`CSR_MSCRATCH:		csr_data = mscratch;
-                `CSR_MNECYCLE           csr_data = mtimecmp;
+        `CSR_MNECYCLE:           csr_data = mtimecmp;
 
 		`CSR_MEDELEG: 		csr_data = medeleg_w;
         	`CSR_MIDELEG: 		csr_data = mideleg_w;
@@ -370,7 +370,7 @@ always_ff @(posedge clk, negedge nrst) begin
 		sideleg			<= 0;
 
 		sscratch		<= 0;
-        	stvec  	        	<= 0;
+        stvec  	        <= 0;
 		sepc			<= 0;
 
 		status_upie		<= 0;
@@ -379,15 +379,14 @@ always_ff @(posedge clk, negedge nrst) begin
 		utip			<= 0;
 		ueip			<= 0;
 		usie			<= 0;
-        	utie			<= 0;
+        utie			<= 0;
 		ueie			<= 0;
 		utvec	    		<= 0;
 		uscratch		<= 0;
 		uepc			<= 0;
 		utval			<= 0;
-               mtimecmp <=0;
-              mtime              <=0;
-              stimecmp <=0;
+        mtimecmp <=0;
+        stimecmp <=0;
 end
 	else
 	  begin
@@ -641,8 +640,13 @@ end
 
 /* Counter for time and cycle CSRs. */
 
-always @(posedge clk) begin
+always @(posedge clk,negedge nrst) begin
+if (!nrst)  begin
+     mtime <=0;
+  end
+  else begin
     mtime <= mtime + 1;
+end
 end
 
 
