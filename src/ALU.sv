@@ -11,11 +11,10 @@ module alu #parameter(
     OR  = 4'b0110,
     AND = 4'b0111,
     //comparison
-    BGE,
-    BGEU,
-    SLT =,
-    SLTU = 
-
+    BGE  = 4'b1001,
+    BGEU = 4'b1010,
+    SLT  = 4'b0010,
+    SLTU = 4'b0011
 )(
 	input  logic bneq,btype,
 	input  logic [3:0]   alu_fn,
@@ -27,27 +26,24 @@ module alu #parameter(
 
 );
 
-    logic sub_op, xor_op;
+    //TODO: move signal decoding to a seperate always block
+    logic sub_op;
     logic signed [31:0] b_adder;    //operand b input to adder
     logic signed [31:0] a_adder;    //operand a input to adder
     logic signed [31:0] adder_result;      //33 adder output, bit 32 is carry out(overflow indication)
     logic [31:0] b_negate;
     logic cin, cout;                      //adder carry-in, mapped to fpga Cin
-    
     //adder
-    //ADD, SUB, XOR
     always_comb begin
         sub_op <= (alu_fn == SUB);
-        xor_op <= (alu_fn == XOR);
 
-        if (sub_op | xor_op) b_negate <= 32'bffff_ffff;
-        else b_negate <= 32'b0;
+        b_negate <= sub_op;
 
-        b_adder      <= b_negate ^ operandB;
-        cin          <= sub_op;
-        a_adder      <= (xor_op)? 32'b0 : operandA;
+        b_adder  <= {32{b_negate}} ^ operandB;
+        cin      <= sub_op;
+        a_adder  <= operandA;
 
-        {cout ,adder_result} <= a_adder + b_adder + cin;    //output of add, sub, xor
+        {cout ,adder_result} <= a_adder + b_adder + cin;    //output of add, sub
     end
     /***************************************************************************************************************/
     /***************************************************************************************************************/
@@ -59,7 +55,6 @@ module alu #parameter(
     logic [31:0] shift_reversed;            //bit reverse shift logical output
     logic signed [31:0] shift_l_res;        //logical shifter result
     logic signed [31:0] shifter_result;     //final shifter result
-    
     //shifter
     always_comb begin
         sll_op <= (alu_fn == SLL);
@@ -79,13 +74,38 @@ module alu #parameter(
     end
     /***************************************************************************************************************/
     /***************************************************************************************************************/
+    logic slt_op, sltu_op, bge_op, bgeu_op;
+    logic op_signed;
+    logic [31:0] a_comp;            //comparator input a
+    logic [31:0] b_comp;            //comparator input b
+    logic [31:0] less_unsigned, less_signed;
+    logic [31:0] comparator_result; //comparator output
+    //comparator
+    always_comb begin
+        slt_op  <= (alu_fn == SLT);
+        sltu_op <= (alu_fn == SLTU);
+        bge_op  <= (alu_fn == BGE);
+        bgeu_op <= (alu_fn == BGEU);
+
+        op_signed <= slt_op & ~sltu_op & beg_op & ~bgeu_op;
+
+        a_comp <= operandA;
+        b_comp <= operandB;
+
+        less_unsigned <= a_comp < b_comp;
+        less_signed   <= $signed(a_comp) < $signed(b_comp);
+
+        comparator result <= (op_signed)? less_signed : less_unsigned;
+    end
+    /***************************************************************************************************************/
+    /***************************************************************************************************************/
     //result block
     always_comb begin
-        unique case (alu_fn)
+        case (alu_fn)
             //logical operations
             AND: result <= operandA & operandB; 
             OR:  result <= operandA | operandB;
-            XOR: result <= adder_result;
+            XOR: result <= operandA ^ operandB;
             
             //arithmetic operations
             ADD, SUB: result <= adder_result;
@@ -93,18 +113,30 @@ module alu #parameter(
             //shift operations
             SLL, SRL, SRA: result <= shifter_result;
             
-
+            //comparator operations
+            SLT, SLTU, BGE, BGEU: result <= comparator_result;
             default: result <= 32'b0;
         endcase    
     end
 
+    //branch block
+    always_comb begin
+        case (alu_fn)
+            SUB: btaken <= (|result) & bneq || (~|result) & ~bneq;
+            SLT, SLTU: btaken <= result[0];
+            BGE, BGEU: btaken <= ~result[0];
+            default: btaken <= 0;
+        endcase
+    end
+
+    //removed next commit
 	always_comb
 	  begin
 		unique case(alu_fn)
 			//4'b0000: result = $signed(operandA) + $signed(operandB);
 			//4'b0001: result = $signed(operandA) << $signed(operandB);
-			4'b0010: result = ($signed(operandA) < $signed(operandB));
-			4'b0011: result = (operandA < operandB); 
+			//4'b0010: result = ($signed(operandA) < $signed(operandB));
+			//4'b0011: result = (operandA < operandB); 
 			//4'b0100: result = $signed(operandA) ^ $signed(operandB);
 			//4'b0101: result = $signed(operandA) >> $signed(operandB);
 			//4'b0110: result = $signed(operandA) | $signed(operandB);
@@ -112,8 +144,8 @@ module alu #parameter(
 			//4'b1000: result = $signed(operandA) - $signed(operandB);
 
             //will be depricated in the next commit, will rely on 4'b0010 and 4'b0011 instead 
-			4'b1001: result = ($signed(operandA) > $signed(operandB));  // for bge 
-			4'b1010: result = (operandA > operandB);  		    // for bgeu
+			//4'b1001: result = ($signed(operandA) > $signed(operandB));  // for bge 
+			//4'b1010: result = (operandA > operandB);  		    // for bgeu
 			//5'b01011: result = 0;
 			//5'b01100: result = 0;
 			//4'b1101: result = $signed(operandA) >>> $signed(operandB);
