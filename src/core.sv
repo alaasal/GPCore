@@ -4,7 +4,32 @@ module core(
 	input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
 	input logic [31:0] DEBUG_addr,
 	input logic [31:0] DEBUG_instr,
-	input logic clk_debug
+	input logic clk_debug,
+
+
+
+	//OpenPiton Request
+	output logic[31:0] transducer_l15_rqtype, 
+	output logic[31:0] transducer_l15_size,
+	output logic[31:0] transducer_l15_address,
+	output logic[31:0] transducer_l15_data,
+	output logic transducer_l15_val,
+	input logic l15_transducer_ack,
+	input logic l15_transducer_header_ack,
+
+
+	//OpenPiton Response
+	input logic l15_transducer_val,
+	input logic[31:0] l15_transducer_data_0, 
+	input logic[31:0] l15_transducer_data_1, 
+	input logic[31:0] l15_transducer_data_2, 
+	input logic[31:0] l15_transducer_data_3, 
+	input logic[31:0] l15_transducer_returntype,
+	output logic transducer_l15_req_ack,
+
+	//OpenPiton Stall Interrupt
+	input logic gpcore_int
+
     );
 
 	// Wires
