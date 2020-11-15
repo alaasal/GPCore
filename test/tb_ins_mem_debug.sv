@@ -1,7 +1,7 @@
 
 //this testbench is designed to test instruction memory writes 
 //in this test bench we instantiate 2 modules instr_mem module -instruction memory- and debug module
-
+`timescale 1ns/1ns 
 module tb_mem_debug; 
 
 reg clk;            //core clock
@@ -29,8 +29,10 @@ initial begin
     clk_debug_cc = 0;  
  end 
  always begin 
- #10 clk_cc = ~clk_cc;
- #10 clk_debug_cc = ~clk_debug_cc;
+ #5 clk_cc = ~clk_cc;
+  end
+   always begin 
+ #5 clk_debug_cc = ~clk_debug_cc;
   end
   
  always @(posedge clk)begin
@@ -44,7 +46,7 @@ initial begin
 	 
   nrst = 0;
   addr = 0;
-#25 nrst = 1; 
+#10 nrst = 1; 
    
    end 
 endmodule

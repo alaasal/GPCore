@@ -7,7 +7,7 @@ class packet; // used for randomization of variables
   
 endclass
  
-`timescale 10ns/10ns 
+`timescale 1ns/1ns 
 module tb_regfile; 
   
 reg clk, we, clrn;		            // clk, write enable and negative clear signal to clear register file data
@@ -24,7 +24,7 @@ initial begin
     clk = 0; 
  end 
  always begin 
- #10 clk = ~clk;
+ #5 clk = ~clk;
   end
   
 
@@ -36,29 +36,34 @@ initial begin
     write_addr=0;
      
 	   clrn = 0;
-#25  clrn = 1;
+#5  clrn = 1;
      we   = 1;
    repeat(32) begin // to write into the register file
       pkt.randomize();
-      #25  write_addr = write_addr+1;
-           result     = pkt.result_random;
+      write_addr = write_addr+1;
+      result     = pkt.result_random;
+#10;
     end
-#25 pkt.randomize();
-#25  we   = 0; 
-#25  write_addr = pkt.write_addr_random;
-     result     =pkt.result_random;
+// to test that there will be no writes if we = 0
+  pkt.randomize();
+  we   = 0; 
+  write_addr = pkt.write_addr_random;
+  result     =pkt.result_random;
+#10;
 repeat(32) begin // tests that the previously written values are being read correctly
    pkt.randomize();
-#25 source_a = pkt.source_a_random; 
-    source_b = pkt.source_b_random; 
+   source_a = pkt.source_a_random; 
+   source_b = pkt.source_b_random;
+#10; 
 end
 
-#25  clrn = 0;
-#25  clrn = 1;
+     clrn = 0;
+#10  clrn = 1;
 repeat(32) begin // tests that the reset values are correct
    pkt.randomize();
-#25 source_a = pkt.source_a_random; 
-    source_b = pkt.source_b_random; 
+   source_a = pkt.source_a_random; 
+   source_b = pkt.source_b_random; 
+#10; 
 end
       
    end 
