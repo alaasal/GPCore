@@ -122,13 +122,14 @@ module alu #parameter(
     //branch block
     always_comb begin
         case (alu_fn)
-            SUB: btaken <= (|result) & bneq || (~|result) & ~bneq;
+            SUB: btaken <= ((|result) & bneq) || ((~|result) & ~bneq);
             SLT, SLTU: btaken <= result[0];
             BGE, BGEU: btaken <= ~result[0];
             default: btaken <= 0;
         endcase
     end
-
+endmodule
+/*
     //removed next commit
 	always_comb
 	  begin
@@ -173,7 +174,4 @@ module alu #parameter(
 	  end
 
 
-endmodule
-
-
-
+endmodule*/
