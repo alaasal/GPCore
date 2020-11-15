@@ -211,7 +211,7 @@ module instr_decoder(
 	// 101 -> div 
 	// 100 -> divu
 	// 111 -> rem
-	// 111 -> remu
+	// 110 -> remu
         
 	assign mulDiv_op[0] =  i_div  | i_rem  | i_mulh   | i_mulhu;
 	assign mulDiv_op[1] =  i_remu | i_rem  | i_mulhsu | i_mulhu;
