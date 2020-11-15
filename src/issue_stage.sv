@@ -1,4 +1,5 @@
 module issue_stage (
+
 	input logic clk, nrst,
 	// Write back signals from commit stage
 	input logic we6,			// Write Enable
@@ -9,6 +10,7 @@ module issue_stage (
 	input logic we3,
 	input logic bneq3,
 	input logic  btype3,
+	input logic [6:0] opcode3,
 	
 	input logic [2:0] fn3,
 	input logic [3:0] alu_fn3,		// ALU control from decode stage
@@ -34,6 +36,7 @@ module issue_stage (
 
 	input logic [31:0] pc3,
 	input logic [1:0] pcselect3,
+	
 
 	// Piped Signals Ended
 
@@ -65,12 +68,19 @@ module issue_stage (
 	output logic [2:0] mulDiv_op4,
 
 	output logic [31:0] pc4,
-	output logic [1:0] pcselect4
+	output logic [1:0] pcselect4,
 	// Piped Signals Ended
+	
+	// Socreboard Signals
+	input bjtaken,
+	output logic stall,
+	output logic [1:0]stallnum
     );
 
 	// Wires
 	logic [31:0] operand_a, operand_b;   	   // Operands value output from the register file
+	// Scoreboard Wires
+	logic kill;
 
 	// =============================================== //
 	//			Pipe 4			   //
@@ -104,6 +114,11 @@ module issue_stage (
 
 	logic [31:0] pcReg4;
 	logic [1:0] pcselectReg4;
+	
+	// Scoreboard Regs
+	logic [1:0]killnum;
+	
+
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
@@ -138,28 +153,18 @@ module issue_stage (
 
 		pcReg4		<= 0;
 		pcselectReg4	<= 0;
+		killnum		<= 2'b0;
           end
         else
           begin
-		BSELReg4	<= B_SEL3;
-		rdReg4		<= rd3;
-
 		shamtReg4	<= shamt;
-		I_immdReg4	<= I_imm3;
 		B_immdReg4	<= B_imm3;
 		J_immReg4	<= J_imm3;
 		U_immReg4  	<= U_imm3;
 		S_immReg4 	<= S_imm3;
-		
-
-		alufnReg4	<= alu_fn3;
-		fnReg4		<= fn3;
-
-		weReg4		<= we3;
 
 		bneqReg4	<= bneq3;
 		btypeReg4	<= btype3;
-
 
 		jReg4 		<= j3;
 		jrReg4 		<= jr3;
@@ -170,23 +175,79 @@ module issue_stage (
 		mulDiv_opReg4 	<= mulDiv_op3;
 
 		pcReg4		<= pc3;		
+		
+		if(stall )
+		begin
+		pcselectReg4	<= 2'b00;
+		weReg4		<= 1'b0;
+		BSELReg4	<= 2'b01;
+		alufnReg4	<= 3'b000;
+		fnReg4		<= 3'b000;
+		I_immdReg4	<= 32'b0;
+		rdReg4		<= 5'b0;
+		end
+		else if(kill ) begin 
+		killnum		<=killnum+1;
+		pcselectReg4	<= 2'b00;
+		weReg4		<= 1'b0;
+		BSELReg4	<= 2'b01;
+		alufnReg4	<= 3'b000;
+		fnReg4		<= 3'b000;
+		I_immdReg4	<= 32'b0;
+		rdReg4		<= 5'b0;
+		end 
+		else if ( killnum[1] && !killnum[0])begin 
+		killnum		<=killnum+1;
+		pcselectReg4	<= 2'b00;
+		weReg4		<= 1'b0;
+		BSELReg4	<= 2'b01;
+		alufnReg4	<= 3'b000;
+		fnReg4		<= 3'b000;
+		I_immdReg4	<= 32'b0;
+		rdReg4		<= 5'b0;
+		end
+		else
+		begin
+		killnum		<= 2'b0;
 		pcselectReg4	<= pcselect3;
-          end
+		weReg4		<= we3;
+		BSELReg4	<= B_SEL3;
+		alufnReg4	<= alu_fn3;
+		fnReg4		<= fn3;
+		I_immdReg4	<= I_imm3;
+		rdReg4		<= rd3;
+		end
+		
+        end
       end
     
-	// register file
-	regfile reg1 (
+    // register file
+    regfile reg1 (
 	.clk(clk),
 	.clrn(nrst),
 	.we(we6),
 	.write_addr(rdaddr6),
 	.source_a(rs1),
-	.source_b(rs2),
+	.source_b(rs2), 
 	.result(wb6),
-	.op_a(operand_a),
+	.op_a(operand_a), 
 	.op_b(operand_b)
 	);
+   
+ scoreboard_data_hazards scoreboard (
+	.clk(clk),
+	.nrst(nrst),
+	.btaken(bjtaken),
+	.rs1(rs1),
+	.rs2(rs2),
+	.rd(rd3),
+	.op_code(opcode3),
+	.stall(stall),
+	.kill(kill),
+	.stallnum(stallnum)
+	);
 
+ 
 
 
 
@@ -207,7 +268,7 @@ module issue_stage (
 	// =============================================== //
 	
 	// Assign Operand A and Operand B to the outputs wires
-	assign op_a = operand_a;
+	 assign op_a =  ( !(|rd4) && !(|I_immdReg4) && !(|alufnReg4) && !(|fnReg4) )? 32'b0: operand_a;
 
 	// Piped Signals from Decode to Execute 
 	// Issue acts such as a cycle delay 

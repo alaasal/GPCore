@@ -13,7 +13,7 @@ module commit_stage(
 	output logic [4:0] rd6Issue,
 	output logic we6Issue
     );
-
+	
 	assign rd6Issue = rd6;
 	assign we6Issue = we6;
  	assign wb_data6 = result6;

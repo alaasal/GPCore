@@ -12,15 +12,15 @@ module instdec_stage(
 	output logic [1:0] B_SEL3,
 
 	// Instruction Immediate
-    	output logic [31:0] I_imm3,		  //Arithemtic, Jump, and Load Immediate
-    	output logic [31:0] B_imm3,		  //Branch Immediate
-    	output logic [31:0] J_imm3,		  //Jumps Immediate
-    	output logic [31:0] U_imm3,		  //LUI & AUIPC Immediate
-    	output logic [31:0] S_imm3,		  //Store Immediate	
-    	output logic [4:0]  shamt,		  //Shift Amount Immediate
+	output logic [31:0] I_imm3,		  //Arithemtic, Jump, and Load Immediate
+	output logic [31:0] B_imm3,		  //Branch Immediate
+	output logic [31:0] J_imm3,		  //Jumps Immediate
+	output logic [31:0] U_imm3,		  //LUI & AUIPC Immediate
+	output logic [31:0] S_imm3,		  //Store Immediate	
+	output logic [4:0]  shamt,		  //Shift Amount Immediate
 
 	// Write back Enable
-    	output logic we3,
+	output logic we3,
 
 	// Branch and Jumps Control Signals
 	output logic bneq3, btype3, jr3, j3,
@@ -36,14 +36,18 @@ module instdec_stage(
    	output logic [31:0] pc3,
 
 	// Memory Request
-    	output logic [3:0] mem_op3
-,
+    output logic [3:0] mem_op3,
 	// MulDiv Operation 
-    	output logic [2:0] mulDiv_op3,
+    output logic [2:0] mulDiv_op3,
 
 	// Program Counter Select Piped to Execute Unit
 	// until Branch and Jumps target is calculated
-	output logic [1:0] pcselect3
+	output logic [1:0] pcselect3,
+	
+	// Scoreboard Signals
+	input logic stall,
+	output logic [6:0]opcode3,
+	input logic [1:0]stallnumin
     );
 
 	// Wires
@@ -59,18 +63,42 @@ module instdec_stage(
 	// =============================================== //
 	//			Pipe 3			   //
 	// =============================================== //
-	always_ff @(posedge clk, negedge nrst)
+	always_ff @(posedge clk , negedge nrst)
 	begin
-        if (!nrst)
-	  begin
-            instrReg3 <= 0;
-            pcReg3 <= 0;
-	  end
-        else
-	  begin
-            instrReg3 <= instr2;
-            pcReg3 <= pc2;
-	  end
+	if (!nrst)
+	begin
+            instrReg3 		<= 0;
+            pcReg3		<= 0;
+
+	end
+	else
+	begin
+	if ( stall&& !stallnumin[1] && !stallnumin[0]) 
+	begin 
+		instrReg3	<=instrReg3;
+		pcReg3		<=pcReg3;
+	end
+	else if(stall&& stallnumin[1] && !stallnumin[0] ) 
+	begin 
+		instrReg3	<=instrReg3;
+		pcReg3		<=pcReg3;
+	end 
+	else if(!stall &&!stallnumin[1] && stallnumin[0] ) 
+	begin 
+		instrReg3	<= instr2;
+		pcReg3		<=pc2;
+	end 
+	else if(stall ) 
+	begin 
+		instrReg3	<=instrReg3;
+		pcReg3		<=pcReg3;
+	end 
+	else 
+	begin 
+		instrReg3	<= instr2;
+		pcReg3		<=pc2;
+	end
+	end
 	end
 
 
@@ -93,19 +121,20 @@ module instdec_stage(
 	assign funct3   = instrReg3[14:12];
 	assign funct7   = instrReg3[31:25];
 	assign instr_30 = instrReg3[30];
+	assign opcode3  = opcode;
 
 	instr_decoder c1 (
 	.op          (opcode),
 	.funct3      (funct3),
 	.funct7      (funct7),
-	.instr_30    (instr_30),	// instr[30]
+	.instr_30    (instr_30),		// instr[30]
 
-	.pcselect    (pcselect3),	// Select pc source
-	.we          (we3),		// Regfile write enable
-	.B_SEL       (B_SEL3),		// Select Operand B at the end of the issue stage
-	.alu_fn      (alu_fn3),		// Select alu operation
-	.fn          (fn3),		// Select Function Unit
-	.bneq        (bneq3),		// to alu beq ~ bneq 
+	.pcselect    (pcselect3),		// Select pc source
+	.we          (we3),				// Regfile write enable
+	.B_SEL       (B_SEL3),			// Select Operand B at the end of the issue stage
+	.alu_fn      (alu_fn3),			// Select alu operation
+	.fn          (fn3),				// Select Function Unit
+	.bneq        (bneq3),			// to alu beq ~ bneq 
 	.btype       (btype3),		 
 	.mulDiv_op   (mulDiv_op3),      //m extension opcode
 	.j           (j3),
@@ -113,6 +142,9 @@ module instdec_stage(
 	.mem_op      (mem_op3),
 	.LUI         (LUI3),
 	.auipc       (auipc3)
-    	);
+	
+	
+	
+    );
     
 endmodule

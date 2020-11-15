@@ -38,18 +38,21 @@ module exe_stage(
 	output logic [31:0] U_imm6,
 	output logic [31:0] AU_imm6 ,
 	
-	output logic [31:0] mem_out6,
+	//output logic [31:0] mem_out6,
 	output logic addr_misaligned6,
 
 	output logic [31:0] mul_divReg6,
 	
 	output logic [31:0] target,
 	output logic [31:0] pc6,
-	output logic [1:0] pcselect5
+	output logic [1:0] pcselect5,
+	
+	output logic bjtaken6		//need some debug
     );
     
 	// wires 
 	logic btaken;
+	logic bjtaken4;
 	logic j5; 
 	logic jr5;
 	logic [31:0] mul_div5;
@@ -66,11 +69,11 @@ module exe_stage(
 
 	logic [31:0] alu_res5;   
 	logic weReg5;
-	
 	logic [4:0] rdReg5;
 
 	logic bneqReg5;
 	logic btypeReg5;
+	logic bjtakenReg5;
 
 	logic [31:0] B_immReg5;
 	logic [31:0] J_immReg5;
@@ -116,6 +119,8 @@ module exe_stage(
 
 		pcReg5	  	<= 0;
 		pcselectReg5	<=2'b0;
+		
+		bjtakenReg5		<= 0;
           end
         else
           begin
@@ -144,52 +149,13 @@ module exe_stage(
 	
 		pcReg5	  	<= pc4;
 		pcselectReg5 	<= pcselect4;
+		
+		bjtakenReg5		<= bjtaken4;
           end
       end   
     
     
-	// ALU
-	alu exe_alu (
-	.alu_fn		(alufnReg5),
-	.operandA	(opaReg5),
-	.operandB	(opbReg5),
-	.result		(alu_res5),
-	.bneq		(bneqReg5),
-	.btype		(btypeReg5),
-	.btaken		(btaken)
-	);
-    
-	// Branch Unit
-	branch_unit exe_bu (
-	.pc          (pcReg5),
-	.operandA    (opaReg5),
-	.B_imm       (B_immReg5),
-	.J_imm       (J_immReg5),
-	.I_imm       (opbReg5),
-	.btaken      (btaken),
-	.jr          (jrReg5),
-	.j           (jReg5),
-	.target      (target)
-	);
 
-	mem_wrap dmem_wrap (
-	.clk                 (clk),
-	.nrst                (nrst),
-	.mem_op4             (mem_op4), //memory operation type
-	.op_a4               (op_a),   //base address
-	.op_b4               (op_b),   //src for store ops, I_imm offset for load ops
-	.S_imm4              (S_imm4),  //S_imm offset
-	.mem_out6            (mem_out6),
-	.addr_misaligned6    (addr_misaligned6)
-	);
-
-	mul_div mul1(
-	.a		(opaReg5),
-	.b		(opbReg5),
-	.mulDiv_op	(mulDiv_opReg5),
-	.res		(mul_div5)
-	);
-	
 	// =============================================== //
 	//			Pipe 6			   //
 	// =============================================== //
@@ -205,8 +171,10 @@ module exe_stage(
 	logic [31:0] AU_immReg6;
 
 	logic [31:0] pcReg6;
+	logic [31:0] mem_out6;
 	
 	logic [2:0] fn6;
+	
 
  
 	always @(posedge clk)
@@ -240,10 +208,51 @@ module exe_stage(
 		mul_divReg6 	<= mul_div5;
 
 		pcReg6 		<= pcReg5;
+		
 	  end
 	end
+	  //ALU
+	alu exe_alu (
+	.alu_fn(alufnReg5 ), 
+	.operandA(opaReg5 ), 
+	.operandB(opbReg5 ), 
+	.result(alu_res5) , 
+	.bneq(bneqReg5), 
+	.btype(btypeReg5) , 
+	.btaken(btaken) 
+	);
+    
+    // branch unit
+	branch_unit exe_bu (
+	.pc          (pc4),
+	.operandA    (op_a),
+	.B_imm       (B_imm4),
+	.J_imm       (J_imm4),
+	.I_imm       (op_b),
+	.btaken      (btaken),
+	.jr          (jr4),
+	.j           (j4),
+	.target      (target)
+    );
 
+	mem_wrap dmem_wrap (
+	.clk                 (clk),
+	.nrst                (nrst),
+	.mem_op4             (mem_op4), //memory operation type
+	.op_a4               (op_a),   //base address
+	.op_b4               (op_b),   //src for store ops, I_imm offset for load ops
+	.S_imm4              (S_imm4),  //S_imm offset
+	.mem_out6            (mem_out6),
+	.addr_misaligned6    (addr_misaligned6)
+	);
 
+	mul_div mul1(
+	.a		(opaReg5),
+	.b		(opbReg5),
+	.mulDiv_op	(mulDiv_opReg5),
+	.res		(mul_div5)
+	);
+	
 
 	// =============================================== //
 	//			 Outputs		   //
@@ -254,10 +263,9 @@ module exe_stage(
 	
 	assign U_imm6 		= U_immReg6;
 	assign AU_imm6 		= AU_immReg6;
-
-	assign pc6 		= pcReg6;
-	assign pcselect5	= pcselectReg5;
-
+	
+	assign bjtaken6 = btaken | jr4 |j4;
+	assign pcselect5=pcselect4;
 	always_comb begin
         unique case(fn6)
             0: wb_data6  = alu_resReg6;

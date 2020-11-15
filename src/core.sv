@@ -7,8 +7,6 @@ module core(
 	input logic clk_debug
     );
 
-
-
 	// Wires
 	logic [31:0] pc, pc2, pc3, pc4, pc5, pc6;         // Program Counter Signals in each pipe 
 	logic [31:0] instr2;   	   // output wire of IF stage
@@ -20,7 +18,7 @@ module core(
 	logic we3, we4, we5, we6;
 	logic [31:0] wb6;	   // data output from commit stage to regfile to be written
 
-	logic [2:0] fn3, fn4, fn5, fn6;
+	logic [2:0] fn3, fn4;
 	logic [3:0] alu_fn3, alu_fn4;
 	
 	logic [31:0] I_imm3, B_imm3, J_imm3, S_imm3,U_imm3;
@@ -35,6 +33,7 @@ module core(
 	logic bneq3,bneq4;
 	logic LUI3,LUI4;
 	logic auipc3,auipc4;
+	logic [1:0]stallnum;
 
 	
 	 
@@ -50,9 +49,14 @@ module core(
 	logic [31:0] wb_data6;	
 	logic we6Issue;
 	logic [4:0] rd6Issue;
+	
+	//Scoreboared Logic 
+	logic stall;
+	logic bjtaken;
+	logic [6:0] opcode3;
 
 	// =============================================== //
-	//			FrpntEnd Stage		   //
+	//			FrontEnd Stage		   //
 	// =============================================== //	
     
 	// instantiating stages (7 pipelines)
@@ -72,7 +76,11 @@ module core(
 	.DEBUG_SIG      (DEBUG_SIG),
 	.DEBUG_addr     (DEBUG_addr),
 	.DEBUG_instr    (DEBUG_instr),
-	.clk_debug      (clk_debug)
+	.clk_debug      (clk_debug),
+	
+	//Scoreboared Signals
+	.stall          (stall),
+	.stallnumin      (stallnum)
 	);
 
 	// =============================================== //
@@ -117,7 +125,12 @@ module core(
 	.mulDiv_op3   (mulDiv_op3),
 	// Program Counter Piping
 	.pc3          (pc3),
-	.pcselect3    (pcselect3)
+	.pcselect3    (pcselect3),
+	
+	// Scoreboared Signals
+	.stall          (stall),
+	.opcode3 	(opcode3),
+	.stallnumin	(stallnum)
 	);
 
 	// =============================================== //
@@ -160,7 +173,7 @@ module core(
 	.auipc3       (auipc3),
 	
 	.mem_op3      (mem_op3),
-	.mulDiv_op3        (mulDiv_op3), 
+	.mulDiv_op3   (mulDiv_op3), 
 
 	.pc3          (pc3),
 	.pcselect3    (pcselect3),
@@ -192,7 +205,13 @@ module core(
 	.mulDiv_op4   (mulDiv_op4),
 
 	.pc4          (pc4),
-	.pcselect4    (pcselect4)
+	.pcselect4    (pcselect4),
+	
+	// Scoreboared Signals
+	.stall          (stall),
+	.bjtaken	(bjtaken),
+	.opcode3	(opcode3),
+	.stallnum	(stallnum)
     );
 
 	// =============================================== //
@@ -239,7 +258,7 @@ module core(
 	.U_imm6       		(U_imm6),
 	.AU_imm6       		(AU_imm6),
 	
-	.mem_out6     		(mem_out6),
+	//.mem_out6     		(mem_out6),
 	.addr_misaligned6 	(addr_misaligned6),
 
 	.mul_divReg6         	(mul_div6),
@@ -247,7 +266,9 @@ module core(
 	.wb_data6		(wb_data6),
 	.pc6              	(pc6),
 	.pcselect5    		(pcselect5),
-	.target       		(target)
+	.target       		(target),
+	//signal to scoreboard
+	.bjtaken6		(bjtaken)
 	);
 
 	// =============================================== //
