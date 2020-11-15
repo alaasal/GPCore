@@ -1,20 +1,20 @@
-module alu #parameter(
+module alu #(
     //arithmetic
-    ADD = 4'b0000,
-    SUB = 4'b1000,
+    parameter ADD = 0, //4'b0000,
+    parameter SUB = 8, //4'b1000,
     //shift
-    SLL = 4'b0001,
-    SRL = 4'b0101,
-    SRA = 4'b1101
+    parameter SLL = 1, //4'b0001,
+    parameter SRL = 5, //4'b0101,
+    parameter SRA = 13,//4'b1101
     //logical
-    XOR = 4'b0100,
-    OR  = 4'b0110,
-    AND = 4'b0111,
+    parameter XOR = 4, //4'b0100,
+    parameter OR  = 6, //4'b0110,
+    parameter AND = 7, //4'b0111,
     //comparison
-    BGE  = 4'b1001,
-    BGEU = 4'b1010,
-    SLT  = 4'b0010,
-    SLTU = 4'b0011
+    parameter BGE  = 9, //4'b1001,
+    parameter BGEU = 10,//4'b1010,
+    parameter SLT  = 2, //4'b0010,
+    parameter SLTU = 3  //4'b0011
 )(
 	input  logic bneq,btype,
 	input  logic [3:0]   alu_fn,
