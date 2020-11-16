@@ -1,4 +1,4 @@
-`include "define.sv"
+`define XLEN 32
 
 module csr_regfile(
 	input logic clk, nrst,
@@ -18,6 +18,7 @@ module csr_regfile(
 	// input logic stall,
 	input logic m_interrupt,
     	input logic s_interrupt,
+	input logic u_interrupt,
 
 	output logic m_timer,
 	output logic s_timer,
@@ -25,13 +26,13 @@ module csr_regfile(
 	output logic [31:0] csr_data,		// output to csr unit to perform operations on it
 	output logic m_eie, m_tie,s_eie, s_tie,
 
-	 output logic u_eie, u_tie, u_sie,
+	output logic u_eie, u_tie, u_sie,
 	output mode::mode_t     current_mode = mode::M,
 
 	// To front end
 	output logic [31:0] epc
 	);
-
+	import csr::*;
 
 	mode::mode_t  next_mode;
 
@@ -133,75 +134,75 @@ module csr_regfile(
 
 
 	always_comb
-	begin
-		case(csr_address_r)
+	begin	
+		case(csr::csrs'(csr_address_r))
 		// System ID Registers
-		`CSR_MISA: csr_data = {
+		CSR_MISA: csr_data = {
         		2'b00,       // MXL = 32
        			4'b0000,     // Reserved.
         		/* Extensions.
         		 *  ZYXWVUTSRQPONMLKJIHGFEDCBA */
-        		26'b00000001000001000100000001		//<<User Mode yet to be implemented>>
+        		26'b00000101000011000100000001	
     			};
-		`CSR_MVENDORID:		csr_data = '0;
-		`CSR_MARCHID:		csr_data = '0;
-		`CSR_MIMPID:		csr_data = '0;
-		`CSR_MHARTID:		csr_data = '0;
+		CSR_MVENDORID:		csr_data = '0;
+		CSR_MARCHID:		csr_data = '0;
+		CSR_MIMPID:		csr_data = '0;
+		CSR_MHARTID:		csr_data = '0;
 
-		`CSR_MSTATUS:		csr_data = mstatus;		// mstatus = sstatus
-		`CSR_MIP:		csr_data = mip;
-		`CSR_MIE:		csr_data = mie;			// Global interrupt-enable (Machine mode) -- interrupts disabled upon entry
-		`CSR_MTVEC:		csr_data = {mtvec, 2'b0}; 	// direct mode
-		`CSR_MEPC:		csr_data = {mepc, 2'b0};  	// two low bits are always zero
-		`CSR_MCAUSE:		csr_data = mcause;
-		`CSR_MTVAL:		csr_data = mtval;
-		`CSR_MSCRATCH:		csr_data = mscratch;
-                `CSR_MNECYCLE:           csr_data = mtimecmp;
+		CSR_MSTATUS:		csr_data = mstatus;		// mstatus = sstatus
+		CSR_MIP:		csr_data = mip;
+		CSR_MIE:		csr_data = mie;			// Global interrupt-enable (Machine mode) -- interrupts disabled upon entry
+		CSR_MTVEC:		csr_data = {mtvec, 2'b0}; 	// direct mode
+		CSR_MEPC:		csr_data = {mepc, 2'b0};  	// two low bits are always zero
+		CSR_MCAUSE:		csr_data = mcause;
+		CSR_MTVAL:		csr_data = mtval;
+		CSR_MSCRATCH:		csr_data = mscratch;
+                CSR_MNECYCLE:           csr_data = mtimecmp;
 
-		`CSR_MEDELEG: 		csr_data = medeleg_w;
-        	`CSR_MIDELEG: 		csr_data = mideleg_w;
+		CSR_MEDELEG: 		csr_data = medeleg_w;
+        	CSR_MIDELEG: 		csr_data = mideleg_w;
 
 
 
 /** not implemented yet **
-		`CSR_MCOUNTEREN:
-		`CSR_MCYCLE:
-		`CSR_MINSTRET:
-		`CSR_MCYCLEH:
-		`CSR_MINSTRETH:
-		`CSR_CYCLEH:
-		`CSR_TIMEH:
-		`CSR_INSTRETH:
+		CSR_MCOUNTEREN:
+		CSR_MCYCLE:
+		CSR_MINSTRET:
+		CSR_MCYCLEH:
+		CSR_MINSTRETH:
+		CSR_CYCLEH:
+		CSR_TIMEH:
+		CSR_INSTRETH:
 **			    */
 
               // S Mode
-		`CSR_SEPC:      	csr_data = {sepc, 2'b0};
-                `CSR_SSTATUS:           csr_data = sstatus;
-                `CSR_SIE:               csr_data = sie;
-                `CSR_STVEC:             csr_data = {stvec, 2'b0};
+		CSR_SEPC:      	csr_data = {sepc, 2'b0};
+                CSR_SSTATUS:           csr_data = sstatus;
+                CSR_SIE:               csr_data = sie;
+                CSR_STVEC:             csr_data = {stvec, 2'b0};
 
-                `CSR_SSCRATCH:          csr_data = sscratch;
-                `CSR_SIP:               csr_data = sip;
-                `CSR_SCAUSE:            csr_data = scause;
-                `CSR_STVAL:             csr_data = stval;
-                `CSR_SNECYCLE:          csr_data = stimecmp;
+                CSR_SSCRATCH:          csr_data = sscratch;
+                CSR_SIP:               csr_data = sip;
+                CSR_SCAUSE:            csr_data = scause;
+                CSR_STVAL:             csr_data = stval;
+                CSR_SNECYCLE:          csr_data = stimecmp;
 
-		`CSR_SEDELEG: 		csr_data = sedeleg_w;
-		`CSR_SIDELEG: 		csr_data = sideleg_w;
+		CSR_SEDELEG: 		csr_data = sedeleg_w;
+		CSR_SIDELEG: 		csr_data = sideleg_w;
 
 			//`CSR_SCOUNTREN:
 
 
 		// 	USER MODE
-		`CSR_USTATUS:           csr_data = ustatus;
-		`CSR_UIE:               csr_data = uie;
-		`CSR_UIP:               csr_data = uip;
-		`CSR_UTVEC:		csr_data = {utvec, 2'b0}; 	// direct mode
-		`CSR_UEPC:		csr_data = {uepc, 2'b0};  	// two low bits are always zero
-		`CSR_UCAUSE:		csr_data = ucause;
-		`CSR_UTVAL:		csr_data = utval;
-		`CSR_USCRATCH:		csr_data = uscratch;
-                `CSR_UNECYCLE:           csr_data = utimecmp;
+		CSR_USTATUS:           csr_data = ustatus;
+		CSR_UIE:               csr_data = uie;
+		CSR_UIP:               csr_data = uip;
+		CSR_UTVEC:		csr_data = {utvec, 2'b0}; 	// direct mode
+		CSR_UEPC:		csr_data = {uepc, 2'b0};  	// two low bits are always zero
+		CSR_UCAUSE:		csr_data = ucause;
+		CSR_UTVAL:		csr_data = utval;
+		CSR_USCRATCH:		csr_data = uscratch;
+                CSR_UNECYCLE:           csr_data = utimecmp;
 
 
 
@@ -220,11 +221,11 @@ module csr_regfile(
     status_mpie,		// xPIE holds the value of the interrupt-enable bit active prior to the trap
     1'b0,
     status_spie,		// xPIE holds the value of the interrupt-enable bit active prior to the trap
-    1'b0,
+    status_upie,
     status_mie,			// Global interrupt-enable (Machine mode) -- interrupts disabled upon entry
     1'b0,
     status_sie,			// Global interrupt-enable (Supervisor mode) -- interrupts disabled upon entry
-    1'b0
+    status_uie
 	};
 
 	// For user mode we need to add to mstatus (MPRV ,
@@ -273,11 +274,11 @@ module csr_regfile(
   		status_sum,
   		9'b0,
     		status_spp,
-    		2'b0,
+    		status_upie,
     		status_spie,
     		3'b0,
     		status_sie,
-    		1'b0
+    		status_uie
 	};
 	assign sip = {
 		22'b0,
@@ -321,10 +322,10 @@ assign ustatus = {
 };
 assign uip = {
     24'b0,
-    ueip,
+    u_interrupt,
     3'b0,
-    utip,
-	3'b0,
+    u_timer,
+    3'b0,
     usip
 };
 assign uie = {
@@ -332,7 +333,7 @@ assign uie = {
     ueie,
     3'b0,
     utie,
-	3'b0,
+    3'b0,
     usie
 };
 assign ucause = {
@@ -384,23 +385,23 @@ always_ff @(posedge clk, negedge nrst) begin
 		utip			<= 0;
 		ueip			<= 0;
 		usie			<= 0;
-        utie			<= 0;
+        	utie			<= 0;
 		ueie			<= 0;
 		utvec	    		<= 0;
 		uscratch		<= 0;
 		uepc			<= 0;
 		utval			<= 0;
-        mtimecmp <=0;
-        stimecmp <=0;
-        utimecmp  <=0;
+        	mtimecmp <=0;
+        	stimecmp <=0;
+       		utimecmp  <=0;
 end
 	else
 	  begin
 	current_mode <= next_mode;
         if (!exception_pending) begin
      	  if(csr_we)begin
-		case(csr_address_wb)
-			`CSR_MSTATUS:
+		case(csr::csrs'(csr_address_wb))
+			CSR_MSTATUS:
 			  begin
 				status_sie  <= csr_wb[1];
                         	status_mie  <= csr_wb[3];
@@ -410,74 +411,74 @@ end
                         	status_mpp  <= mode::mode_t'(csr_wb[12:11]);
                         	status_sum  <= csr_wb[18];
 			  end
-			`CSR_MTVEC:
+			CSR_MTVEC:
 				mtvec <= csr_wb[`XLEN-1:2];
-			`CSR_MIE:
+			CSR_MIE:
 			  begin
 				stie <= csr_wb[5];
                         	mtie <= csr_wb[7];
                         	seie <= csr_wb[9];
                         	meie <= csr_wb[11];
 			  end
-			`CSR_MSCRATCH:
+			CSR_MSCRATCH:
 				mscratch <= csr_wb;
-                        `CSR_MNECYCLE:
+                        CSR_MNECYCLE:
                                        mtimecmp <= csr_wb;
-			`CSR_MEPC:
+			CSR_MEPC:
 				mepc <= csr_wb[`XLEN-1:2];
-			`CSR_MCAUSE:
+			CSR_MCAUSE:
 			  begin
 				mcause_code      <= csr_wb[5:0];
 				mcause_interrupt <= csr_wb[31];
 			  end
-			`CSR_MTVAL:
+			CSR_MTVAL:
 				mtval <= csr_wb;
-			`CSR_MEDELEG:
+			CSR_MEDELEG:
 				medeleg <= csr_wb[15:0];
-			`CSR_MIDELEG:
+			CSR_MIDELEG:
 				mideleg <= csr_wb[11:0];
 
 			// S Mode
-			`CSR_SSTATUS:
+			CSR_SSTATUS:
 			  begin
   				status_sum <= csr_wb[18];
     				status_spp <= csr_wb[8];
     				status_spie <= csr_wb[5];
     				status_sie <= csr_wb[1];
 			  end
-                        `CSR_STVEC:
+                        CSR_STVEC:
 				stvec <= csr_wb[`XLEN-1:2];
-			`CSR_SEPC:
+			CSR_SEPC:
                     		sepc <= csr_wb[`XLEN-1:2];
-			`CSR_SCAUSE:
+			CSR_SCAUSE:
               		  begin
                			scause_code <= csr_wb[5:0];
                 		scause_interrupt <= csr_wb[31];
                                    		  end
-                        `CSR_STVAL:
+                        CSR_STVAL:
 				stval <= csr_wb;
-                        `CSR_SIE:
+                        CSR_SIE:
 			  begin
 				stie <= csr_wb[5];
                              	seie <= csr_wb[9];
                            end
-                        `CSR_SSCRATCH:
+                        CSR_SSCRATCH:
 				sscratch <= csr_wb;
-			`CSR_SEDELEG:
+			CSR_SEDELEG:
 				sedeleg <= csr_wb[15:0];
-			`CSR_SIDELEG:
+			CSR_SIDELEG:
 				sideleg <= csr_wb[11:0];  
-                         `CSR_SNECYCLE:
+                        CSR_SNECYCLE:
                                        stimecmp <= csr_wb;
  
 
 			// USER MODE
-			`CSR_USTATUS:
+			CSR_USTATUS:
 				begin
 					status_upie		<= csr_wb[4];
 					status_uie		<= csr_wb[0];
 				end
-			`CSR_UIE:
+			CSR_UIE:
 				begin
 					usie			<= csr_wb[0];
 					utie			<= csr_wb[4];
@@ -488,26 +489,26 @@ end
 					//meie			<= csr_wb[8];
 
 				end
-			`CSR_UIP:
+			CSR_UIP:
 				begin
 					usip			<= csr_wb[0];
 					//ssip			<= csr_wb[0];
 					//msip			<= csr_wb[0];
 				end
-			`CSR_USCRATCH:
+			CSR_USCRATCH:
 				uscratch <= csr_wb;
-			`CSR_UEPC:
+			CSR_UEPC:
 				uepc <= csr_wb[31:2];
-			`CSR_UCAUSE:
+			CSR_UCAUSE:
 			  begin
 				mcause_code      <= csr_wb[5:0];
 				mcause_interrupt <= csr_wb[31];
 			  end
-			`CSR_UTVAL:
+			CSR_UTVAL:
 				utval <= csr_wb;
-			`CSR_UTVEC:
+			CSR_UTVEC:
 				utvec <= csr_wb[`XLEN-1:2];
-                        `CSR_UNECYCLE:
+                        CSR_UNECYCLE:
                                        utimecmp <= csr_wb;
  
 

@@ -13,7 +13,7 @@ module issue_stage (
 	input logic exception_pending,
 	input logic [31:0] pc_exc,
 	input logic m_ret, s_ret, u_ret,
-	input logic m_interrupt, s_interrupt,
+	input logic m_interrupt, s_interrupt, u_interrupt,
 
 	// Piped Signals from Decode to Issue
 	input logic we3,
@@ -374,13 +374,14 @@ module issue_stage (
 	.s_timer(s_timer),
 	.m_timer(m_timer),
 	.s_eie(s_eie),
-.m_eie(m_eie),
+	.m_eie(m_eie),
 	.m_tie	(m_tie),
 	.s_tie(s_tie),
  	.m_interrupt(m_interrupt),
-  .s_interrupt(s_interrupt),
-  .u_timer(u_timer),
-  .u_eie(u_eie),
+  	.s_interrupt(s_interrupt),
+	.u_interrupt(u_interrupt),
+  	.u_timer(u_timer),
+  	.u_eie(u_eie),
 	.u_tie(u_tie),
 	.u_sie(u_sie)
 	);

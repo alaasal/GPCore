@@ -1,5 +1,4 @@
-`include "define.sv"
-
+`define XLEN 32
 
 module exe_stage(
 
@@ -83,7 +82,7 @@ module exe_stage(
 	output logic exception_pending,
 	output logic mret6, sret6, uret6,
 
-	output logic m_interrupt, s_interrupt
+	output logic m_interrupt, s_interrupt, u_interrupt
     );
 
 
@@ -459,8 +458,8 @@ module exe_stage(
   	assign u_interrupt_conditioned = (current_mode == 2'b00)   &&   u_eie && external_interrupt;
 
 /* EXCEPTIONS. ********************************************************************************************************/
-//delete instruction_addr_misalignedReg6
-	assign exception =  ecallReg6 || addr_misaligned6 || m_timer_conditioned || s_interrupt_conditioned
+
+	assign exception =  instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6 || m_timer_conditioned || s_interrupt_conditioned
 			|| illegal_instrReg6   || s_timer_conditioned || m_interrupt_conditioned||u_interrupt_conditioned||u_timer_conditioned  || mretReg6 || sretReg6 || uretReg6;
 
 	always_comb
@@ -487,11 +486,22 @@ module exe_stage(
     			cause[`XLEN-1] = 1;
     		 	cause[`XLEN-2:0] = exceptions::S_INT_TIMER;
     		  end
-    		/* pc need to be increamented by 4 to detect the misalignment
+		else if (u_interrupt_conditioned)
+		  begin
+    			cause[`XLEN-1] = 1;
+        		cause[`XLEN-2:0] = exceptions::U_INT_EXT;
+		  end
+  
+    		else if (u_timer_conditioned)
+		  begin
+    			cause[`XLEN-1] = 1;
+    			cause[`XLEN-2:0] = exceptions::U_INT_TIMER;
+    		  end
+ 
 		else if (instruction_addr_misalignedReg6)
 		  begin
     			cause[`XLEN-2:0] = exceptions::I_ADDR_MISALIGNED;
-    		  end*/
+    		  end
 		else if (ecallReg6)
 		  begin
 			cause[`XLEN-2:0] = exceptions::U_CALL + {3'b0, current_mode};
@@ -541,6 +551,7 @@ module exe_stage(
 	assign csr_we6 		 = csr_weReg6;
 	assign m_interrupt	 = m_interrupt_conditioned;
 	assign s_interrupt	 = s_interrupt_conditioned;
+	assign u_interrupt	 = u_interrupt_conditioned;
 	assign cause6 		 = cause;
 	assign exception_pending = exception;
 	assign mret6		 = mretReg6;

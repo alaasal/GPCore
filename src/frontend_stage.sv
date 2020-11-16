@@ -53,8 +53,8 @@ module frontend_stage(
         else begin
 	//stallnumin<=stallnuminin;
 	if ( stall&&!stallnumin[1] && !stallnumin[0]) begin
-		pcReg		<= pcReg-1;
-		pcReg2		<= pcReg2-1;
+		pcReg		<= pcReg-4;
+		pcReg2		<= pcReg2-4;
 
 
 	//instruction_addr_misalignedReg1 <= 0;
@@ -111,13 +111,13 @@ module frontend_stage(
       begin
         // npc logic
 	casez({exception_pending, PCSEL})
-		3'b000: npc = pcReg + 1;
+		3'b000: npc = pcReg + 4;
             	3'b001: npc = 0;
             	3'b010: npc = target;
             	3'b011: npc = npc;
 		//Exception
 		3'b1??: npc = epc;
-            	default: npc = pcReg + 1;
+            	default: npc = pcReg + 4;
         endcase
 
       end
@@ -125,8 +125,8 @@ module frontend_stage(
 
     // output
 
-	assign pc = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg-1: pcReg;
-	assign pc2 = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg2 - 1 : pcReg2;
+	assign pc = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg-4: pcReg;
+	assign pc2 = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg2 - 4 : pcReg2;
 	assign instruction_addr_misaligned2 = instruction_addr_misalignedReg2;
 
 

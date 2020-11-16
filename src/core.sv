@@ -1,4 +1,4 @@
-`include "define.sv"
+
 module core(
 	input logic clk, nrst,
 
@@ -67,7 +67,7 @@ module core(
 	logic [31:0] epc, cause;
 	logic m_ret, s_ret, u_ret;
 	mode::mode_t     current_mode;
-	logic s_timer, m_timer, m_eie, m_tie, s_eie, s_tie, m_interrupt, s_interrupt;
+	logic s_timer, m_timer, m_eie, m_tie, s_eie, s_tie, m_interrupt, s_interrupt, u_interrupt;
 	logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
 	logic external_interrupt_w;
 
@@ -195,7 +195,8 @@ module core(
 	.s_ret		(s_ret),
 	.u_ret		(u_ret),
 	.m_interrupt(m_interrupt),
-    .s_interrupt(s_interrupt),
+    	.s_interrupt(s_interrupt),
+	.u_interrupt(u_interrupt),
 	
 	// Inputs from decode stage
 	.rs1          (rs1),
@@ -304,7 +305,7 @@ module core(
 	.s_tie(s_tie),
 	
 	.u_timer(u_timer),
-  .u_eie(u_eie),
+  	.u_eie(u_eie),
 	.u_tie(u_tie),
 	.u_sie(u_sie)
     
@@ -402,6 +403,7 @@ module core(
 	.s_tie(s_tie),
   .m_interrupt(m_interrupt),
   .s_interrupt(s_interrupt),
+	.u_interrupt(u_interrupt),
     
   .u_timer(u_timer),
   .u_eie(u_eie),
