@@ -2,15 +2,21 @@
 //it generates the addresses and control signals for the data memory,
 //it also performs the proper extension of outputs. 
 
-module mem_wrap(
+module mem_interface(
     input logic clk, nrst,
     input logic [3:0] mem_op4,             //memory operation type
     input logic [31:0] op_a4,        //base address
     input logic [31:0] op_b4,        //src for store ops, I_imm offset for load ops
     input logic [31:0] S_imm4,       //S_imm offset
 
-    output logic [31: 0] mem_out6,
-    output logic addr_misaligned6
+    output logic [31:0] addr6,
+    output logic [31:0] data_in6, 
+    output logic [1:0]  baddr6,
+    output logic gwe6, rd6,
+    output logic bw06, bw16, bw26, bw36,
+    output logic addr_misaligned6,
+    output logic ld_addr_misaligned6,
+    output logic samo_addr_misaligned6
 );
     //pipe5 registers
     logic [3:0] mem_opReg5; 
@@ -25,6 +31,8 @@ module mem_wrap(
     logic [31:0] addr5, data_in5;
     logic [1:0] addr_mis5;
     logic addr_misaligned5;
+    logic ld_addr_misaligned5;
+    logic samo_addr_misaligned5;
     logic bw05, bw15, bw25, bw35;
 
     //pip6 registers
@@ -32,14 +40,14 @@ module mem_wrap(
     logic [3:0] mem_opReg6;
     logic [31:0] addrReg6, data_inReg6;
     logic addr_misalignedReg6;
+    logic ld_addr_misalignedReg6;
+    logic samo_addr_misalignedReg6;
     logic bw0Reg6, bw1Reg6, bw2Reg6, bw3Reg6;
 
     //pipe5 memory controls
     logic gwe6, rd6;
     logic [3:0] mem_op6; 
-    logic [31:0] addr6, data_in6;
     logic [3:0][7:0] data_out6;
-    logic bw06, bw16, bw26, bw36;
     logic [1:0] baddr6;
 
     //pipe5
@@ -60,27 +68,31 @@ module mem_wrap(
     //pipe6
     always_ff @(posedge clk, negedge nrst) begin
         if (!nrst) begin
-            gweReg6             <= 0;
-            rdReg6              <= 0;
-            mem_opReg6          <= 0;
-            addrReg6            <= 0;
-            data_inReg6         <= 0;
-            addr_misalignedReg6 <= 0;
-            bw0Reg6             <= 0; 
-            bw1Reg6             <= 0; 
-            bw2Reg6             <= 0; 
-            bw3Reg6             <= 0;
+            gweReg6                  <= 0;
+            rdReg6                   <= 0;
+            mem_opReg6               <= 0;
+            addrReg6                 <= 0;
+            data_inReg6              <= 0;
+            addr_misalignedReg6      <= 0;
+            ld_addr_misalignedReg6   <= 0;
+            samo_addr_misalignedReg6 <= 0;
+            bw0Reg6                  <= 0; 
+            bw1Reg6                  <= 0; 
+            bw2Reg6                  <= 0; 
+            bw3Reg6                  <= 0;
         end else begin
-            gweReg6             <= gwe5;
-            rdReg6              <= rd5;
-            mem_opReg6          <= mem_op5;
-            addrReg6            <= addr5;
-            data_inReg6         <= data_in5;
-            addr_misalignedReg6 <= addr_misaligned5;
-            bw0Reg6             <= bw05; 
-            bw1Reg6             <= bw15; 
-            bw2Reg6             <= bw25; 
-            bw3Reg6             <= bw35;
+            gweReg6                  <= gwe5;
+            rdReg6                   <= rd5;
+            mem_opReg6               <= mem_op5;
+            addrReg6                 <= addr5;
+            data_inReg6              <= data_in5;
+            addr_misalignedReg6      <= addr_misaligned5;
+            ld_addr_misalignedReg6   <= ld_addr_misaligned5;
+            samo_addr_misalignedReg6 <= samo_addr_misaligned5
+            bw0Reg6                  <= bw05; 
+            bw1Reg6                  <= bw15; 
+            bw2Reg6                  <= bw25; 
+            bw3Reg6                  <= bw35;
         end
     end
 
@@ -117,6 +129,8 @@ module mem_wrap(
     assign addr_mis5[0] = (i_lh | i_lhu | i_sh | i_sw) & addr5[0];
     assign addr_mis5[1] = (i_lw | i_sw) & addr5[1];
     assign addr_misaligned5 = addr_mis5[0] | addr_mis5[1];
+    assign ld_addr_misaligned5   = addr_misaligned5 && (i_lh | i_lhu | i_lw);   //load misalignment
+    assign samo_addr_misaligned5 = addr_misaligned5 && (i_sw | i_sh);           //store and atomic misalignment
 
     assign gwe5 = (mem_op5[3] & ~(mem_op5[2] | mem_op5[1] | mem_op5[0])) & ~addr_misaligned5;
     assign rd5  = !mem_op5[3] & (mem_op5[0] | mem_op5[1] | mem_op5[2]) & ~addr_misaligned5;
@@ -144,17 +158,19 @@ module mem_wrap(
     
     assign data_in5 = op_b5; 
 
-    assign gwe6             = gweReg6;
-    assign rd6              = rdReg6;
-    assign mem_op6          = mem_opReg6;
-    assign addr6            = addrReg6;
-    assign data_in6         = data_inReg6;
-    assign addr_misaligned6 = addr_misalignedReg6;
-    assign bw06             = bw0Reg6;
-    assign bw16             = bw1Reg6;
-    assign bw26             = bw2Reg6;
-    assign bw36             = bw3Reg6;
-
+    assign gwe6                  = gweReg6;
+    assign rd6                   = rdReg6;
+    assign mem_op6               = mem_opReg6;
+    assign addr6                 = addrReg6;
+    assign data_in6              = data_inReg6;
+    assign addr_misaligned6      = addr_misalignedReg6;
+    assign ld_addr_misaligned6   = ld_addr_misalignedReg6;
+    assign samo_addr_misaligned6 = samo_addr_misalignedReg6;
+    assign bw06                  = bw0Reg6;
+    assign bw16                  = bw1Reg6;
+    assign bw26                  = bw2Reg6;
+    assign bw36                  = bw3Reg6;
+/*
     data_mem dmem (
     .clk        (clk),
 	.nrst	(nrst),
@@ -168,7 +184,7 @@ module mem_wrap(
     .data_in    (data_in6),
     .data_out   (data_out6)
     );
-
+*//*
     assign baddr6 = addr6[1:0];
 
     always_comb begin
@@ -180,5 +196,5 @@ module mem_wrap(
             4'b0101: mem_out6 = {16'b0, data_out6[baddr6 + 1], data_out6[baddr6]};	    //i_lhu
             default: mem_out6 = 0;
         endcase
-    end
+    end*/
 endmodule
