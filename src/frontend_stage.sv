@@ -1,3 +1,24 @@
+`timescale 1ns/1ns
+
+// Request Types
+`define LOAD_RET        4'b0000
+`define INV_RET         4'b0011
+`define ST_ACK          4'b0100
+`define AT_ACK          4'b0011
+`define INT_RET         4'b0111
+`define TEST_RET        4'b0101
+`define FP_RET          4'b1000
+`define IFILL_RET       4'b0001
+`define	EVICT_REQ	4'b0011
+`define	ERR_RET		4'b1100
+`define STRLOAD_RET     4'b0010
+`define STRST_ACK       4'b0110
+`define FWD_RQ_RET      4'b1010
+`define FWD_RPY_RET     4'b1011
+`define RSVD_RET        4'b1111
+
+
+
 module frontend_stage(
     input logic clk, 
 	input logic nrst,
@@ -10,13 +31,31 @@ module frontend_stage(
     output logic [31:0] pc2,	// pc at instruction mem pipe #2
     output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
     
- 
 
 	//DEBUG Signals from debug module to load a program
     input logic DEBUG_SIG,				
     input logic [31:0] DEBUG_addr,
     input logic [31:0] DEBUG_instr,
-    input logic clk_debug
+    input logic clk_debug,
+
+    //OpenPiton Request
+	output logic[4:0] transducer_l15_rqtype, 
+	output logic[2:0] transducer_l15_size,
+	output logic[31:0] transducer_l15_address,
+	output logic[31:0] transducer_l15_data,
+	output logic transducer_l15_val,
+	input logic l15_transducer_ack,
+	input logic l15_transducer_header_ack,
+
+
+	//OpenPiton Response
+	input logic l15_transducer_val,
+	input logic[31:0] l15_transducer_data_0, 
+	input logic[31:0] l15_transducer_data_1, 
+	input logic[31:0] l15_transducer_data_2, 
+	input logic[31:0] l15_transducer_data_3, 
+	input logic[3:0] l15_transducer_returntype,
+	output logic transducer_l15_req_ack
     );
 
     // registers
@@ -26,15 +65,31 @@ module frontend_stage(
     // wires
     logic [31:0] npc;   	   // next pc wire
     logic [31:0] pc; 
+	//latches
+	logic wake_up;
     
 
-    // pipes
-
+always_ff @(posedge clk , negedge nrst)
+begin
+if(~nrst)
+begin
+	wake_up <= 0;
+end
+else
+begin
+if (wake_up == 0)
+	wake_up <= l15_transducer_returntype == `INT_RET;
+end
+end
+/************************************************/
+/*			First Pipe 							*/
+/*			PC FETCH							*/
+/************************************************/
     always_ff @(posedge clk , negedge nrst)
 	begin
         if (!nrst)
         begin
-		pcReg		<=  32'h0;
+		pcReg		<= 32'h40000000;
 		pcReg2 		<= 0;
 
 		end
@@ -72,13 +127,18 @@ module frontend_stage(
     always_comb
       begin
         // npc logic
+		if (wake_up == 1)
+			npc = 32'h40000000;
+		else
+		begin
         unique case(PCSEL)
-            0: npc = pcReg +1;
-            1: npc = 0;
+            0: npc = pcReg +4;
+            1: npc =  32'h40000000;
             2: npc = target;
             3: npc = npc;
-            default: npc = pcReg + 1 ;
+            default: npc = pcReg + 4 ;
         endcase
+		end
         
       end
 
@@ -86,15 +146,79 @@ module frontend_stage(
 
 	assign pc = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg-1: pcReg;
 	assign pc2 = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg2 - 1 : pcReg2;
-    // dummy inst mem
-    instr_mem m1 (
-	.clk(clk ),
-	.addr(pc),
-	.instr(instr2), 		
-	.DEBUG_SIG(DEBUG_SIG),				//DEBUG Signals from debug module to load a program
-	.DEBUG_addr(DEBUG_addr),
-	.DEBUG_instr(DEBUG_instr),
-	.clk_debug(clk_debug)
-	); 
+
+/************************************************/
+/*			First Pipe 							*/
+/*			INSTR FETCH							*/
+/************************************************/
+
+
+localparam[1:0]   // 3 states are required for Moore
+s_req = 0,
+s_idle = 1,
+s_resp = 2;
+
+logic state_reg;
+
+logic req_fire;
+logic resp_int;
+logic resp_fire;
+
+
+assign req_fire = l15_transducer_ack && l15_transducer_header_ack && transducer_l15_val && (state_reg == s_req) && wake_up;
+assign resp_fire = l15_transducer_val && (state_reg == s_idle) && (!resp_int);
+assign resp_init =  (l15_transducer_returntype != `LOAD_RET) && (l15_transducer_returntype != `IFILL_RET) && (l15_transducer_returntype != `ST_ACK) && l15_transducer_val;
+
+
+	
+always_ff @(posedge clk , negedge nrst)
+begin
+
+if (!nrst)
+begin
+	state_reg <= 3'b0;
+end
+
+else
+begin
+// npc logic
+case(state_reg)
+	s_req: 
+	begin
+		transducer_l15_address <= pc;
+	    transducer_l15_rqtype	<= 0;
+		transducer_l15_size	<= 4;
+		transducer_l15_val	<= 1 && wake_up;
+		transducer_l15_req_ack	<= resp_init;
+		instr2 <= 32'h33;				//Inster no op when cache is busy
+		if (req_fire)
+			state_reg <= s_idle;
+
+	end
+	s_idle:
+	begin
+		transducer_l15_address	<= pc;
+	    transducer_l15_rqtype	<= 0;
+		transducer_l15_size	<= 4;
+		transducer_l15_val	<= 0;
+		transducer_l15_req_ack	<= resp_init;
+		instr2 <= 32'h33;				//Inster no op when cache is busy
+		if (resp_fire)
+			state_reg <= s_resp;
+	end
+	s_resp:
+	begin
+		transducer_l15_address <= pc;
+	    transducer_l15_rqtype	<= 0;
+	    transducer_l15_size	<= 4;
+		transducer_l15_val	<= 0;
+		transducer_l15_req_ack	<= 1;
+		instr2 <= l15_transducer_data_0;
+		state_reg <= s_req;
+	end
+endcase
+        
+end
+end
 
 endmodule

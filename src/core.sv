@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module core(
 	input logic clk, nrst,
 
@@ -9,8 +11,8 @@ module core(
 
 
 	//OpenPiton Request
-	output logic[31:0] transducer_l15_rqtype, 
-	output logic[31:0] transducer_l15_size,
+	output logic[4:0] transducer_l15_rqtype, 
+	output logic[2:0] transducer_l15_size,
 	output logic[31:0] transducer_l15_address,
 	output logic[31:0] transducer_l15_data,
 	output logic transducer_l15_val,
@@ -25,11 +27,7 @@ module core(
 	input logic[31:0] l15_transducer_data_2, 
 	input logic[31:0] l15_transducer_data_3, 
 	input logic[31:0] l15_transducer_returntype,
-	output logic transducer_l15_req_ack,
-
-	//OpenPiton Stall Interrupt
-	input logic gpcore_int
-
+	output logic transducer_l15_req_ack
     );
 
 	// Wires
@@ -105,7 +103,27 @@ module core(
 	
 	//Scoreboared Signals
 	.stall          (stall),
-	.stallnumin      (stallnum)
+	.stallnumin      (stallnum),
+	 
+	.l15_transducer_ack                 (l15_transducer_ack),
+    .l15_transducer_header_ack          (l15_transducer_header_ack),
+
+    .transducer_l15_rqtype              (transducer_l15_rqtype),
+    .transducer_l15_size                (transducer_l15_size),
+    .transducer_l15_val                 (transducer_l15_val),
+    .transducer_l15_address             (transducer_l15_address),
+    .transducer_l15_data                (transducer_l15_data),
+
+
+    .l15_transducer_val                 (l15_transducer_val),
+    .l15_transducer_returntype          (l15_transducer_returntype),
+
+    .l15_transducer_data_0              (l15_transducer_data_0),
+    .l15_transducer_data_1              (l15_transducer_data_1),
+    .l15_transducer_data_2              (l15_transducer_data_2),
+    .l15_transducer_data_3              (l15_transducer_data_3),
+
+    .transducer_l15_req_ack             (transducer_l15_req_ack)
 	);
 
 	// =============================================== //
@@ -315,5 +333,26 @@ module core(
 	
 	.pc6         (pc6)
 	);
+
+logic pc6Tmp;
+logic pc6Commit;
+always_ff @(posedge clk , negedge nrst)
+begin
+if (!nrst)
+begin
+	pc6Tmp<= 32'b0;
+end
+else
+begin
+if (pc6 == pc6Tmp)
+	pc6Commit <= 0;
+else
+begin
+	pc6Commit <= 1;
+	pc6Tmp <= pc6;
+end
+end
+end
     
 endmodule
+
