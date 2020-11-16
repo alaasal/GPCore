@@ -23,7 +23,6 @@ module alu #(
 
 	output logic btaken,
 	output logic signed [31:0]  result
-
 );
 
     //TODO: move signal decoding to a seperate always block
