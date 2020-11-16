@@ -39,7 +39,18 @@ module exe_stage(
 	output logic [31:0] AU_imm6 ,
 	
 	//output logic [31:0] mem_out6,
+    output logic [31:0] addr6,
+    output logic [31:0] data_in6,          //memory input data
+    output logic [1:0]  baddr6,
+    output logic gwe6,
+    output logic m_rd6,
+    output logic bw06,
+    output logic bw16,
+    output logic bw26,
+    output logic bw36,
 	output logic addr_misaligned6,
+    output logic ld_addr_misaligned6,
+    output logic samo_addr_misaligned6,
 
 	output logic [31:0] mul_divReg6,
 	
@@ -235,6 +246,29 @@ module exe_stage(
 	.target      (target)
     );
 
+    mem_interface dmem_interface (
+        //inputs
+    .clk                      (clk),
+    .nrst                     (nrst),
+    .mem_op4                  (mem_op4),    //memory operation type
+    .op_a4                    (op_a4),      //base address
+    .op_b4                    (op_b4),      //src for store ops, I_imm offset for load ops
+    .S_imm4                   (S_imm4),     //S_imm offset
+        //outputs
+    .addr6                    (addr6),
+    .data_in6                 (data_in6),
+    .baddr6                   (baddr6),
+    .gwe6                     (gwe6),
+    .rd6                      (m_rd6),
+    .bw06                     (bw06),
+    .bw16                     (bw16),
+    .bw26                     (bw26),
+    .bw36                     (bw36),
+    .addr_misaligned6         (addr_misaligned6),
+    .ld_addr_misaligned6      (ld_addr_misaligned6),
+    .samo_addr_misaligned6    (samo_addr_misaligned6)
+);
+/*
 	mem_wrap dmem_wrap (
 	.clk                 (clk),
 	.nrst                (nrst),
@@ -245,7 +279,7 @@ module exe_stage(
 	.mem_out6            (mem_out6),
 	.addr_misaligned6    (addr_misaligned6)
 	);
-
+*/
 	mul_div mul1(
 	.a		(opaReg5),
 	.b		(opbReg5),
