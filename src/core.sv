@@ -40,7 +40,20 @@ module core(
 	
 	logic [3:0] mem_op3, mem_op4;
 	logic [31:0] mem_out6;
-	logic addr_misaligned6;
+
+    //memory signals
+    output logic [31:0] addr6,
+    output logic [31:0] data_in6,          //memory input data
+    output logic [1:0]  baddr6,
+    output logic gwe6,
+    output logic m_rd6,
+    output logic bw06,
+    output logic bw16,
+    output logic bw26,
+    output logic bw36,
+	output logic addr_misaligned6,
+    output logic ld_addr_misaligned6,
+    output logic samo_addr_misaligned6,
 
 	logic [2:0] mulDiv_op4, mulDiv_op3;
 	logic [31:0] mul_div6;	
@@ -259,7 +272,18 @@ module core(
 	.AU_imm6       		(AU_imm6),
 	
 	//.mem_out6     		(mem_out6),
-	.addr_misaligned6 	(addr_misaligned6),
+    .addr6                  (addr6),
+    .data_in6               (data_in6),
+    .baddr6                 (baddr6),
+    .gwe6                   (gwe6),
+    .m_rd6                  (m_rd6),
+    .bw06                   (bw06),
+    .bw16                   (bw16),
+    .bw26                   (bw26),
+    .bw36                   (bw36),
+	.addr_misaligned6 	    (addr_misaligned6),
+    .ld_addr_misaligned6    (ld_addr_misaligned6),
+    .samo_addr_misaligned6  (samo_addr_misaligned6),
 
 	.mul_divReg6         	(mul_div6),
 	
