@@ -334,13 +334,14 @@ module core(
 	.pc6         (pc6)
 	);
 
-logic pc6Tmp;
+logic[31:0] pc6Tmp;
 logic pc6Commit;
 always_ff @(posedge clk , negedge nrst)
 begin
 if (!nrst)
 begin
 	pc6Tmp<= 32'b0;
+	pc6Commit<- 0;
 end
 else
 begin

@@ -10,7 +10,7 @@ module data_mem #(
     parameter EADDR     = XLEN - BADDR,   //byte address
     parameter MEM_LEN   = 256
 )(
-    input logic clk, 
+    input logic clk, nrst,
     input logic gwe, rd,
     input logic bw0, bw1, bw2, bw3,         //byte write signals
     input logic [XLEN - 1:0] addr, data_in,

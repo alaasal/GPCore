@@ -1,0 +1,15 @@
+src/ALU.sv
+src/branch_unit.sv
+src/commit_stage.sv
+src/core.sv
+src/data_mem.sv
+src/execute_stage.sv
+src/inst_mem.sv
+src/instr_decoder.sv
+src/issue_stage.sv
+src/mem_wrap.sv
+src/mul_div.sv
+src/regfile.sv
+src/scoreboard_data_hazards.sv
+src/frontend_stage.sv
+src/decode_stage.sv

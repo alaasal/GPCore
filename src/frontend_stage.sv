@@ -78,7 +78,7 @@ end
 else
 begin
 if (wake_up == 0)
-	wake_up <= l15_transducer_returntype == `INT_RET;
+	wake_up <= (l15_transducer_returntype == `INT_RET) && l15_transducer_val;
 end
 end
 /************************************************/
