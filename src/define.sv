@@ -31,30 +31,30 @@ typedef enum logic [31:0]{
 
 typedef enum logic [11:0]{
 // Machine-Mode
- 	CSR_MVENDORID  = 12'hf11		,	//Machine Vendor ID Register (mvendorid) [p18] 
- 	CSR_MARCHID    = 12'hf12		,	//Machine Architecture ID Register (marchid)  [p18]
- 	CSR_MIMPID     = 12'hf13		,	//Machine Implementation ID Register (mimpid) p[19]
- 	CSR_MHARTID    = 12'hf14		,	//Hart ID Register (mhartid) p[19]
- 	CSR_MSTATUS   =  12'h300		,	//Machine Status Registers (mstatus and mstatush) p[20]
- 	CSR_MISA       = 12'h301		,	//Machine ISA Register (misa) [p15]
- 	CSR_MEDELEG    = 12'h302		,	//Machine Trap Delegation Registers (medeleg and mideleg p[29]
- 	CSR_MIDELEG    = 12'h303		,	//Machine Trap Delegation Registers (medeleg and mideleg p[29]
- 	CSR_MIE       =  12'h304		,	//Machine Interrupt Registers (mip and mie) p[31]
- 	CSR_MTVEC      = 12'h305		,	//Machine Trap-Vector Base-Address Register (mtvec) p[28]
+ 	CSR_MVENDORID  = 12'hf11,	//Machine Vendor ID Register (mvendorid) [p18] 
+ 	CSR_MARCHID    = 12'hf12,	//Machine Architecture ID Register (marchid)  [p18]
+ 	CSR_MIMPID     = 12'hf13,	//Machine Implementation ID Register (mimpid) p[19]
+ 	CSR_MHARTID    = 12'hf14,	//Hart ID Register (mhartid) p[19]
+ 	CSR_MSTATUS    = 12'h300,	//Machine Status Registers (mstatus and mstatush) p[20]
+ 	CSR_MISA       = 12'h301,	//Machine ISA Register (misa) [p15]
+ 	CSR_MEDELEG    = 12'h302,	//Machine Trap Delegation Registers (medeleg and mideleg p[29]
+ 	CSR_MIDELEG    = 12'h303,	//Machine Trap Delegation Registers (medeleg and mideleg p[29]
+ 	CSR_MIE        = 12'h304,	//Machine Interrupt Registers (mip and mie) p[31]
+ 	CSR_MTVEC      = 12'h305,	//Machine Trap-Vector Base-Address Register (mtvec) p[28]
  	CSR_MCOUNTEREN = 12'h306,
  	CSR_MSCRATCH   = 12'h340,
  	CSR_MEPC       = 12'h341,
  	CSR_MCAUSE     = 12'h342,
  	CSR_MTVAL      = 12'h343,
- 	CSR_MIP        = 12'h344		,	//Machine Interrupt Registers (mip and mie) p[31]
- 	CSR_MCYCLE     = 12'hb00		,	//**Hardware Performance Monitor p[35]
- 	CSR_MINSTRET   = 12'hb02		,	//**Hardware Performance Monitor p[35]
+ 	CSR_MIP        = 12'h344,	//Machine Interrupt Registers (mip and mie) p[31]
+ 	CSR_MCYCLE     = 12'hb00,	//**Hardware Performance Monitor p[35]
+ 	CSR_MINSTRET   = 12'hb02,	//**Hardware Performance Monitor p[35]
  	CSR_MCYCLEH    = 12'hb80,
  	CSR_MINSTRETH  = 12'hb82,
  	CSR_CYCLEH     = 12'hc80,
- 	CSR_TIMEH      = 12'hc81		,	//**Machine Timer Registers (mtime and mtimecmp) p[33]
+ 	CSR_TIMEH      = 12'hc81,	//**Machine Timer Registers (mtime and mtimecmp) p[33]
  	CSR_INSTRETH   = 12'hc82,
- 	CSR_MNECYCLE	=12'hbbf,
+ 	CSR_MNECYCLE   = 12'hbbf,
 
 	// User-Mode
 	CSR_USTATUS    = 12'h000,
@@ -86,7 +86,7 @@ typedef enum logic [11:0]{
  	CSR_STVAL      = 12'h143,
  	CSR_SIP        = 12'h144,
  	CSR_SATP       = 12'h180,
- 	CSR_SNECYCLE	=12'h5C0
+ 	CSR_SNECYCLE   = 12'h5C0
 	}csrs;
 
 endpackage

@@ -458,7 +458,6 @@ module exe_stage(
   	assign u_interrupt_conditioned = (current_mode == 2'b00)   &&   u_eie && external_interrupt;
 
 /* EXCEPTIONS. ********************************************************************************************************/
-
 	assign exception =  instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6 || m_timer_conditioned || s_interrupt_conditioned
 			|| illegal_instrReg6   || s_timer_conditioned || m_interrupt_conditioned||u_interrupt_conditioned||u_timer_conditioned  || mretReg6 || sretReg6 || uretReg6;
 

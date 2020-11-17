@@ -161,22 +161,14 @@ module csr_regfile(
 
 		CSR_MEDELEG: 		csr_data = medeleg_w;
         	CSR_MIDELEG: 		csr_data = mideleg_w;
+		CSR_TIMEH, CSR_CYCLEH:
+				csr_data = mtime[63:32];
+		CSR_TIME, CSR_CYCLE:
+				csr_data = mtime[31:0];
 
-
-
-/** not implemented yet **
-		CSR_MCOUNTEREN:
-		CSR_MCYCLE:
-		CSR_MINSTRET:
-		CSR_MCYCLEH:
-		CSR_MINSTRETH:
-		CSR_CYCLEH:
-		CSR_TIMEH:
-		CSR_INSTRETH:
-**			    */
 
               // S Mode
-		CSR_SEPC:      	csr_data = {sepc, 2'b0};
+		CSR_SEPC:	       csr_data = {sepc, 2'b0};
                 CSR_SSTATUS:           csr_data = sstatus;
                 CSR_SIE:               csr_data = sie;
                 CSR_STVEC:             csr_data = {stvec, 2'b0};
@@ -190,7 +182,7 @@ module csr_regfile(
 		CSR_SEDELEG: 		csr_data = sedeleg_w;
 		CSR_SIDELEG: 		csr_data = sideleg_w;
 
-			//`CSR_SCOUNTREN:
+			//CSR_SCOUNTREN:
 
 
 		// 	USER MODE
@@ -376,7 +368,7 @@ always_ff @(posedge clk, negedge nrst) begin
 		sideleg			<= 0;
 
 		sscratch		<= 0;
-        stvec  	        <= 0;
+        	stvec  	        	<= 0;
 		sepc			<= 0;
 
 		status_upie		<= 0;
@@ -454,7 +446,7 @@ end
               		  begin
                			scause_code <= csr_wb[5:0];
                 		scause_interrupt <= csr_wb[31];
-                                   		  end
+                          end
                         CSR_STVAL:
 				stval <= csr_wb;
                         CSR_SIE:
@@ -519,7 +511,7 @@ end
 	 //Exception logic
 	else if (exception_pending && next_mode==mode::M && !m_ret)
 	  begin
-		mepc <= pc_exc[`XLEN-1:2];
+		mepc <= {pc_exc[`XLEN-1:2],2'b00};
         	status_mie  <= 0;
         	status_mpie <= status_mie;
         	status_mpp  <= current_mode;
@@ -553,7 +545,7 @@ end
 
         else if (exception_pending && next_mode==mode::S && !s_ret)
 		begin
-            sepc <= pc_exc[`XLEN-1:2];
+            sepc <= {pc_exc[`XLEN-1:2],2'b0};
             status_sie  <= 0;
             status_spie <= status_sie;
             status_spp  <= current_mode[0];
@@ -588,7 +580,7 @@ end
 	// USER MODE
 	else if (exception_pending && next_mode==mode::U && !u_ret)
 	  begin
-		uepc <= pc_exc[`XLEN-1:2];
+		uepc <= {pc_exc[`XLEN-1:2],2'b0};
         	status_uie  <= 0;
         	status_upie <= status_uie;
 
@@ -599,7 +591,7 @@ end
 		if (!cause[`XLEN-1])
 		  begin
 			case (cause[`XLEN-2:0])
-            exceptions::I_ADDR_MISALIGNED:   utval <= {pc_exc};
+            exceptions::I_ADDR_MISALIGNED:   utval <= {pc_exc, 1'b0};
             exceptions::I_ILLEGAL:           utval <= 0;			//{instruction_word, 2'b11};
             default:                        utval <= 0;
 			endcase
