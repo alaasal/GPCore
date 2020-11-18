@@ -14,6 +14,7 @@ module mem_interface(
     output logic [1:0]  baddr6,
     output logic gwe6, rd6,
     output logic bw06, bw16, bw26, bw36,
+    output logic m_op6,
     output logic addr_misaligned6,
     output logic ld_addr_misaligned6,
     output logic samo_addr_misaligned6
@@ -80,6 +81,7 @@ module mem_interface(
             bw1Reg6                  <= 0; 
             bw2Reg6                  <= 0; 
             bw3Reg6                  <= 0;
+            m_opReg6                 <= 0;
         end else begin
             gweReg6                  <= gwe5;
             rdReg6                   <= rd5;
@@ -93,6 +95,7 @@ module mem_interface(
             bw1Reg6                  <= bw15; 
             bw2Reg6                  <= bw25; 
             bw3Reg6                  <= bw35;
+            m_opReg6                 <= m_op5;
         end
     end
 
@@ -102,38 +105,42 @@ module mem_interface(
     assign S_imm5   = S_immReg5;
 
     //mem_op
-    //4'b0000	//no memory operation
-    //4'b0001   //i_lb
-    //4'b0010	//i_lh
-    //4'b0011	//i_lw
-    //4'b0100	//i_lbu
-    //4'b0101	//i_lhu
-    //4'b1110	//i_sb
-    //4'b1111	//i_sh
-    //4'b1000   //i_sw
+    //mem_op[3]   -> store = 1, load = 0
+    //mem_op[2:1] -> word = 11, half = 01, byte = 10
+    //mem_op[0]   -> signed = 1, unsigned = 0
 
+    /*
+    --------------------|
+    mem_op  | operation |
+    --------------------|
+    4'b0000 | no_mem_op |
+    --------------------|
+    4'b1111 | SW        |
+    4'b1011 | SH        |
+    4'b1101 | SB        |
+    --------------------|
+    4'b0111 | LW        |
+    4'b0011 | LH        |
+    4'b0010 | LHU       |
+    4'b0101 | LB        |
+    4'b0100 | LBU       |
+    --------------------|
+    */ 
+    
                               //s imm + offset   //i imm + offset  
     assign addr5    = (mem_op5[3])? (S_imm5 + op_a5) : (op_b5 + op_a5);
     
-    //reconstruct instructions
-    assign i_lb  = (mem_op5 == 1);
-    assign i_lh  = (mem_op5 == 2);
-    assign i_lw  = (mem_op5 == 3);
-    assign i_lbu = (mem_op5 == 4);
-    assign i_lhu = (mem_op5 == 5);
-    assign i_sb  = (mem_op5 == 14);
-    assign i_sh  = (mem_op5 == 15);
-    assign i_sw  = (mem_op5 == 8);
+    assign m_op5 = |mem_op5;  //is there a memory op?
     
     //generate address misaligned exception
-    assign addr_mis5[0] = (i_lh | i_lhu | i_sh | i_sw) & addr5[0];
-    assign addr_mis5[1] = (i_lw | i_sw) & addr5[1];
-    assign addr_misaligned5 = addr_mis5[0] | addr_mis5[1];
-    assign ld_addr_misaligned5   = addr_misaligned5 && (i_lh | i_lhu | i_lw);   //load misalignment
-    assign samo_addr_misaligned5 = addr_misaligned5 && (i_sw | i_sh);           //store and atomic misalignment
+    assign addr_mis5[0]          = mem_op5[1] & addr5[0];
+    assign addr_mis5[1]          = mem_op5[1] & mem_op5[2] & addr5[1];
+    assign addr_misaligned5      = addr_mis5[0] | addr_mis5[1];
+    assign ld_addr_misaligned5   = addr_misaligned5 & ~mem_op5[3];   //load misalignment
+    assign samo_addr_misaligned5 = addr_misaligned5 & mem_op5[3];           //store and atomic misalignment
 
-    assign gwe5 = (mem_op5[3] & ~(mem_op5[2] | mem_op5[1] | mem_op5[0])) & ~addr_misaligned5;
-    assign rd5  = !mem_op5[3] & (mem_op5[0] | mem_op5[1] | mem_op5[2]) & ~addr_misaligned5;
+    assign gwe5 = &mem_op5 & ~addr_misaligned5;
+    assign rd5  = !mem_op5[3] & ~addr_misaligned5;
 
 /*
 --------------------------------------------------------------
@@ -151,10 +158,10 @@ module mem_interface(
 --------------------------------------------------------------
 */
     //byte write enable
-    assign bw05 = (~addr5[1]  & ~addr5[0]) & (i_sb | i_sh) & ~addr_misaligned5;
-    assign bw25 = (addr5[1]   & ~addr5[0]) & (i_sb | i_sh) & ~addr_misaligned5;
-    assign bw15 = ~addr5[1]   & ((addr5[0] & i_sb)  | (~addr5[0] & i_sh)) & ~addr_misaligned5; 
-    assign bw35 = addr5[1]    & ((addr5[0] & i_sb)  | (~addr5[0] & i_sh)) & ~addr_misaligned5;
+    assign bw05 = (~addr5[1]  & ~addr5[0]) & mem_op5[3] & ~addr_misaligned5;
+    assign bw25 = (addr5[1]   & ~addr5[0]) & mem_op5[3] & ~addr_misaligned5;
+    assign bw15 = ~addr5[1]   & ((addr5[0] & mem_op5[2])  | (~addr5[0] & mem_op5[1])) & mem_op5[3] & ~addr_misaligned5; 
+    assign bw35 = addr5[1]    & ((addr5[0] & mem_op5[2])  | (~addr5[0] & mem_op5[1])) & mem_op5[3] & ~addr_misaligned5;
     
     assign data_in5 = op_b5; 
 
@@ -170,6 +177,7 @@ module mem_interface(
     assign bw16                  = bw1Reg6;
     assign bw26                  = bw2Reg6;
     assign bw36                  = bw3Reg6;
+    assign m_op6                 = m_opReg5;
 /*
     data_mem dmem (
     .clk        (clk),
