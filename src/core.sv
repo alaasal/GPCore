@@ -1,10 +1,13 @@
+
 module core(
 	input logic clk, nrst,
 
-	input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
+	input logic DEBUG_SIG,				// DEBUG Signals from debug module to load a program
 	input logic [31:0] DEBUG_addr,
 	input logic [31:0] DEBUG_instr,
-	input logic clk_debug
+	input logic clk_debug,
+	
+	input logic external_interrupt	// Asynchronus interrupt 
     );
 
 	// Wires
@@ -33,10 +36,7 @@ module core(
 	logic bneq3,bneq4;
 	logic LUI3,LUI4;
 	logic auipc3,auipc4;
-	logic [1:0]stallnum;
-
-	
-	 
+	logic [1:0]stallnum; 
 	
 	logic [3:0] mem_op3, mem_op4;
 	logic [31:0] mem_out6;
@@ -53,7 +53,23 @@ module core(
 	//Scoreboared Logic 
 	logic stall;
 	logic bjtaken;
+	logic exception;
 	logic [6:0] opcode3;
+
+	// Exceptions and CSRs
+	logic [11:0] csr_addr3, csr_addr4, csr_wb_addr, csr_wb_addr6;
+	logic [2:0] funct3_3, funct3_4;
+	logic [31:0] csr_imm3, csr_imm4, csr_data, csr_wb6, m_cause6, csr_wb, pc_exc, cause6;
+	logic instruction_addr_misaligned2, instruction_addr_misaligned3, instruction_addr_misaligned4;
+	logic ecall3, ecall4, ebreak3, ebreak4, mret3, mret4, mret6, sret3, sret4, sret6, uret3, uret4, uret6;
+	logic illegal_instr3, illegal_instr4;
+	logic exception_pending, exception_pending6;
+	logic [31:0] epc, cause;
+	logic m_ret, s_ret, u_ret;
+	mode::mode_t     current_mode;
+	logic s_timer, m_timer, m_eie, m_tie, s_eie, s_tie, m_interrupt, s_interrupt, u_interrupt;
+	logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
+	logic external_interrupt_w;
 
 	// =============================================== //
 	//			FrontEnd Stage		   //
@@ -67,6 +83,10 @@ module core(
 	// Branch Select and Branch Target
 	.PCSEL          (pcselect5),	
 	.target         (target),
+
+	// exceptions to control pc
+	.exception_pending(exception_pending),
+	.epc		(epc),
 	
 	// Outputs to Decode Stage
 	.pc2            (pc2),		// pc at instruction mem pipe #2
@@ -80,7 +100,10 @@ module core(
 	
 	//Scoreboared Signals
 	.stall          (stall),
-	.stallnumin      (stallnum)
+	.stallnumin      (stallnum),
+	
+	// Exceptions
+	.instruction_addr_misaligned2	(instruction_addr_misaligned2)
 	);
 
 	// =============================================== //
@@ -93,7 +116,9 @@ module core(
 	
 	// Inputs from FrontEnd Stage
 	.instr2       (instr2),	
-	.pc2          (pc2),	
+	.pc2          (pc2),
+	.exception_pending(exception_pending),
+	.instruction_addr_misaligned2(instruction_addr_misaligned2),
 	
 	// Outputs to Issue Stage 
 	.rs1          (rs1),
@@ -130,7 +155,22 @@ module core(
 	// Scoreboared Signals
 	.stall          (stall),
 	.opcode3 	(opcode3),
-	.stallnumin	(stallnum)
+	.stallnumin	(stallnum),
+	
+	// csr operations
+	.funct3_3	(funct3_3),
+	.csr_addr3	(csr_addr3),
+	.csr_imm3	(csr_imm3),
+	
+	// Exceptions
+	.instruction_addr_misaligned3(instruction_addr_misaligned3),
+	.ecall3		(ecall3),
+	.ebreak3	(ebreak3),
+	.illegal_instr3 (illegal_instr3),
+	.mret3		(mret3),
+	.sret3		(sret3),
+	.uret3		(uret3),
+	.csr_we3  	(csr_we3)
 	);
 
 	// =============================================== //
@@ -140,11 +180,24 @@ module core(
 	issue_stage issue (
 	.clk          (clk),
 	.nrst         (nrst),
-	
+
 	// Write Back address, enable, and data from commit stage
 	.we6          (we6Issue),		
 	.rdaddr6      (rd6Issue),	    
-	.wb6          (wb6),		
+	.wb6          (wb6),
+
+	.csr_wb		(csr_wb),
+	.csr_we6 (csr_we6Issue),
+	.csr_wb_addr	(csr_wb_addr),
+	.cause		(cause),
+	.exception_pending(exception_pending),
+	.pc_exc		(pc_exc),
+	.m_ret		(m_ret),
+	.s_ret		(s_ret),
+	.u_ret		(u_ret),
+	.m_interrupt(m_interrupt),
+    	.s_interrupt(s_interrupt),
+	.u_interrupt(u_interrupt),
 	
 	// Inputs from decode stage
 	.rs1          (rs1),
@@ -178,6 +231,20 @@ module core(
 	.pc3          (pc3),
 	.pcselect3    (pcselect3),
 
+	.funct3_3	(funct3_3),
+	.csr_addr3	(csr_addr3),
+	.csr_imm3	(csr_imm3),
+	.csr_we3 (csr_we3),
+
+	.instruction_addr_misaligned3(instruction_addr_misaligned3),
+	.ecall3		(ecall3),
+	.ebreak3	(ebreak3),
+	.illegal_instr3 (illegal_instr3),
+
+	.mret3		(mret3),
+	.sret3		(sret3),
+	.uret3		(uret3),
+
 	// Outputs
 	.op_a         (opa),
 	.op_b         (opb),		// operands A & B output from regfile in PIPE #4 (to exe stage)
@@ -210,8 +277,41 @@ module core(
 	// Scoreboared Signals
 	.stall          (stall),
 	.bjtaken	(bjtaken),
+	.exception (exception),
 	.opcode3	(opcode3),
-	.stallnum	(stallnum)
+	.stallnum	(stallnum),
+	
+	// csr
+	.csr_data	(csr_data),
+	.funct3_4	(funct3_4),
+	.csr_addr4	(csr_addr4),
+	.csr_imm4	(csr_imm4),
+	.csr_we4  (csr_we4),
+	
+	// exceptions
+	.instruction_addr_misaligned4(instruction_addr_misaligned4),
+	.ecall4		(ecall4),
+	.ebreak4	(ebreak4),
+	.illegal_instr4 (illegal_instr4),
+	.epc		(epc),
+
+	.mret4		(mret4),
+	.sret4		(sret4),
+	.uret4		(uret4),
+	
+	.current_mode(current_mode),
+	.s_timer(s_timer),
+	.m_timer(m_timer),
+	.s_eie(s_eie),
+	.m_eie(m_eie),
+	.m_tie(m_tie),
+	.s_tie(s_tie),
+	
+	.u_timer(u_timer),
+  	.u_eie(u_eie),
+	.u_tie(u_tie),
+	.u_sie(u_sie)
+    
     );
 
 	// =============================================== //
@@ -251,6 +351,22 @@ module core(
 	.pc4          (pc4),
 	.pcselect4    (pcselect4),
 
+	.funct3_4	(funct3_4),
+	.csr_data	(csr_data),
+	.csr_imm4	(csr_imm4),
+	.csr_addr4	(csr_addr4),
+	.csr_we4  (csr_we4),
+
+	.instruction_addr_misaligned4(instruction_addr_misaligned4),
+	.ecall4		(ecall4),
+	.ebreak4	(ebreak4),
+	.illegal_instr4	(illegal_instr4),
+	.mret4		(mret4),
+	.sret4		(sret4),
+	.uret4		(uret4),
+	.external_interrupt(external_interrupt),
+	//.excep6(exception_pending),
+
 	// Outputs
 	.rd6          		(rd6),
 	.we6          		(we6),
@@ -268,7 +384,35 @@ module core(
 	.pcselect5    		(pcselect5),
 	.target       		(target),
 	//signal to scoreboard
-	.bjtaken6		(bjtaken)
+	.bjtaken6		(bjtaken),
+	.exception (exception),
+
+	// to csr_regfile
+	//.pc_exc			(pc6),
+	.exception_pending	(exception_pending6),
+	.cause6			(cause6),
+	.csr_wb			(csr_wb6),
+	.csr_wb_addr	(csr_wb_addr6),
+	.csr_we6     (csr_we6),
+	.mret6			(mret6),
+	.sret6			(sret6),
+	.uret6			(uret6),
+	
+	.current_mode(current_mode),
+	.s_timer(s_timer),
+	.m_timer(m_timer),
+	.s_eie(s_eie),
+	.m_eie(m_eie),
+	.m_tie(m_tie),
+	.s_tie(s_tie),
+  	.m_interrupt(m_interrupt),
+  	.s_interrupt(s_interrupt),
+	.u_interrupt(u_interrupt),
+    
+  	.u_timer(u_timer),
+  	.u_eie(u_eie),
+	.u_tie(u_tie),
+	.u_sie(u_sie)
 	);
 
 	// =============================================== //
@@ -284,11 +428,31 @@ module core(
 	.we6          (we6),	  
 	.wb_data6    (wb6),	        // final output that will be written back in register file PIPE #6
 	
-	.we6Issue        (we6Issue),
-	.rd6Issue   (rd6Issue),
-	.result6(wb_data6),
+	.csr_wb6	(csr_wb6),
+	.csr_wb_addr6	(csr_wb_addr6),
+	.csr_we6      	(csr_we6),
+	.cause6		(cause6),
+	.exception_pending6(exception_pending6),
+	.mret6		(mret6),
+	.sret6		(sret6),
+	.uret6		(uret6),
 	
-	.pc6         (pc6)
+	.pc6         	(pc6),
+
+	.we6Issue       (we6Issue),
+	.rd6Issue   	(rd6Issue),
+	.result6	(wb_data6),
+
+	.csr_wb		(csr_wb),
+	.csr_wb_addr	(csr_wb_addr),
+	.csr_we6Issue   (csr_we6Issue),
+	.pc_exc		(pc_exc),
+	.cause		(cause),
+	.exception_pending(exception_pending),
+	.mret		(m_ret),
+	.sret		(s_ret),
+	.uret		(u_ret)
 	);
+	
     
 endmodule

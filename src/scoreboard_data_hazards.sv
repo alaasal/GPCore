@@ -1,5 +1,5 @@
 module scoreboard_data_hazards (
-input logic clk,nrst,btaken,
+input logic clk,nrst,exception,btaken,
 //source registers
 input logic [4:0] rs1, // instr[15:15]
 input logic [4:0] rs2, // instr[23:20]
@@ -194,7 +194,7 @@ assign kill=killReg;
 	end
       end
    always_ff@(negedge clk) begin 
-if (btaken)
+if (btaken | exception)
 begin 
 	stallReg<=0;
 	killReg<=1;

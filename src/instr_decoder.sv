@@ -2,26 +2,31 @@ module instr_decoder(
 	input logic [6:0] op,
 	input logic [2:0] funct3,
 	input logic [6:0] funct7,
+	input logic [11:0]funct12,
 	input logic instr_30,		// instr[30]
-	
+	// from commit stage
+	input logic exception_pending,
+
+
+	//input logic nrst,
 	// Operands Select Sginals
 	output logic [1:0] B_SEL,	// select op b
-	
+
 	// Write back Enable
-	output logic we,		    
+	output logic we,
 
 	// Function Control Signals
-	output logic [2:0]fn,		// select result to be written back in regfile
+	output logic [2:0] fn,		// select result to be written back in regfile
 	output logic [3:0] alu_fn,	// select alu operation
-	
+
 	// Branch, Jumps decode signals
-	output logic j, jr,          
-	output logic bneq, 		        // to alu beq ~ bneq  
-	output logic btype,	
-	
+	output logic j, jr,
+	output logic bneq, 		        // to alu beq ~ bneq
+	output logic btype,
+
 	//Other Instrs decode signals
 	output logic LUI, auipc,
-	
+
 	// Memory Decode Signals
 	output logic [3:0] mem_op,  //mem operation type
 
@@ -29,10 +34,13 @@ module instr_decoder(
 	output logic [2:0] mulDiv_op,
 
 	// Program Counter Select Piped to Execute Unit
-	// until Branch and Jumps target is calculated	
-	output logic [1:0] pcselect
-	
+	// until Branch and Jumps target is calculated
+	output logic [1:0] pcselect,
 
+	output logic ecall, ebreak, uret, sret, mret, wfi, illegal_instr,
+
+	// Write back csr_regfile Enable
+	output logic csr_we
     );
 
     	// Wires
@@ -50,7 +58,7 @@ module instr_decoder(
 
 	// MulDiv Operations
 	logic i_mul , i_mulh , i_mulhsu , i_mulhu , i_div ,i_divu, i_rem , i_remu, instr_25;
- 
+
 	// Arithemtic Immediate Instructions
 	logic i_addi, i_slti, i_sltiu, i_xori, i_ori, i_andi, i_slli, i_srli, i_srai;
 
@@ -66,8 +74,6 @@ module instr_decoder(
 	// Other Instructions
 	logic lui,aupc;
 	logic noOp;
-
-
 
 	assign instr_25 = (~& funct7[6:1]) & funct7[0];     //funct7 == 0000_001
 	//noOp
@@ -85,6 +91,17 @@ module instr_decoder(
 	assign stype  = ~op[6] & op[5] & ~op[4] & ~op[3] & ~op[2] & op[1] & op[0];      //0100011
 	assign utype = ~op[6] & ~op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];     //0010111 LUI
 	assign autype = ~op[6] & op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];    //0110111 auipc
+
+	// zicsr and system instructions
+	// interrupts and exceptions instructions
+	assign system = op[6] & op[5] & op[4] & ~op[3] & ~op[2] & op[1] & op[0];  //1110011 SYSTEM
+	assign ecall  = system & (~|funct3) & ~funct12[0];
+	assign ebreak = system & (~|funct3) &  funct12[0];
+	assign uret   = system & (~|funct3) &  funct12[1];
+	assign sret   = system & (~|funct3) & (~funct7[4]) & funct7[3];
+	assign mret   = system & (~|funct3) & funct7[4] & funct7[3];
+	assign wfi    = system & (~|funct3) & funct12[0] & funct12[2] & funct12[8];
+	assign illegal_instr = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system || (~|op));
 
 	// rtype op								  // instr[30] funct3
 	assign i_add  = rtype & ~instr_30 & (~&funct3);				  //   	0	000
@@ -107,7 +124,7 @@ module instr_decoder(
 	assign i_divu   = rtype & instr_25 &  funct3[2] & ~funct3[1] &  funct3[0];  //        0      101
 	assign i_rem    = rtype & instr_25 & funct3[2]  & funct3[1]  & ~funct3[0];  //        0      110
 	assign i_remu   = rtype & instr_25 & (&funct3);                             //        0      111
-    
+
 	// itype op
 	assign i_addi  = itype & (~&funct3);					  //   	x	000
 	assign i_slti  = itype & ~funct3[2] &  funct3[1] & ~funct3[0];		  //	x	010
@@ -117,7 +134,7 @@ module instr_decoder(
 	assign i_andi  = itype & (&funct3);					  //	x	111
 	assign i_slli  = itype & ~instr_30  & ~funct3[2] & ~funct3[1] & funct3[0]; //	0	001
 	assign i_srli  = itype & ~instr_30  &  funct3[2] & ~funct3[1] & funct3[0]; //	0	101
-	assign i_srai  = itype &  instr_30  &  funct3[2] & ~funct3[1] & funct3[0]; //	1	101 
+	assign i_srai  = itype &  instr_30  &  funct3[2] & ~funct3[1] & funct3[0]; //	1	101
 
 	// btype op
 	assign BEQ  = btype & (~&funct3);					  //   	x	000
@@ -126,7 +143,7 @@ module instr_decoder(
 	assign BGE  = btype &  funct3[2] & ~funct3[1] & funct3[0];		  //	x	101
 	assign BLTU = btype &  funct3[2] &  funct3[1] & ~funct3[0];		  //	x	110
     	assign BGEU = btype & (&funct3);					  //	x	111
-	
+
 	//jmp op
 	assign i_jal	= jtype;
 	assign i_jalr	= jrtype & (~&funct3);
@@ -154,7 +171,7 @@ module instr_decoder(
 	// =============================================== //
 	//			 Outputs		   //
 	// =============================================== //
-    
+
 	//mem_op
 	//4'b0000	//no memory operation
 	//4'b0001   //i_lb
@@ -165,34 +182,35 @@ module instr_decoder(
 	//4'b1110	//i_sb
 	//4'b1111	//i_sh
 	//4'b1000   //i_sw
-	assign mem_op[0] = i_lb  | i_lw  | i_lhu | i_sh; 
+	assign mem_op[0] = i_lb  | i_lw  | i_lhu | i_sh;
 	assign mem_op[1] = i_lh  | i_lw  | i_sb  | i_sh;
 	assign mem_op[2] = i_lbu | i_lhu | i_sb  | i_sh;
 	assign mem_op[3] = i_sw  | i_sb  | i_sh;
-         
-    // generate control signals
-    assign pcselect[0] = 0 ; // to set pcselect to 0 (will be edited when branch and jump operations added)
-    assign pcselect[1] = btype | i_jal | i_jalr;
 
-    //00 rtype itype nop
-    //01 
-    //10 branch 
-    //11
-    assign we 	    = rtype | itype | jtype | jr | ltype| utype | autype;		  // set we to 1 if instr is rtype or itype (1 for all alu op)
-    assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr | ltype;
-    assign B_SEL[1] = i_slli | i_srli | i_srai;
+    	// generate control signals
+    	assign pcselect[0] = 0 ; // to set pcselect to 0 (will be edited when branch and jump operations added)
+    	assign pcselect[1] = btype | i_jal | i_jalr;
 
-    
+    	//00 rtype itype nop
+    	//01
+    	//10 branch
+    	//11
+    	assign we 	= rtype | itype | jtype | jr | ltype| utype | autype | (system & ~(exception_pending));
+    	assign csr_we   = system;
+    	assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr | ltype;
+    	assign B_SEL[1] = i_slli | i_srli | i_srai;
+
+
 	// inst signal controls the type of instruction done by the ALU {bit30, funct3}
-	// 0000 -> add | addi	
-	// 0001 -> SLL | slli	
+	// 0000 -> add | addi
+	// 0001 -> SLL | slli
 	// 0010 -> SLT | slti  | BLT
 	// 0011 -> SLTU| sltiu | BLTU
-	// 0100 -> xor | xori	
-	// 0101 -> SRL | srli	
-	// 0110 -> or  | ori	
-	// 0111 -> and | andi	
-	// 1000 -> sub | bneq  | beq 
+	// 0100 -> xor | xori
+	// 0101 -> SRL | srli
+	// 0110 -> or  | ori
+	// 0111 -> and | andi
+	// 1000 -> sub | bneq  | beq
 	// 1001 -> bge
 	// 1010 -> bgeu
 	// 1101 -> sra | srai
@@ -202,22 +220,22 @@ module instr_decoder(
 	assign alu_fn[2] = i_xor | i_xori| i_srl  | i_srli  | i_or  | i_ori  | i_and | i_andi| i_sra | i_srai;
 	assign alu_fn[3] = i_sub | i_sra | i_srai | BEQ | BNE | BGE  | BGEU ;
 
-    
+
 	// inst signal controls the type of instruction done by the mul_div
-	// 000 -> mul 	
+	// 000 -> mul
 	// 001 -> mulh
 	// 010 -> mulhsu
 	// 011 -> mulhu
-	// 101 -> div 
+	// 101 -> div
 	// 100 -> divu
 	// 111 -> rem
 	// 110 -> remu
-        
+
 	assign mulDiv_op[0] =  i_div  | i_rem  | i_mulh   | i_mulhu;
 	assign mulDiv_op[1] =  i_remu | i_rem  | i_mulhsu | i_mulhu;
-	assign mulDiv_op[2] =  i_div  | i_divu | i_rem    | i_remu; 
+	assign mulDiv_op[2] =  i_div  | i_divu | i_rem    | i_remu;
 
-	assign bneq = BNE ; 
+	assign bneq = BNE ;
 	assign j = i_jal;
 	assign jr = i_jalr;
 	assign LUI = lui;
@@ -233,6 +251,6 @@ module instr_decoder(
 	// 100 -> auipcimm
 	// 111 -> load
 	assign fn[0] = i_jal | i_jalr | lui | aupc;
-	assign fn[1] = i_mul | i_mulh | i_mulhsu | i_mulhu | i_rem | i_remu | i_div | i_divu | lui;
-	assign fn[2] = ltype| aupc;		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
+	assign fn[1] = i_mul | i_mulh | i_mulhsu | i_mulhu | i_rem | i_remu | i_div | i_divu | lui | system;
+	assign fn[2] = ltype| aupc | system;
 endmodule
