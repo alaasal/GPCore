@@ -155,20 +155,31 @@ module instr_decoder(
 	//			 Outputs		   //
 	// =============================================== //
     
-	//mem_op
-	//4'b0000	//no memory operation
-	//4'b0001   //i_lb
-	//4'b0010	//i_lh
-	//4'b0011	//i_lw
-	//4'b0100	//i_lbu
-	//4'b0101	//i_lhu
-	//4'b1110	//i_sb
-	//4'b1111	//i_sh
-	//4'b1000   //i_sw
-	assign mem_op[0] = i_lb  | i_lw  | i_lhu | i_sh; 
-	assign mem_op[1] = i_lh  | i_lw  | i_sb  | i_sh;
-	assign mem_op[2] = i_lbu | i_lhu | i_sb  | i_sh;
-	assign mem_op[3] = i_sw  | i_sb  | i_sh;
+    //mem_op
+    //mem_op[3]   -> store = 1, load = 0
+    //mem_op[2:1] -> word = 11, half = 01, byte = 10
+    //mem_op[0]   -> signed = 1, unsigned = 0
+
+    /*
+    --------------------|
+    mem_op  | operation |
+    --------------------|
+    4'b0000 | no_mem_op |
+    4'b1111 | SW        |
+    4'b1011 | SH        |
+    4'b1101 | SB        |
+    4'b0111 | LW        |
+    4'b0011 | LH        |
+    4'b0010 | LHU       |
+    4'b0101 | LB        |
+    4'b0100 | LBU       |
+    --------------------|
+    */ 
+	
+    assign mem_op[0] = i_sw | i_sh | i_sb | i_lw | i_lh | i_lb; //sign 
+	assign mem_op[1] = i_sw | i_lw | i_sh | i_lh | i_lhu;       //size
+	assign mem_op[2] = i_sw | i_lb | i_lbu;                     //size
+	assign mem_op[3] = i_sw  | i_sb  | i_sh;                    //store op
          
     // generate control signals
     assign pcselect[0] = 0 ; // to set pcselect to 0 (will be edited when branch and jump operations added)
