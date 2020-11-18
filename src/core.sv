@@ -281,6 +281,7 @@ module core(
     .bw16                   (bw16),
     .bw26                   (bw26),
     .bw36                   (bw36),
+    .m_op6                  (m_op6),
 	.addr_misaligned6 	    (addr_misaligned6),
     .ld_addr_misaligned6    (ld_addr_misaligned6),
     .samo_addr_misaligned6  (samo_addr_misaligned6),

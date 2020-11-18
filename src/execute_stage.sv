@@ -48,6 +48,7 @@ module exe_stage(
     output logic bw16,
     output logic bw26,
     output logic bw36,
+    output logic m_op6,
 	output logic addr_misaligned6,
     output logic ld_addr_misaligned6,
     output logic samo_addr_misaligned6,
@@ -264,6 +265,7 @@ module exe_stage(
     .bw16                     (bw16),
     .bw26                     (bw26),
     .bw36                     (bw36),
+    .m_op6                    (m_op6),
     .addr_misaligned6         (addr_misaligned6),
     .ld_addr_misaligned6      (ld_addr_misaligned6),
     .samo_addr_misaligned6    (samo_addr_misaligned6)
