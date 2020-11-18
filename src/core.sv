@@ -341,7 +341,7 @@ begin
 if (!nrst)
 begin
 	pc6Tmp<= 32'b0;
-	pc6Commit<- 0;
+	pc6Commit<= 0;
 end
 else
 begin

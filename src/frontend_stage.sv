@@ -81,16 +81,17 @@ if (wake_up == 0)
 	wake_up <= (l15_transducer_returntype == `INT_RET) && l15_transducer_val;
 end
 end
+
 /************************************************/
 /*			First Pipe 							*/
 /*			PC FETCH							*/
 /************************************************/
     always_ff @(posedge clk , negedge nrst)
 	begin
-        if (!nrst)
+        if (!nrst || !wake_up)
         begin
 		pcReg		<= 32'h40000000;
-		pcReg2 		<= 0;
+		pcReg2 		<= 32'h40000000;
 
 		end
         else begin	
@@ -126,20 +127,13 @@ end
 
     always_comb
       begin
-        // npc logic
-		if (wake_up == 1)
-			npc = 32'h40000000;
-		else
-		begin
         unique case(PCSEL)
             0: npc = pcReg +4;
             1: npc =  32'h40000000;
             2: npc = target;
             3: npc = npc;
             default: npc = pcReg + 4 ;
-        endcase
-		end
-        
+        endcase        
       end
 
     // output
@@ -158,7 +152,7 @@ s_req = 0,
 s_idle = 1,
 s_resp = 2;
 
-logic state_reg;
+logic[1:0] state_reg;
 
 logic req_fire;
 logic resp_int;
