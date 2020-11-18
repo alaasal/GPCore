@@ -61,7 +61,7 @@ module core(
 	logic [2:0] funct3_3, funct3_4;
 	logic [31:0] csr_imm3, csr_imm4, csr_data, csr_wb6, m_cause6, csr_wb, pc_exc, cause6;
 	logic instruction_addr_misaligned2, instruction_addr_misaligned3, instruction_addr_misaligned4;
-	logic ecall3, ecall4, mret3, mret4, mret6, sret3, sret4, sret6, uret3, uret4, uret6;
+	logic ecall3, ecall4, ebreak3, ebreak4, mret3, mret4, mret6, sret3, sret4, sret6, uret3, uret4, uret6;
 	logic illegal_instr3, illegal_instr4;
 	logic exception_pending, exception_pending6;
 	logic [31:0] epc, cause;
@@ -165,6 +165,7 @@ module core(
 	// Exceptions
 	.instruction_addr_misaligned3(instruction_addr_misaligned3),
 	.ecall3		(ecall3),
+	.ebreak3	(ebreak3),
 	.illegal_instr3 (illegal_instr3),
 	.mret3		(mret3),
 	.sret3		(sret3),
@@ -237,6 +238,7 @@ module core(
 
 	.instruction_addr_misaligned3(instruction_addr_misaligned3),
 	.ecall3		(ecall3),
+	.ebreak3	(ebreak3),
 	.illegal_instr3 (illegal_instr3),
 
 	.mret3		(mret3),
@@ -289,6 +291,7 @@ module core(
 	// exceptions
 	.instruction_addr_misaligned4(instruction_addr_misaligned4),
 	.ecall4		(ecall4),
+	.ebreak4	(ebreak4),
 	.illegal_instr4 (illegal_instr4),
 	.epc		(epc),
 
@@ -356,6 +359,7 @@ module core(
 
 	.instruction_addr_misaligned4(instruction_addr_misaligned4),
 	.ecall4		(ecall4),
+	.ebreak4	(ebreak4),
 	.illegal_instr4	(illegal_instr4),
 	.mret4		(mret4),
 	.sret4		(sret4),
@@ -401,12 +405,12 @@ module core(
 	.m_eie(m_eie),
 	.m_tie(m_tie),
 	.s_tie(s_tie),
-  .m_interrupt(m_interrupt),
-  .s_interrupt(s_interrupt),
+  	.m_interrupt(m_interrupt),
+  	.s_interrupt(s_interrupt),
 	.u_interrupt(u_interrupt),
     
-  .u_timer(u_timer),
-  .u_eie(u_eie),
+  	.u_timer(u_timer),
+  	.u_eie(u_eie),
 	.u_tie(u_tie),
 	.u_sie(u_sie)
 	);

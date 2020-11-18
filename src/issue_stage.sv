@@ -44,7 +44,7 @@ module issue_stage (
 	
 	// exceptions	
 	input logic instruction_addr_misaligned3,
-	input logic ecall3,
+	input logic ecall3, ebreak3,
 	input logic illegal_instr3,
 	input logic mret3, sret3, uret3,
 
@@ -109,7 +109,7 @@ module issue_stage (
 
 	// exceptions
 	output logic instruction_addr_misaligned4,
-	output logic ecall4,
+	output logic ecall4, ebreak4,
 	output logic illegal_instr4,
 	output logic [31:0] epc,	// output to frontend
 	output logic mret4, sret4, uret4,
@@ -167,7 +167,7 @@ module issue_stage (
 	
 	// exceptions
 	logic instruction_addr_misalignedReg4;
-	logic ecallReg4;
+	logic ecallReg4, ebreakReg4;
 	logic illegal_instrReg4;
 	logic mretReg4, sretReg4, uretReg4;
 
@@ -212,6 +212,7 @@ module issue_stage (
 		csr_weReg4 <= 0;
 		instruction_addr_misalignedReg4 <= 0;
 		ecallReg4	<= 0;
+		ebreakReg4	<= 0;
 		illegal_instrReg4<= 0;
 
 		mretReg4	<= 0;
@@ -243,6 +244,7 @@ module issue_stage (
 		csr_addrReg4	<= csr_addr3;
 		instruction_addr_misalignedReg4 <= instruction_addr_misaligned3;
 		ecallReg4	<= ecall3;
+		ebreakReg4	<= ebreak3;
 		illegal_instrReg4<= illegal_instr3;
 		mretReg4	<= mret3;
 		sretReg4	<= sret3;
@@ -261,6 +263,7 @@ module issue_stage (
 		csr_weReg4		<= 0;
 		instruction_addr_misalignedReg4 <= 0;
 		ecallReg4	<= 0;
+		ebreakReg4	<= 0;
 		illegal_instrReg4<= 0;
 		mretReg4	<= 0;
 		sretReg4	<= 0;
@@ -279,6 +282,7 @@ module issue_stage (
 		csr_weReg4		<= 0;
 		instruction_addr_misalignedReg4 <= 0;
 		ecallReg4	<= 0;
+		ebreakReg4	<= 0;
 		illegal_instrReg4<= 0;
 		mretReg4	<= 0;
 		sretReg4	<= 0;
@@ -297,6 +301,7 @@ module issue_stage (
 		csr_weReg4		<= 0;
 		instruction_addr_misalignedReg4 <= 0;
 		ecallReg4	<= 0;
+		ebreakReg4	<= 0;
 		illegal_instrReg4<= 0;
 		mretReg4	<= 0;
 		sretReg4	<= 0;
@@ -317,6 +322,7 @@ module issue_stage (
 		// exceptions
 		instruction_addr_misalignedReg4 <= instruction_addr_misaligned3;
 		ecallReg4	<= ecall3;
+		ebreakReg4	<= ebreak3;
 		illegal_instrReg4<= illegal_instr3;
 		mretReg4	<= mret3;
 		sretReg4	<= sret3;
@@ -444,6 +450,7 @@ module issue_stage (
 	// exceptions
 	assign instruction_addr_misaligned4 = instruction_addr_misalignedReg4;
 	assign ecall4		= ecallReg4;
+	assign ebreak4		= ebreakReg4;
 	assign illegal_instr4	= illegal_instrReg4;
 
 	assign mret4		= mretReg4;

@@ -40,7 +40,7 @@ module exe_stage(
 
 	// exceptions
 	input logic instruction_addr_misaligned4,
-	input logic ecall4,
+	input logic ecall4, ebreak4,
 	input logic illegal_instr4,
 	input logic mret4, sret4, uret4,
 
@@ -135,7 +135,7 @@ module exe_stage(
 	logic csr_weReg5;
 	logic [31:0] csr_rd5;
 	// exceptions
-	logic ecallReg5;
+	logic ecallReg5, ebreakReg5;
 	logic instruction_addr_misalignedReg5;
 	logic illegal_instrReg5;
 	logic mretReg5, sretReg5, uretReg5;
@@ -179,6 +179,7 @@ module exe_stage(
 		csr_weReg5	<= 0;
 
 		ecallReg5	<= 0;
+		ebreakReg5	<= 0;
 		instruction_addr_misalignedReg5 <= 0;
 		illegal_instrReg5<= 0;
 		mretReg5	<= 0;
@@ -223,6 +224,7 @@ module exe_stage(
 		csr_weReg5	<= 0;
 
 		ecallReg5	<= 0;
+		ebreakReg5	<= 0;
 		instruction_addr_misalignedReg5 <= 0;
 		illegal_instrReg5<= 0;
 		mretReg5	<= 0;
@@ -265,6 +267,7 @@ module exe_stage(
 		csr_weReg5	  <= csr_we4;
 
 		ecallReg5	<= ecall4;
+		ebreakReg5	<= ebreak4;
 		instruction_addr_misalignedReg5 <= instruction_addr_misaligned4;
 		illegal_instrReg5 <= illegal_instr4;
 		mretReg5	<= mret4;
@@ -357,7 +360,7 @@ module exe_stage(
 
 	// exceptions
 	logic instruction_addr_misalignedReg6;
-	logic ecallReg6;
+	logic ecallReg6, ebreakReg6;
 	logic illegal_instrReg6;
 	//logic exception;
 	logic mretReg6, sretReg6, uretReg6;
@@ -380,6 +383,7 @@ module exe_stage(
 		csr_weReg6 			<= 0;
 		instruction_addr_misalignedReg6 <= 0;
 		ecallReg6	  	<= 0;
+		ebreakReg6		<= 0;
 		illegal_instrReg6 	<= 0;
 		mretReg6		<= 0;
 		sretReg6		<= 0;
@@ -405,14 +409,15 @@ module exe_stage(
 		csr_addrReg6	<=  12'b0;
 
 		instruction_addr_misalignedReg6 <= 0;
-		ecallReg6	   <=  0;
+		ecallReg6	  	<=  0;
+		ebreakReg6		<= 0;
 		illegal_instrReg6  <= 0;
 		mretReg6	<= 0;
 		sretReg6	<= 0;
 		uretReg6	<= 0;
 
 	   end
-		  else begin
+		else begin
 
 		    fnReg6 		    <=  fnReg5;
 		    rdReg6 		    <=  rdReg5;
@@ -430,7 +435,8 @@ module exe_stage(
 		    csr_addrReg6	<=  csr_addrReg5;
 
 		    instruction_addr_misalignedReg6 <= instruction_addr_misalignedReg5;
-		    ecallReg6	   <=  ecallReg5;
+			ecallReg6	<=  ecallReg5;
+			ebreakReg6	<= ebreakReg5;
 		    illegal_instrReg6  <= illegal_instrReg5;
 		    mretReg6	<= mretReg5;
 		    sretReg6	<= sretReg5;
@@ -458,7 +464,8 @@ module exe_stage(
   	assign u_interrupt_conditioned = (current_mode == 2'b00)   &&   u_eie && external_interrupt;
 
 /* EXCEPTIONS. ********************************************************************************************************/
-	assign exception =  instruction_addr_misalignedReg6 || ecallReg6 || addr_misaligned6 || m_timer_conditioned || s_interrupt_conditioned
+										      /* from data mem (L/S)*/
+	assign exception =  instruction_addr_misalignedReg6 || ecallReg6 || ebreakReg6 || addr_misaligned6 || m_timer_conditioned || s_interrupt_conditioned
 			|| illegal_instrReg6   || s_timer_conditioned || m_interrupt_conditioned||u_interrupt_conditioned||u_timer_conditioned  || mretReg6 || sretReg6 || uretReg6;
 
 	always_comb
@@ -501,18 +508,18 @@ module exe_stage(
 		  begin
     			cause[`XLEN-2:0] = exceptions::I_ADDR_MISALIGNED;
     		  end
-		else if (ecallReg6)
-		  begin
-			cause[`XLEN-2:0] = exceptions::U_CALL + {3'b0, current_mode};
-    		  end
-    		else if (illegal_instrReg6)
+		else if (illegal_instrReg6)
 		  begin
     		    	cause[`XLEN-2:0] = exceptions::I_ILLEGAL;
     		  end
-    		/*else if (e_break) begin
+		else if (ecallReg6)
+		  begin
+			cause[`XLEN-2:0] = exceptions::U_CALL + {3'b0, current_mode};
+    		  end	
+    		else if (ebreakReg6)
+		  begin
         		cause[`XLEN-2:0] = exceptions::BREAKPOINT;
-    		end*/
-
+    		  end
 		// addr_misaligned6 will divided to load & store exceptions
     		else if (addr_misaligned6)
 		  begin

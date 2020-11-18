@@ -12,7 +12,6 @@ module csr_regfile(
 
 	input logic [31:0] cause,
 	input logic [31:0] pc_exc,		// pc of instruction that caused the exception >> (mepc - sepc - uepc)
-       	// input  [`XLEN-1:0] add_result,
 
  	input logic m_ret, s_ret, u_ret,	//MRET or SRET instruction is used to return from a trap in M-mode or S-mode respectively
 	// input logic stall,
@@ -624,12 +623,8 @@ always_comb begin
         end
         else if (u_ret)
 	  begin
-	
-        	next_mode = mode::U;
-	  
-        end
-
-        
+        	next_mode = mode::U;	  
+        end        
 	else if (current_mode == mode::S)
 	  begin
 		if (cause[`XLEN-1])

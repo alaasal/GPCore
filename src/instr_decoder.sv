@@ -37,7 +37,7 @@ module instr_decoder(
 	// until Branch and Jumps target is calculated
 	output logic [1:0] pcselect,
 
-	output logic ecall, uret, sret, mret, wfi, illegal_instr,
+	output logic ecall, ebreak, uret, sret, mret, wfi, illegal_instr,
 	
 	// Write back csr_regfile Enable
 	output logic csr_we
@@ -96,7 +96,8 @@ module instr_decoder(
 	// interrupts and exceptions instructions	
 	assign system = op[6] & op[5] & op[4] & ~op[3] & ~op[2] & op[1] & op[0];  //1110011 SYSTEM
 	assign ecall  = system & (~|funct3) & ~funct12[0];
-	assign uret   = system & (~|funct3) & (~|funct7);  
+	assign ebreak = system & (~|funct3) &  funct12[0];
+	assign uret   = system & (~|funct3) &  funct12[1];  
 	assign sret   = system & (~|funct3) & (~funct7[4]) & funct7[3]; 
 	assign mret   = system & (~|funct3) & funct7[4] & funct7[3];
 	assign wfi    = system & (~|funct3) & funct12[0] & funct12[2] & funct12[8];
@@ -194,7 +195,7 @@ module instr_decoder(
     	//01
     	//10 branch
     	//11
-    	assign we 	= rtype | itype | jtype | jr | ltype| utype | autype |system  |system & ~(exception_pending);
+    	assign we 	= rtype | itype | jtype | jr | ltype| utype | autype | (system & ~(exception_pending));
     	assign csr_we   = system;
     	assign B_SEL[0] = i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_jalr | ltype;
     	assign B_SEL[1] = i_slli | i_srli | i_srai;

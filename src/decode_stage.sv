@@ -59,7 +59,7 @@ module instdec_stage(
 	output logic [31:0] csr_imm3,
 	// exceptions
 	output logic instruction_addr_misaligned3,
-	output logic ecall3,
+	output logic ecall3, ebreak3,
 	output logic illegal_instr3,
 	// return instructions
 	output logic mret3, sret3, uret3,
@@ -183,6 +183,7 @@ module instdec_stage(
 	.LUI         (LUI3),
 	.auipc       (auipc3),
 	.ecall       (ecall3),
+	.ebreak	     (ebreak3),
 	.uret        (uret3),
 	.sret        (sret3),
 	.mret        (mret3),
