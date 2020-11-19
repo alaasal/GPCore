@@ -183,7 +183,7 @@ case(state_reg)
 	    transducer_l15_rqtype	<= 0;
 		transducer_l15_size	<= 4;
 		transducer_l15_val	<= 1 && wake_up;
-		transducer_l15_req_ack	<= resp_init;
+		transducer_l15_req_ack	<= resp_init && wake_up;
 		instr2 <= 32'h33;				//Inster no op when cache is busy
 		if (req_fire)
 			state_reg <= s_idle;
