@@ -97,8 +97,8 @@ end
         else begin	
 	//stallnumin<=stallnuminin;
 	if ( stall&&!stallnumin[1] && !stallnumin[0]) begin 
-		pcReg		<= pcReg-1;		
-		pcReg2		<= pcReg2-1;
+		pcReg		<= pcReg-4;		
+		pcReg2		<= pcReg2-4;
 	end
 	else if(stall && !(!stallnumin[1] && stallnumin[0]) ) 
 	begin 
@@ -127,13 +127,20 @@ end
 
     always_comb
       begin
+      if (state_reg == s_resp)
+      begin
         unique case(PCSEL)
             0: npc = pcReg +4;
             1: npc =  32'h40000000;
             2: npc = target;
             3: npc = npc;
             default: npc = pcReg + 4 ;
-        endcase        
+        endcase 
+      end
+      else
+      begin
+      	npc = pcReg;
+      end
       end
 
     // output
@@ -155,13 +162,13 @@ s_resp = 2;
 logic[1:0] state_reg;
 
 logic req_fire;
-logic resp_int;
+logic resp_init;
 logic resp_fire;
 
 
-assign req_fire = l15_transducer_ack && l15_transducer_header_ack && transducer_l15_val && (state_reg == s_req) && wake_up;
-assign resp_fire = l15_transducer_val && (state_reg == s_idle) && (!resp_int);
-assign resp_init =  (l15_transducer_returntype != `LOAD_RET) && (l15_transducer_returntype != `IFILL_RET) && (l15_transducer_returntype != `ST_ACK) && l15_transducer_val;
+assign req_fire =  l15_transducer_header_ack && transducer_l15_val && (state_reg == s_req) && wake_up;
+assign resp_fire = l15_transducer_val && (state_reg == s_idle) && (!resp_init);
+assign resp_init = ( (l15_transducer_returntype != `LOAD_RET) && (l15_transducer_returntype != `IFILL_RET) && (l15_transducer_returntype != `ST_ACK) ) && l15_transducer_val;
 
 
 	
@@ -179,15 +186,37 @@ begin
 case(state_reg)
 	s_req: 
 	begin
+		if (req_fire)
+			state_reg <= s_idle;
+	end
+	s_idle:
+	begin
+		if (resp_fire)
+			state_reg <= s_resp;
+	end
+	s_resp:
+	begin
+		state_reg <= s_req;
+	end
+endcase     
+end
+end
+
+
+
+always_comb
+begin
+
+// npc logic
+case(state_reg)
+	s_req: 
+	begin
 		transducer_l15_address <= pc;
 	    transducer_l15_rqtype	<= 0;
 		transducer_l15_size	<= 4;
 		transducer_l15_val	<= 1 && wake_up;
 		transducer_l15_req_ack	<= resp_init && wake_up;
 		instr2 <= 32'h33;				//Inster no op when cache is busy
-		if (req_fire)
-			state_reg <= s_idle;
-
 	end
 	s_idle:
 	begin
@@ -197,8 +226,6 @@ case(state_reg)
 		transducer_l15_val	<= 0;
 		transducer_l15_req_ack	<= resp_init;
 		instr2 <= 32'h33;				//Inster no op when cache is busy
-		if (resp_fire)
-			state_reg <= s_resp;
 	end
 	s_resp:
 	begin
@@ -208,11 +235,9 @@ case(state_reg)
 		transducer_l15_val	<= 0;
 		transducer_l15_req_ack	<= 1;
 		instr2 <= l15_transducer_data_0;
-		state_reg <= s_req;
 	end
 endcase
-        
-end
+       
 end
 
 endmodule
