@@ -224,8 +224,8 @@ case(state_reg)
 	    transducer_l15_rqtype	<= 0;
 		transducer_l15_size	<= 4;
 		transducer_l15_val	<= 0;
-		transducer_l15_req_ack	<= resp_init;
-		instr2 <= 32'h33;				//Inster no op when cache is busy
+		transducer_l15_req_ack	<= resp_init || l15_transducer_val;
+		instr2 <= (l15_transducer_val) ? l15_transducer_data_0 : 32'h33;				//Inster no op when cache is busy
 	end
 	s_resp:
 	begin
@@ -233,8 +233,8 @@ case(state_reg)
 	    transducer_l15_rqtype	<= 0;
 	    transducer_l15_size	<= 4;
 		transducer_l15_val	<= 0;
-		transducer_l15_req_ack	<= 1;
-		instr2 <= l15_transducer_data_0;
+		transducer_l15_req_ack	<= 0;
+		instr2 <= 32'h33;
 	end
 endcase
        
