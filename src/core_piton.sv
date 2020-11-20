@@ -66,14 +66,13 @@ module core_piton(
 
 	//OpenPiton Response
 	input logic [31:0] l15_core_data_0, 
-	input logic [31:0] l15_core_data_1, 
-	input logic [31:0] l15_core_data_2, 
-	input logic [31:0] l15_core_data_3, 
 	input logic [3:0] l15_core_returntype,
     
     input logic l15_core_val,
     input logic l15_core_ack,
 	input logic l15_core_header_ack,
+
+    output logic [31:0] piton_out
 );
 
 enum logic[1:0] {s_req, s_idle, s_resp} state_reg;
@@ -141,6 +140,8 @@ always_ff @(posedge clk , negedge nrst) begin
 	        core_l15_size    <= core_l15_size;
 		    core_l15_val	 <= 0;
 		    core_l15_req_ack <= 1;
+
+            piton_out        <= l15_core_data_0;
 		    
             state_reg <= s_req;
 	    end

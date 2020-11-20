@@ -37,27 +37,27 @@ module exe_stage(
 	
 	output logic [31:0] U_imm6,
 	output logic [31:0] AU_imm6 ,
-	
-	//output logic [31:0] mem_out6,
-    output logic [31:0] addr6,
-    output logic [31:0] data_in6,          //memory input data
-    output logic [1:0]  baddr6,
-    output logic gwe6,
-    output logic m_rd6,
-    output logic bw06,
-    output logic bw16,
-    output logic bw26,
-    output logic bw36,
-    output logic m_op6,
-	output logic addr_misaligned6,
-    output logic ld_addr_misaligned6,
-    output logic samo_addr_misaligned6,
-
 	output logic [31:0] mul_divReg6,
 	
 	output logic [31:0] target,
 	output logic [31:0] pc6,
 	output logic [1:0] pcselect5,
+
+    //OpenPiton Request
+	output logic [5:0] core_l15_rqtype, 
+	output logic [2:0] core_l15_size,
+	output logic [31:0] core_l15_address,
+	output logic [31:0] core_l15_data,
+	
+    output logic core_l15_val,
+
+	//OpenPiton Response
+	input logic [31:0] l15_core_data_0,
+	input logic [3:0] l15_core_returntype,
+    
+    input logic l15_core_val,
+    input logic l15_core_ack,
+	input logic l15_core_header_ack,
 	
 	output logic bjtaken6		//need some debug
     );
@@ -183,6 +183,18 @@ module exe_stage(
 	logic [31:0] AU_immReg6;
 
 	logic [31:0] pcReg6;
+
+    logic [31:0] addr6,
+    logic [31:0] data_in6,          //memory input data
+    //input logic [1:0]  baddr6,
+    //input logic gwe6,
+    logic m_rd6,
+    logic bw06,
+    logic bw16,
+    logic bw26,
+    logic bw36,
+    logic m_op6,
+
 	logic [31:0] mem_out6;
     logic [31:0] piton_out6;
 	
@@ -271,8 +283,41 @@ module exe_stage(
     .ld_addr_misaligned6      (ld_addr_misaligned6),
     .samo_addr_misaligned6    (samo_addr_misaligned6),
     .piton_out6                (piton_out6),
-    .mem_out6                (mem_out6),
+    .mem_out6                (mem_out6)
 );
+
+    core_piton core_piton(
+    //core -> memory controls
+    .addr6              (addr6),
+    .data_in6           (data_in6),          //memory input data
+    //input logic [1:0]  baddr6,
+    //input logic gwe6,
+    .m_rd6              (m_rd6),
+    .bw06               (bw06),
+    .bw16               (bw16),
+    .bw26               (bw26),
+    .bw26               (bw36),
+    .bw36               (m_op6), 
+
+    //OpenPiton Request
+	.core_l15_rqtype    (core_l15_rqtype), 
+	.core_l15_size      (core_l15_size),
+	.core_l15_address   (core_l15_address),
+	.core_l15_data      (core_l15_data),
+	
+    .core_l15_val       (core_l15_val),
+
+	//OpenPiton Response
+	.l15_core_data_0    (l15_core_data_0), 
+	.l15_core_returntype(l15_core_returntype),
+    
+    .l15_core_val       (l15_core_val),
+    .l15_core_ack       (l15_core_ack),
+	.l15_core_header_ack(l15_core_header_ack),
+
+    .piton_out          (piton_out6)
+);
+
 /*
 	mem_wrap dmem_wrap (
 	.clk                 (clk),
