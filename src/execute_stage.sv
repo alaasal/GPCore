@@ -184,6 +184,7 @@ module exe_stage(
 
 	logic [31:0] pcReg6;
 	logic [31:0] mem_out6;
+    logic [31:0] piton_out6;
 	
 	logic [2:0] fn6;
 	
@@ -268,7 +269,9 @@ module exe_stage(
     .m_op6                    (m_op6),
     .addr_misaligned6         (addr_misaligned6),
     .ld_addr_misaligned6      (ld_addr_misaligned6),
-    .samo_addr_misaligned6    (samo_addr_misaligned6)
+    .samo_addr_misaligned6    (samo_addr_misaligned6),
+    .piton_out6                (piton_out6),
+    .mem_out6                (mem_out6),
 );
 /*
 	mem_wrap dmem_wrap (

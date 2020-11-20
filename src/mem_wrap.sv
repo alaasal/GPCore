@@ -17,7 +17,10 @@ module mem_interface(
     output logic m_op6,
     output logic addr_misaligned6,
     output logic ld_addr_misaligned6,
-    output logic samo_addr_misaligned6
+    output logic samo_addr_misaligned6,
+
+    input  logic [31:0] piton_out6,
+    output logic [31:0] mem_out6,
 );
     //pipe5 registers
     logic [3:0] mem_opReg5; 
@@ -158,10 +161,10 @@ module mem_interface(
 --------------------------------------------------------------
 */
     //byte write enable
-    assign bw05 = (~addr5[1]  & ~addr5[0]) & mem_op5[3] & ~addr_misaligned5;
-    assign bw25 = (addr5[1]   & ~addr5[0]) & mem_op5[3] & ~addr_misaligned5;
-    assign bw15 = ~addr5[1]   & ((addr5[0] & mem_op5[2])  | (~addr5[0] & mem_op5[1])) & mem_op5[3] & ~addr_misaligned5; 
-    assign bw35 = addr5[1]    & ((addr5[0] & mem_op5[2])  | (~addr5[0] & mem_op5[1])) & mem_op5[3] & ~addr_misaligned5;
+    assign bw05 = ((~addr5[1]  & ~addr5[0]) & mem_op5[3] & ~addr_misaligned5) | gwe5;
+    assign bw25 = ((addr5[1]   & ~addr5[0]) & mem_op5[3] & ~addr_misaligned5) | gwe5;
+    assign bw15 = (~addr5[1]   & ((addr5[0] & mem_op5[2])  | (~addr5[0] & mem_op5[1])) & mem_op5[3] & ~addr_misaligned5) | gwe5; 
+    assign bw35 = (addr5[1]    & ((addr5[0] & mem_op5[2])  | (~addr5[0] & mem_op5[1])) & mem_op5[3] & ~addr_misaligned5) | gwe5;
     
     assign data_in5 = op_b5; 
 
@@ -192,17 +195,17 @@ module mem_interface(
     .data_in    (data_in6),
     .data_out   (data_out6)
     );
-*//*
+*/
     assign baddr6 = addr6[1:0];
 
     always_comb begin
-        unique case(mem_op6)
-            4'b0001: mem_out6 = 32'(signed'(data_out6[baddr6]));             //i_lb
-            4'b0010: mem_out6 = 32'(signed'({data_out6[baddr6 + 1], data_out6[baddr6]}));	//i_lh
-            4'b0011: mem_out6 = data_out6;	                                //i_lw
-            4'b0100: mem_out6 = {24'b0, data_out6[baddr6]};     	            //i_lbu
-            4'b0101: mem_out6 = {16'b0, data_out6[baddr6 + 1], data_out6[baddr6]};	    //i_lhu
+        unique case(mem_op6[2:0])
+            3'b101: mem_out6 = 32'(signed'(piton_out6[baddr6]));                            //i_lb
+            3'b011: mem_out6 = 32'(signed'({piton_out6[baddr6 + 1], piton_out6[baddr6]}));  //i_lh
+            3'b111: mem_out6 = piton_out6;	                                                //i_lw
+            3'b100: mem_out6 = {24'b0, piton_out6[baddr6]};     	                        //i_lbu
+            3'b010: mem_out6 = {16'b0, piton_out6[baddr6 + 1], piton_out6[baddr6]};	        //i_lhu
             default: mem_out6 = 0;
         endcase
-    end*/
+    end
 endmodule
