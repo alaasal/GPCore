@@ -271,27 +271,29 @@ module core(
 	.U_imm6       		(U_imm6),
 	.AU_imm6       		(AU_imm6),
 	
-	//.mem_out6     		(mem_out6),
-    .addr6                  (addr6),
-    .data_in6               (data_in6),
-    .baddr6                 (baddr6),
-    .gwe6                   (gwe6),
-    .m_rd6                  (m_rd6),
-    .bw06                   (bw06),
-    .bw16                   (bw16),
-    .bw26                   (bw26),
-    .bw36                   (bw36),
-    .m_op6                  (m_op6),
-	.addr_misaligned6 	    (addr_misaligned6),
-    .ld_addr_misaligned6    (ld_addr_misaligned6),
-    .samo_addr_misaligned6  (samo_addr_misaligned6),
-
 	.mul_divReg6         	(mul_div6),
 	
 	.wb_data6		(wb_data6),
 	.pc6              	(pc6),
 	.pcselect5    		(pcselect5),
 	.target       		(target),
+
+    //OpenPiton Request
+	.core_l15_rqtype    (core_l15_rqtype), 
+	.core_l15_size      (core_l15_size),
+	.core_l15_address   (core_l15_address),
+	.core_l15_data      (core_l15_data),
+	
+    .core_l15_val       (core_l15_val),
+
+	//OpenPiton Response
+	.l15_core_data_0    (l15_core_data_0), 
+	.l15_core_returntype(l15_core_returntype),
+    
+    .l15_core_val       (l15_core_val),
+    .l15_core_ack       (l15_core_ack),
+	.l15_core_header_ack(l15_core_header_ack),
+    
 	//signal to scoreboard
 	.bjtaken6		(bjtaken)
 	);
