@@ -26,7 +26,24 @@ module alu #(
 );
 
     //TODO: move signal decoding to a seperate always block
-    logic sub_op;
+    logic sub_op;                           //subtract operation
+    logic sll_op, srl_op, sra_op;           //shift operations
+    logic slt_op, sltu_op, bge_op, bgeu_op; //comparison operations
+    //operation decode
+    always_comb begin
+        sub_op <= alu_fn[3];                //false triggers at SRA, BGE, BGEU. gate count reduction
+
+        sll_op <= ~alu_fn[3] & ~alu_fn[2];  //false triggers at ADD, SLT, SLTU
+        //srl_op <= (alu_fn == SRL);  //not really required 
+        sra_op <= alu_fn[3] & alu_fn[2];    //no false triggers
+
+        slt_op  <= ~alu_fn[3] & alu_fn[1] &  ~alu_fn[0]; 
+        //sltu_op <= (alu_fn == SLTU);    //not really required
+        bge_op  <= alu_fn[3] & alu_fn[0];
+        //bgeu_op <= (alu_fn == BGEU);    //not really required
+    end
+    /***************************************************************************************************************/
+    /***************************************************************************************************************/
     logic signed [31:0] b_adder;    //operand b input to adder
     logic signed [31:0] a_adder;    //operand a input to adder
     logic signed [31:0] adder_result;      //33 adder output, bit 32 is carry out(overflow indication)
@@ -34,8 +51,6 @@ module alu #(
     logic cin, cout;                      //adder carry-in, mapped to fpga Cin
     //adder
     always_comb begin
-        sub_op <= (alu_fn == SUB);
-
         b_negate <= sub_op;
 
         b_adder  <= {32{b_negate}} ^ operandB;
@@ -46,7 +61,6 @@ module alu #(
     end
     /***************************************************************************************************************/
     /***************************************************************************************************************/
-    logic sll_op, srl_op, sra_op;           //shift operations
     logic signed [31:0] shift_op_a;         //shift operand a
     logic [31:0] a_reversed;                //operand a bit reversed
     logic [31:0] shift_amt;                 //shift amount
@@ -56,10 +70,6 @@ module alu #(
     logic signed [31:0] shifter_result;     //final shifter result
     //shifter
     always_comb begin
-        sll_op <= (alu_fn == SLL);
-        srl_op <= (alu_fn == SRL);
-        sra_op <= (alu_fn == SRA);
-
         a_reversed     <= {<<{operandA}};    //reverse operand a
         shift_op_a     <= (sll_op)? a_reversed : operandA;
         shift_amt      <= operandB;
@@ -69,11 +79,10 @@ module alu #(
         shift_reversed <= {<<{shift_l}};
 
         shift_l_res    <= (sll_op)? shift_reversed : shift_l;
-        shifter_result <= (sra_op)? shift_a : shift_l_result;   //final output
+        shifter_result <= (sra_op)? shift_a : shift_l_res;   //final output
     end
     /***************************************************************************************************************/
     /***************************************************************************************************************/
-    logic slt_op, sltu_op, bge_op, bgeu_op;
     logic op_signed;
     logic [31:0] a_comp;            //comparator input a
     logic [31:0] b_comp;            //comparator input b
@@ -81,12 +90,7 @@ module alu #(
     logic [31:0] comparator_result; //comparator output
     //comparator
     always_comb begin
-        slt_op  <= (alu_fn == SLT);
-        sltu_op <= (alu_fn == SLTU);
-        bge_op  <= (alu_fn == BGE);
-        bgeu_op <= (alu_fn == BGEU);
-
-        op_signed <= slt_op & ~sltu_op & beg_op & ~bgeu_op;
+        op_signed <= slt_op | bge_op;
 
         a_comp <= operandA;
         b_comp <= operandB;
@@ -94,7 +98,7 @@ module alu #(
         less_unsigned <= a_comp < b_comp;
         less_signed   <= $signed(a_comp) < $signed(b_comp);
 
-        comparator result <= (op_signed)? less_signed : less_unsigned;
+        comparator_result <= (op_signed)? less_signed : less_unsigned;
     end
     /***************************************************************************************************************/
     /***************************************************************************************************************/
