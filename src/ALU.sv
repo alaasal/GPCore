@@ -81,7 +81,7 @@ module alu #(
     logic op_signed;
     logic [31:0] a_comp;            //comparator input a
     logic [31:0] b_comp;            //comparator input b
-    logic [31:0] less_unsigned, less_signed;
+    logic [31:0] less;
     logic [31:0] comparator_result; //comparator output
     //comparator
     always_comb begin
@@ -90,10 +90,9 @@ module alu #(
         a_comp = operandA;
         b_comp = operandB;
 
-        less_unsigned = a_comp < b_comp;
-        less_signed   = $signed(a_comp) < $signed(b_comp);
+        less   = $signed({op_signed & a_comp[31], a_comp}) < $signed({op_signed & b_comp[31], b_comp});
 
-        comparator_result = (op_signed)? less_signed : less_unsigned;
+        comparator_result = less;
     end
     /***************************************************************************************************************/
     /***************************************************************************************************************/
@@ -112,7 +111,8 @@ module alu #(
             SLL, SRL, SRA: result = shifter_result;
             
             //comparator operations
-            SLT, SLTU, BGE, BGEU: result = comparator_result;
+            SLT, SLTU: result = comparator_result;
+            BGE, BGEU: result = {comparator_result[31:1], !comparator_result[0]};
             default: result = 32'b0;
         endcase    
     end
@@ -122,7 +122,7 @@ module alu #(
         case (alu_fn)
             SUB: btaken = ((|result) & bneq) || ((~|result) & ~bneq);
             SLT, SLTU: btaken = result[0];
-            BGE, BGEU: btaken = ~result[0];
+            BGE, BGEU: btaken = result[0];
             default: btaken = 0;
         endcase
     end
