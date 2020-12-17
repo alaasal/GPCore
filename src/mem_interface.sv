@@ -20,10 +20,11 @@ module mem_interface(
     output logic samo_addr_misaligned6,
 
     input  logic [31:0] piton_out6,
-    output logic [31:0] mem_out6,
+    output logic [31:0] mem_out6
 );
     //pipe5 registers
     logic [3:0] mem_opReg5; 
+    logic m_opReg5;
     logic [31:0] op_aReg5, op_bReg5, S_immReg5;
 
     //pipe5 outputs
@@ -32,6 +33,7 @@ module mem_interface(
 
     //pipe5 memory controls
     logic gwe5, rd5; 
+    logic m_op5;
     logic [31:0] addr5, data_in5;
     logic [1:0] addr_mis5;
     logic addr_misaligned5;
@@ -41,6 +43,7 @@ module mem_interface(
 
     //pip6 registers
     logic gweReg6, rdReg6;
+    logic m_opReg6;
     logic [3:0] mem_opReg6;
     logic [31:0] addrReg6, data_inReg6;
     logic addr_misalignedReg6;
@@ -49,10 +52,9 @@ module mem_interface(
     logic bw0Reg6, bw1Reg6, bw2Reg6, bw3Reg6;
 
     //pipe5 memory controls
-    logic gwe6, rd6;
     logic [3:0] mem_op6; 
     logic [3:0][7:0] data_out6;
-    logic [1:0] baddr6;
+
 
     //pipe5
     always_ff @(posedge clk, negedge nrst) begin
@@ -93,7 +95,7 @@ module mem_interface(
             data_inReg6              <= data_in5;
             addr_misalignedReg6      <= addr_misaligned5;
             ld_addr_misalignedReg6   <= ld_addr_misaligned5;
-            samo_addr_misalignedReg6 <= samo_addr_misaligned5
+            samo_addr_misalignedReg6 <= samo_addr_misaligned5;
             bw0Reg6                  <= bw05; 
             bw1Reg6                  <= bw15; 
             bw2Reg6                  <= bw25; 

@@ -42,18 +42,18 @@ module core(
 	logic [31:0] mem_out6;
 
     //memory signals
-    output logic [31:0] addr6,
-    output logic [31:0] data_in6,          //memory input data
-    output logic [1:0]  baddr6,
-    output logic gwe6,
-    output logic m_rd6,
-    output logic bw06,
-    output logic bw16,
-    output logic bw26,
-    output logic bw36,
-	output logic addr_misaligned6,
-    output logic ld_addr_misaligned6,
-    output logic samo_addr_misaligned6,
+    logic [31:0] addr6;
+    logic [31:0] data_in6;          //memory input data
+    logic [1:0]  baddr6;
+    logic gwe6;
+    logic m_rd6;
+    logic bw06;
+    logic bw16;
+    logic bw26;
+    logic bw36;
+    logic addr_misaligned6;
+    logic ld_addr_misaligned6;
+    logic samo_addr_misaligned6;
 
 	logic [2:0] mulDiv_op4, mulDiv_op3;
 	logic [31:0] mul_div6;	

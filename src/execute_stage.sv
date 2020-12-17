@@ -184,16 +184,16 @@ module exe_stage(
 
 	logic [31:0] pcReg6;
 
-    logic [31:0] addr6,
-    logic [31:0] data_in6,          //memory input data
+    logic [31:0] addr6;
+    logic [31:0] data_in6;          //memory input data
     //input logic [1:0]  baddr6,
     //input logic gwe6,
-    logic m_rd6,
-    logic bw06,
-    logic bw16,
-    logic bw26,
-    logic bw36,
-    logic m_op6,
+    logic m_rd6;
+    logic bw06;
+    logic bw16;
+    logic bw26;
+    logic bw36;
+    logic m_op6;
 
 	logic [31:0] mem_out6;
     logic [31:0] piton_out6;
@@ -290,14 +290,12 @@ module exe_stage(
     //core -> memory controls
     .addr6              (addr6),
     .data_in6           (data_in6),          //memory input data
-    //input logic [1:0]  baddr6,
-    //input logic gwe6,
     .m_rd6              (m_rd6),
     .bw06               (bw06),
     .bw16               (bw16),
     .bw26               (bw26),
-    .bw26               (bw36),
-    .bw36               (m_op6), 
+    .bw36               (bw36),
+    .m_op6              (m_op6), 
 
     //OpenPiton Request
 	.core_l15_rqtype    (core_l15_rqtype), 
@@ -314,22 +312,11 @@ module exe_stage(
     .l15_core_val       (l15_core_val),
     .l15_core_ack       (l15_core_ack),
 	.l15_core_header_ack(l15_core_header_ack),
+    .core_l15_req_ack   (core_l15_req_ack),
 
     .piton_out          (piton_out6)
 );
 
-/*
-	mem_wrap dmem_wrap (
-	.clk                 (clk),
-	.nrst                (nrst),
-	.mem_op4             (mem_op4), //memory operation type
-	.op_a4               (op_a),   //base address
-	.op_b4               (op_b),   //src for store ops, I_imm offset for load ops
-	.S_imm4              (S_imm4),  //S_imm offset
-	.mem_out6            (mem_out6),
-	.addr_misaligned6    (addr_misaligned6)
-	);
-*/
 	mul_div mul1(
 	.a		(opaReg5),
 	.b		(opbReg5),
