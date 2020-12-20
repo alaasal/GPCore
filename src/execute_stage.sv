@@ -48,7 +48,6 @@ module exe_stage(
 	output logic [2:0] core_l15_size,
 	output logic [31:0] core_l15_address,
 	output logic [31:0] core_l15_data,
-	
     output logic core_l15_val,
 
 	//OpenPiton Response
@@ -184,19 +183,8 @@ module exe_stage(
 
 	logic [31:0] pcReg6;
 
-    logic [31:0] addr6;
-    logic [31:0] data_in6;          //memory input data
-    //input logic [1:0]  baddr6,
-    //input logic gwe6,
-    logic m_rd6;
-    logic bw06;
-    logic bw16;
-    logic bw26;
-    logic bw36;
-    logic m_op6;
-
 	logic [31:0] mem_out6;
-    logic [31:0] piton_out6;
+   
 	
 	logic [2:0] fn6;
 	
@@ -260,63 +248,31 @@ module exe_stage(
 	.target      (target)
     );
 
-    mem_interface dmem_interface (
-        //inputs
-    .clk                      (clk),
-    .nrst                     (nrst),
-    .mem_op4                  (mem_op4),    //memory operation type
-    .op_a4                    (op_a4),      //base address
-    .op_b4                    (op_b4),      //src for store ops, I_imm offset for load ops
-    .S_imm4                   (S_imm4),     //S_imm offset
-        //outputs
-    .addr6                    (addr6),
-    .data_in6                 (data_in6),
-    .baddr6                   (baddr6),
-    .gwe6                     (gwe6),
-    .rd6                      (m_rd6),
-    .bw06                     (bw06),
-    .bw16                     (bw16),
-    .bw26                     (bw26),
-    .bw36                     (bw36),
-    .m_op6                    (m_op6),
-    .addr_misaligned6         (addr_misaligned6),
-    .ld_addr_misaligned6      (ld_addr_misaligned6),
-    .samo_addr_misaligned6    (samo_addr_misaligned6),
-    .piton_out6                (piton_out6),
-    .mem_out6                (mem_out6)
-);
-
-    core_piton core_piton(
-    //core -> memory controls
-    .addr6              (addr6),
-    .data_in6           (data_in6),          //memory input data
-    .m_rd6              (m_rd6),
-    .bw06               (bw06),
-    .bw16               (bw16),
-    .bw26               (bw26),
-    .bw36               (bw36),
-    .m_op6              (m_op6), 
+    mem_wrap u_mem_wrap (
+    .clk                   (clk),
+    .nrst                  (nrst),
+    .mem_op4               (mem_op4),//memory operation type
+    .op_a4                 (op_a4),  //base address
+    .op_b4                 (op_b4), //src for store ops, I_imm offset for load ops
+    .S_imm4                (S_imm4), //S_imm offset
 
     //OpenPiton Request
-	.core_l15_rqtype    (core_l15_rqtype), 
-	.core_l15_size      (core_l15_size),
-	.core_l15_address   (core_l15_address),
-	.core_l15_data      (core_l15_data),
-	
-    .core_l15_val       (core_l15_val),
+	.mem_l15_rqtype        (mem_l15_rqtype),
+    .mem_l15_size          (mem_l15_size),
+    .mem_l15_address       (mem_l15_address),
+    .mem_l15_data          (mem_l15_data),
+    .mem_l15_val           (mem_l15_val),
 
-	//OpenPiton Response
-	.l15_core_data_0    (l15_core_data_0), 
-	.l15_core_returntype(l15_core_returntype),
-    
-    .l15_core_val       (l15_core_val),
-    .l15_core_ack       (l15_core_ack),
-	.l15_core_header_ack(l15_core_header_ack),
-    .core_l15_req_ack   (core_l15_req_ack),
-
-    .piton_out          (piton_out6)
+    //OpenPiton Response
+	.l15_mem_data_0        (l15_mem_data_0),
+    .l15_mem_data_1        (l15_mem_data_1),
+    .l15_mem_returntype    (l15_mem_returntype),
+    .l15_mem_val           (l15_mem_val),
+    .l15_mem_ack           (l15_mem_ack),
+    .l15_mem_header_ack    (l15_mem_header_ack),
+    .mem_l15_req_ack       (mem_l15_req_ack),
+    .mem_out6              (mem_out6)   //memory read output
 );
-
 	mul_div mul1(
 	.a		(opaReg5),
 	.b		(opbReg5),
