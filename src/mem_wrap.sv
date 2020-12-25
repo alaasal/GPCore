@@ -40,7 +40,6 @@ module mem_decode(
 );
     //pipe5 registers
     logic [3:0] mem_opReg5; 
-    logic m_opReg5;
     logic [31:0] op_aReg5, op_bReg5, S_immReg5;
 
     //pipe5 outputs
@@ -198,7 +197,7 @@ module mem_decode(
     assign bw16                  = bw1Reg6;
     assign bw26                  = bw2Reg6;
     assign bw36                  = bw3Reg6;
-    assign m_op6                 = m_opReg5;
+    assign m_op6                 = m_opReg6;
 /*
     data_mem dmem (
     .clk        (clk),
@@ -243,7 +242,7 @@ module piton_fsm(
     input logic m_op6, 
 
     //OpenPiton Request
-	output logic [5:0] core_l15_rqtype, 
+	output logic [3:0] core_l15_rqtype, 
 	output logic [2:0] core_l15_size,
 	output logic [31:0] core_l15_address,
 	output logic [31:0] core_l15_data,
@@ -368,7 +367,7 @@ module mem_wrap(
     input logic [31:0] S_imm4,       //S_imm offset
 
     //OpenPiton Request
-	output logic [5:0] mem_l15_rqtype, 
+	output logic [3:0] mem_l15_rqtype, 
 	output logic [2:0] mem_l15_size,
 	output logic [31:0] mem_l15_address,
 	output logic [31:0] mem_l15_data,
@@ -376,8 +375,8 @@ module mem_wrap(
     output logic mem_l15_val,
 
 	//OpenPiton Response
-	input logic [31:0] l15_mem_data_0, 
-    input logic [31:0] l15_mem_data_1, 
+	input logic [63:0] l15_mem_data_0, 
+    input logic [63:0] l15_mem_data_1, 
 	input logic [3:0] l15_mem_returntype,
     
     input logic l15_mem_val,
@@ -426,6 +425,8 @@ module mem_wrap(
 );
 
     piton_fsm piton_fsm(
+    .clk                (clk),
+    .nrst               (nrst),
     //core -> memory controls
     .addr6              (addr6),
     .data_in6           (data_in6),          //memory input data

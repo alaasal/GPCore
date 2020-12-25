@@ -64,17 +64,24 @@ module core(
 	logic [3:0] mem_op3, mem_op4;
 	logic [31:0] mem_out6;
 
-    //memory signals
-    logic [31:0] addr6;
-    logic [31:0] data_in6;          //memory input data
-    logic [1:0]  baddr6;
-    logic gwe6;
-    logic m_rd6;
-    logic bw06;
-    logic bw16;
-    logic bw26;
-    logic bw36;
-    logic addr_misaligned6;
+    //OpenPiton Memory Request
+	logic [3:0] mem_l15_rqtype; 
+	logic [2:0] mem_l15_size;
+	logic [31:0] mem_l15_address;
+	logic [31:0] mem_l15_data;
+	
+    logic mem_l15_val;
+
+	//OpenPiton Memory Response
+    logic [63:0] l15_mem_data_0; 
+    logic [63:0] l15_mem_data_1;
+    logic [3:0] l15_mem_returntype;
+    
+    logic l15_mem_val;
+    logic l15_mem_ack;
+    logic l15_mem_header_ack;
+    logic mem_l15_req_ack;
+
     logic ld_addr_misaligned6;
     logic samo_addr_misaligned6;
 
@@ -316,20 +323,23 @@ module core(
 	.target       		(target),
 
     //OpenPiton Request
-	.core_l15_rqtype    (core_l15_rqtype), 
-	.core_l15_size      (core_l15_size),
-	.core_l15_address   (core_l15_address),
-	.core_l15_data      (core_l15_data),
-	
-    .core_l15_val       (core_l15_val),
+	.mem_l15_rqtype        (mem_l15_rqtype), 
+	.mem_l15_size          (mem_l15_size),
+	.mem_l15_address       (mem_l15_address),
+	.mem_l15_data          (mem_l15_data),
+    .mem_l15_val           (mem_l15_val),
 
 	//OpenPiton Response
-	.l15_core_data_0    (l15_core_data_0), 
-	.l15_core_returntype(l15_core_returntype),
+	.l15_mem_data_0        (l15_mem_data_0),
+    .l15_mem_data_1        (l15_mem_data_1), 
+	.l15_mem_returntype    (l15_mem_returntype),
     
-    .l15_core_val       (l15_core_val),
-    .l15_core_ack       (l15_core_ack),
-	.l15_core_header_ack(l15_core_header_ack),
+    .l15_mem_val           (l15_mem_val),
+    .l15_mem_ack           (l15_mem_ack),
+	.l15_mem_header_ack    (l15_mem_header_ack),
+    .mem_l15_req_ack       (mem_l15_req_ack),
+    .ld_addr_misaligned6   (ld_addr_misaligned6),
+    .samo_addr_misaligned6 (samo_addr_misaligned6),
     
 	//signal to scoreboard
 	.bjtaken6		(bjtaken)
