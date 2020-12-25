@@ -22,8 +22,8 @@ module core(
 
 	//OpenPiton Response
 	input logic l15_transducer_val,
-	input logic[31:0] l15_transducer_data_0, 
-	input logic[31:0] l15_transducer_data_1, 
+	input logic[63:0] l15_transducer_data_0, 
+	input logic[63:0] l15_transducer_data_1, 
 	input logic[31:0] l15_transducer_data_2, 
 	input logic[31:0] l15_transducer_data_3, 
 	input logic[31:0] l15_transducer_returntype,
@@ -94,12 +94,6 @@ module core(
 	// Outputs to Decode Stage
 	.pc2            (pc2),		// pc at instruction mem pipe #2
 	.instr2         (instr2),	// instruction output from inst memory (to decode stage)
-	
-	//DEBUG Signals from debug module to load a program
-	.DEBUG_SIG      (DEBUG_SIG),
-	.DEBUG_addr     (DEBUG_addr),
-	.DEBUG_instr    (DEBUG_instr),
-	.clk_debug      (clk_debug),
 	
 	//Scoreboared Signals
 	.stall          (stall),

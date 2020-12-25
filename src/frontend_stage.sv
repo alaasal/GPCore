@@ -32,12 +32,6 @@ module frontend_stage(
     output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
     
 
-	//DEBUG Signals from debug module to load a program
-    input logic DEBUG_SIG,				
-    input logic [31:0] DEBUG_addr,
-    input logic [31:0] DEBUG_instr,
-    input logic clk_debug,
-
     //OpenPiton Request
 	output logic[4:0] transducer_l15_rqtype, 
 	output logic[2:0] transducer_l15_size,
@@ -50,8 +44,8 @@ module frontend_stage(
 
 	//OpenPiton Response
 	input logic l15_transducer_val,
-	input logic[31:0] l15_transducer_data_0, 
-	input logic[31:0] l15_transducer_data_1, 
+	input logic[63:0] l15_transducer_data_0, 
+	input logic[63:0] l15_transducer_data_1, 
 	input logic[31:0] l15_transducer_data_2, 
 	input logic[31:0] l15_transducer_data_3, 
 	input logic[3:0] l15_transducer_returntype,
@@ -67,18 +61,23 @@ module frontend_stage(
     logic [31:0] pc; 
 	//latches
 	logic wake_up;
-    
+	logic[1:0] state_reg;
+    localparam[1:0]   // 3 states are required for Moore
+	s_req = 0,
+    s_idle = 1,
+    s_resp = 2;
 
 always_ff @(posedge clk , negedge nrst)
 begin
-if(~nrst)
+if(!nrst)
 begin
 	wake_up <= 0;
 end
 else
 begin
 if (wake_up == 0)
-	wake_up <= (l15_transducer_returntype == `INT_RET) && l15_transducer_val;
+	if (l15_transducer_returntype == 4'b0111)
+	wake_up <= l15_transducer_val;
 end
 end
 
@@ -154,12 +153,9 @@ end
 /************************************************/
 
 
-localparam[1:0]   // 3 states are required for Moore
-s_req = 0,
-s_idle = 1,
-s_resp = 2;
 
-logic[1:0] state_reg;
+
+
 
 logic req_fire;
 logic resp_init;
@@ -202,6 +198,28 @@ endcase
 end
 end
 
+logic[31:0] l15_data;
+//code for flipping and choosing the right bits
+always_comb
+begin
+case(transducer_l15_address[3:2])
+2'b00: begin
+l15_data = l15_transducer_data_0[63:32];
+end
+2'b01: begin
+l15_data = l15_transducer_data_0[31:0];
+end
+2'b10: begin
+l15_data = l15_transducer_data_1[63:32];
+end
+2'b11: begin
+l15_data = l15_transducer_data_1[31:0];
+end
+default: begin
+end
+endcase
+end
+
 
 
 always_comb
@@ -213,31 +231,23 @@ case(state_reg)
 	begin
 		transducer_l15_address <= pc;
 	    transducer_l15_rqtype	<= 0;
-		transducer_l15_size	<= 4;
+		transducer_l15_size	<= 8;
 		transducer_l15_val	<= 1 && wake_up;
 		transducer_l15_req_ack	<= resp_init && wake_up;
 		instr2 <= 32'h33;				//Inster no op when cache is busy
 	end
-	s_idle:
+	s_resp:
 	begin
 		transducer_l15_address	<= pc;
 	    transducer_l15_rqtype	<= 0;
-		transducer_l15_size	<= 4;
+		transducer_l15_size	<= 8;
 		transducer_l15_val	<= 0;
 		transducer_l15_req_ack	<= resp_init || l15_transducer_val;
-		instr2 <= (l15_transducer_val) ? l15_transducer_data_0 : 32'h33;				//Inster no op when cache is busy
-	end
-	s_resp:
-	begin
-		transducer_l15_address <= pc;
-	    transducer_l15_rqtype	<= 0;
-	    transducer_l15_size	<= 4;
-		transducer_l15_val	<= 0;
-		transducer_l15_req_ack	<= 0;
-		instr2 <= 32'h33;
+		instr2 <= (l15_transducer_val) ? l15_data : 32'h33;				//Inster no op when cache is busy
 	end
 endcase
        
 end
+       
 
 endmodule
