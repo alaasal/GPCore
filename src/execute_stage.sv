@@ -248,7 +248,7 @@ module exe_stage(
 	.target      (target)
     );
 
-    mem_wrap u_mem_wrap (
+    mem_wrap exe_mem_wrap(
     .clk                   (clk),
     .nrst                  (nrst),
     .mem_op4               (mem_op4),//memory operation type
@@ -271,7 +271,9 @@ module exe_stage(
     .l15_mem_ack           (l15_mem_ack),
     .l15_mem_header_ack    (l15_mem_header_ack),
     .mem_l15_req_ack       (mem_l15_req_ack),
-    .mem_out6              (mem_out6)   //memory read output
+    .mem_out6              (mem_out6),   //memory read output
+    .ld_addr_misaligned6   (ld_addr_misaligned6),
+    .samo_addr_misaligned6 (samo_addr_misaligned6)
 );
 	mul_div mul1(
 	.a		(opaReg5),
