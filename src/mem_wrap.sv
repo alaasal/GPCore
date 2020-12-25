@@ -385,7 +385,10 @@ module mem_wrap(
 	input logic l15_mem_header_ack,
     output logic mem_l15_req_ack,
 
-    output logic [31:0] mem_out6
+    output logic [31:0] mem_out6,
+
+    output logic ld_addr_misaligned6,
+    output logic samo_addr_misaligned6
 );
     logic [31:0] addr6;
     logic [31:0] data_in6; 
@@ -394,8 +397,6 @@ module mem_wrap(
     logic bw06, bw16, bw26, bw36;
     logic m_op6;
     logic addr_misaligned6;
-    logic ld_addr_misaligned6;
-    logic samo_addr_misaligned6;
     logic [31:0] piton_out6;
     
     mem_decode mem_decode (
