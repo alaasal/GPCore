@@ -37,15 +37,26 @@ module exe_stage(
 	
 	output logic [31:0] U_imm6,
 	output logic [31:0] AU_imm6 ,
-	
-	//output logic [31:0] mem_out6,
-	output logic addr_misaligned6,
-
 	output logic [31:0] mul_divReg6,
 	
 	output logic [31:0] target,
 	output logic [31:0] pc6,
 	output logic [1:0] pcselect5,
+
+    //OpenPiton Request
+	output logic [5:0] core_l15_rqtype, 
+	output logic [2:0] core_l15_size,
+	output logic [31:0] core_l15_address,
+	output logic [31:0] core_l15_data,
+    output logic core_l15_val,
+
+	//OpenPiton Response
+	input logic [31:0] l15_core_data_0,
+	input logic [3:0] l15_core_returntype,
+    
+    input logic l15_core_val,
+    input logic l15_core_ack,
+	input logic l15_core_header_ack,
 	
 	output logic bjtaken6		//need some debug
     );
@@ -171,7 +182,11 @@ module exe_stage(
 	logic [31:0] AU_immReg6;
 
 	logic [31:0] pcReg6;
+
 	logic [31:0] mem_out6;
+    logic ld_addr_misaligned6;
+    logic samo_addr_misaligned6;
+   
 	
 	logic [2:0] fn6;
 	
@@ -235,17 +250,33 @@ module exe_stage(
 	.target      (target)
     );
 
-	mem_wrap dmem_wrap (
-	.clk                 (clk),
-	.nrst                (nrst),
-	.mem_op4             (mem_op4), //memory operation type
-	.op_a4               (op_a),   //base address
-	.op_b4               (op_b),   //src for store ops, I_imm offset for load ops
-	.S_imm4              (S_imm4),  //S_imm offset
-	.mem_out6            (mem_out6),
-	.addr_misaligned6    (addr_misaligned6)
-	);
+    mem_wrap exe_mem_wrap(
+    .clk                   (clk),
+    .nrst                  (nrst),
+    .mem_op4               (mem_op4),//memory operation type
+    .op_a4                 (op_a4),  //base address
+    .op_b4                 (op_b4), //src for store ops, I_imm offset for load ops
+    .S_imm4                (S_imm4), //S_imm offset
 
+    //OpenPiton Request
+	.mem_l15_rqtype        (mem_l15_rqtype),
+    .mem_l15_size          (mem_l15_size),
+    .mem_l15_address       (mem_l15_address),
+    .mem_l15_data          (mem_l15_data),
+    .mem_l15_val           (mem_l15_val),
+
+    //OpenPiton Response
+	.l15_mem_data_0        (l15_mem_data_0),
+    .l15_mem_data_1        (l15_mem_data_1),
+    .l15_mem_returntype    (l15_mem_returntype),
+    .l15_mem_val           (l15_mem_val),
+    .l15_mem_ack           (l15_mem_ack),
+    .l15_mem_header_ack    (l15_mem_header_ack),
+    .mem_l15_req_ack       (mem_l15_req_ack),
+    .mem_out6              (mem_out6),   //memory read output
+    .ld_addr_misaligned6   (ld_addr_misaligned6),
+    .samo_addr_misaligned6 (samo_addr_misaligned6)
+);
 	mul_div mul1(
 	.a		(opaReg5),
 	.b		(opbReg5),

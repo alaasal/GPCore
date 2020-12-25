@@ -63,7 +63,20 @@ module core(
 	
 	logic [3:0] mem_op3, mem_op4;
 	logic [31:0] mem_out6;
-	logic addr_misaligned6;
+
+    //memory signals
+    logic [31:0] addr6;
+    logic [31:0] data_in6;          //memory input data
+    logic [1:0]  baddr6;
+    logic gwe6;
+    logic m_rd6;
+    logic bw06;
+    logic bw16;
+    logic bw26;
+    logic bw36;
+    logic addr_misaligned6;
+    logic ld_addr_misaligned6;
+    logic samo_addr_misaligned6;
 
 	logic [2:0] mulDiv_op4, mulDiv_op3;
 	logic [31:0] mul_div6;	
@@ -295,15 +308,29 @@ module core(
 	.U_imm6       		(U_imm6),
 	.AU_imm6       		(AU_imm6),
 	
-	//.mem_out6     		(mem_out6),
-	.addr_misaligned6 	(addr_misaligned6),
-
 	.mul_divReg6         	(mul_div6),
 	
 	.wb_data6		(wb_data6),
 	.pc6              	(pc6),
 	.pcselect5    		(pcselect5),
 	.target       		(target),
+
+    //OpenPiton Request
+	.core_l15_rqtype    (core_l15_rqtype), 
+	.core_l15_size      (core_l15_size),
+	.core_l15_address   (core_l15_address),
+	.core_l15_data      (core_l15_data),
+	
+    .core_l15_val       (core_l15_val),
+
+	//OpenPiton Response
+	.l15_core_data_0    (l15_core_data_0), 
+	.l15_core_returntype(l15_core_returntype),
+    
+    .l15_core_val       (l15_core_val),
+    .l15_core_ack       (l15_core_ack),
+	.l15_core_header_ack(l15_core_header_ack),
+    
 	//signal to scoreboard
 	.bjtaken6		(bjtaken)
 	);

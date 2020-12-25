@@ -2,18 +2,45 @@
 //it generates the addresses and control signals for the data memory,
 //it also performs the proper extension of outputs. 
 
-module mem_wrap(
+// Requests
+`define	LOAD_RQ		4'b0000
+`define	STORE_RQ	4'b0001
+
+// Responds
+`define LOAD_RET    4'b0000
+`define ST_ACK      4'b0100
+`define INT_RET     4'b0111
+
+//Message size
+`define MSG_DATA_SIZE_WIDTH     3
+`define MSG_DATA_SIZE_0B        3'b000
+`define MSG_DATA_SIZE_1B        3'b001
+`define MSG_DATA_SIZE_2B        3'b010
+`define MSG_DATA_SIZE_4B        3'b011
+
+module mem_decode(
     input logic clk, nrst,
     input logic [3:0] mem_op4,             //memory operation type
     input logic [31:0] op_a4,        //base address
     input logic [31:0] op_b4,        //src for store ops, I_imm offset for load ops
     input logic [31:0] S_imm4,       //S_imm offset
 
-    output logic [31: 0] mem_out6,
-    output logic addr_misaligned6
+    output logic [31:0] addr6,
+    output logic [31:0] data_in6, 
+    output logic [1:0]  baddr6,
+    output logic gwe6, rd6,
+    output logic bw06, bw16, bw26, bw36,
+    output logic m_op6,
+    output logic addr_misaligned6,
+    output logic ld_addr_misaligned6,
+    output logic samo_addr_misaligned6,
+
+    input  logic [31:0] piton_out6,
+    output logic [31:0] mem_out6
 );
     //pipe5 registers
     logic [3:0] mem_opReg5; 
+    logic m_opReg5;
     logic [31:0] op_aReg5, op_bReg5, S_immReg5;
 
     //pipe5 outputs
@@ -22,25 +49,28 @@ module mem_wrap(
 
     //pipe5 memory controls
     logic gwe5, rd5; 
+    logic m_op5;
     logic [31:0] addr5, data_in5;
     logic [1:0] addr_mis5;
     logic addr_misaligned5;
+    logic ld_addr_misaligned5;
+    logic samo_addr_misaligned5;
     logic bw05, bw15, bw25, bw35;
 
     //pip6 registers
     logic gweReg6, rdReg6;
+    logic m_opReg6;
     logic [3:0] mem_opReg6;
     logic [31:0] addrReg6, data_inReg6;
     logic addr_misalignedReg6;
+    logic ld_addr_misalignedReg6;
+    logic samo_addr_misalignedReg6;
     logic bw0Reg6, bw1Reg6, bw2Reg6, bw3Reg6;
 
     //pipe5 memory controls
-    logic gwe6, rd6;
     logic [3:0] mem_op6; 
-    logic [31:0] addr6, data_in6;
     logic [3:0][7:0] data_out6;
-    logic bw06, bw16, bw26, bw36;
-    logic [1:0] baddr6;
+
 
     //pipe5
     always_ff @(posedge clk, negedge nrst) begin
@@ -60,27 +90,33 @@ module mem_wrap(
     //pipe6
     always_ff @(posedge clk, negedge nrst) begin
         if (!nrst) begin
-            gweReg6             <= 0;
-            rdReg6              <= 0;
-            mem_opReg6          <= 0;
-            addrReg6            <= 0;
-            data_inReg6         <= 0;
-            addr_misalignedReg6 <= 0;
-            bw0Reg6             <= 0; 
-            bw1Reg6             <= 0; 
-            bw2Reg6             <= 0; 
-            bw3Reg6             <= 0;
+            gweReg6                  <= 0;
+            rdReg6                   <= 0;
+            mem_opReg6               <= 0;
+            addrReg6                 <= 0;
+            data_inReg6              <= 0;
+            addr_misalignedReg6      <= 0;
+            ld_addr_misalignedReg6   <= 0;
+            samo_addr_misalignedReg6 <= 0;
+            bw0Reg6                  <= 0; 
+            bw1Reg6                  <= 0; 
+            bw2Reg6                  <= 0; 
+            bw3Reg6                  <= 0;
+            m_opReg6                 <= 0;
         end else begin
-            gweReg6             <= gwe5;
-            rdReg6              <= rd5;
-            mem_opReg6          <= mem_op5;
-            addrReg6            <= addr5;
-            data_inReg6         <= data_in5;
-            addr_misalignedReg6 <= addr_misaligned5;
-            bw0Reg6             <= bw05; 
-            bw1Reg6             <= bw15; 
-            bw2Reg6             <= bw25; 
-            bw3Reg6             <= bw35;
+            gweReg6                  <= gwe5;
+            rdReg6                   <= rd5;
+            mem_opReg6               <= mem_op5;
+            addrReg6                 <= addr5;
+            data_inReg6              <= data_in5;
+            addr_misalignedReg6      <= addr_misaligned5;
+            ld_addr_misalignedReg6   <= ld_addr_misaligned5;
+            samo_addr_misalignedReg6 <= samo_addr_misaligned5;
+            bw0Reg6                  <= bw05; 
+            bw1Reg6                  <= bw15; 
+            bw2Reg6                  <= bw25; 
+            bw3Reg6                  <= bw35;
+            m_opReg6                 <= m_op5;
         end
     end
 
@@ -90,36 +126,42 @@ module mem_wrap(
     assign S_imm5   = S_immReg5;
 
     //mem_op
-    //4'b0000	//no memory operation
-    //4'b0001   //i_lb
-    //4'b0010	//i_lh
-    //4'b0011	//i_lw
-    //4'b0100	//i_lbu
-    //4'b0101	//i_lhu
-    //4'b1110	//i_sb
-    //4'b1111	//i_sh
-    //4'b1000   //i_sw
+    //mem_op[3]   -> store = 1, load = 0
+    //mem_op[2:1] -> word = 11, half = 01, byte = 10
+    //mem_op[0]   -> signed = 1, unsigned = 0
 
+    /*
+    --------------------|
+    mem_op  | operation |
+    --------------------|
+    4'b0000 | no_mem_op |
+    --------------------|
+    4'b1111 | SW        |
+    4'b1011 | SH        |
+    4'b1101 | SB        |
+    --------------------|
+    4'b0111 | LW        |
+    4'b0011 | LH        |
+    4'b0010 | LHU       |
+    4'b0101 | LB        |
+    4'b0100 | LBU       |
+    --------------------|
+    */ 
+    
                               //s imm + offset   //i imm + offset  
     assign addr5    = (mem_op5[3])? (S_imm5 + op_a5) : (op_b5 + op_a5);
     
-    //reconstruct instructions
-    assign i_lb  = (mem_op5 == 1);
-    assign i_lh  = (mem_op5 == 2);
-    assign i_lw  = (mem_op5 == 3);
-    assign i_lbu = (mem_op5 == 4);
-    assign i_lhu = (mem_op5 == 5);
-    assign i_sb  = (mem_op5 == 14);
-    assign i_sh  = (mem_op5 == 15);
-    assign i_sw  = (mem_op5 == 8);
+    assign m_op5 = |mem_op5;  //is there a memory op?
     
     //generate address misaligned exception
-    assign addr_mis5[0] = (i_lh | i_lhu | i_sh | i_sw) & addr5[0];
-    assign addr_mis5[1] = (i_lw | i_sw) & addr5[1];
-    assign addr_misaligned5 = addr_mis5[0] | addr_mis5[1];
+    assign addr_mis5[0]          = mem_op5[1] & addr5[0];
+    assign addr_mis5[1]          = mem_op5[1] & mem_op5[2] & addr5[1];
+    assign addr_misaligned5      = addr_mis5[0] | addr_mis5[1];
+    assign ld_addr_misaligned5   = addr_misaligned5 & ~mem_op5[3];   //load misalignment
+    assign samo_addr_misaligned5 = addr_misaligned5 & mem_op5[3];           //store and atomic misalignment
 
-    assign gwe5 = (mem_op5[3] & ~(mem_op5[2] | mem_op5[1] | mem_op5[0])) & ~addr_misaligned5;
-    assign rd5  = !mem_op5[3] & (mem_op5[0] | mem_op5[1] | mem_op5[2]) & ~addr_misaligned5;
+    assign gwe5 = &mem_op5 & ~addr_misaligned5;
+    assign rd5  = !mem_op5[3] & ~addr_misaligned5;
 
 /*
 --------------------------------------------------------------
@@ -137,24 +179,27 @@ module mem_wrap(
 --------------------------------------------------------------
 */
     //byte write enable
-    assign bw05 = (~addr5[1]  & ~addr5[0]) & (i_sb | i_sh) & ~addr_misaligned5;
-    assign bw25 = (addr5[1]   & ~addr5[0]) & (i_sb | i_sh) & ~addr_misaligned5;
-    assign bw15 = ~addr5[1]   & ((addr5[0] & i_sb)  | (~addr5[0] & i_sh)) & ~addr_misaligned5; 
-    assign bw35 = addr5[1]    & ((addr5[0] & i_sb)  | (~addr5[0] & i_sh)) & ~addr_misaligned5;
+    assign bw05 = ((~addr5[1]  & ~addr5[0]) & mem_op5[3] & ~addr_misaligned5) | gwe5;
+    assign bw25 = ((addr5[1]   & ~addr5[0]) & mem_op5[3] & ~addr_misaligned5) | gwe5;
+    assign bw15 = (~addr5[1]   & ((addr5[0] & mem_op5[2])  | (~addr5[0] & mem_op5[1])) & mem_op5[3] & ~addr_misaligned5) | gwe5; 
+    assign bw35 = (addr5[1]    & ((addr5[0] & mem_op5[2])  | (~addr5[0] & mem_op5[1])) & mem_op5[3] & ~addr_misaligned5) | gwe5;
     
     assign data_in5 = op_b5; 
 
-    assign gwe6             = gweReg6;
-    assign rd6              = rdReg6;
-    assign mem_op6          = mem_opReg6;
-    assign addr6            = addrReg6;
-    assign data_in6         = data_inReg6;
-    assign addr_misaligned6 = addr_misalignedReg6;
-    assign bw06             = bw0Reg6;
-    assign bw16             = bw1Reg6;
-    assign bw26             = bw2Reg6;
-    assign bw36             = bw3Reg6;
-
+    assign gwe6                  = gweReg6;
+    assign rd6                   = rdReg6;
+    assign mem_op6               = mem_opReg6;
+    assign addr6                 = addrReg6;
+    assign data_in6              = data_inReg6;
+    assign addr_misaligned6      = addr_misalignedReg6;
+    assign ld_addr_misaligned6   = ld_addr_misalignedReg6;
+    assign samo_addr_misaligned6 = samo_addr_misalignedReg6;
+    assign bw06                  = bw0Reg6;
+    assign bw16                  = bw1Reg6;
+    assign bw26                  = bw2Reg6;
+    assign bw36                  = bw3Reg6;
+    assign m_op6                 = m_opReg5;
+/*
     data_mem dmem (
     .clk        (clk),
 	.nrst	(nrst),
@@ -168,17 +213,248 @@ module mem_wrap(
     .data_in    (data_in6),
     .data_out   (data_out6)
     );
-
+*/
     assign baddr6 = addr6[1:0];
 
     always_comb begin
-        unique case(mem_op6)
-            4'b0001: mem_out6 = 32'(signed'(data_out6[baddr6]));             //i_lb
-            4'b0010: mem_out6 = 32'(signed'({data_out6[baddr6 + 1], data_out6[baddr6]}));	//i_lh
-            4'b0011: mem_out6 = data_out6;	                                //i_lw
-            4'b0100: mem_out6 = {24'b0, data_out6[baddr6]};     	            //i_lbu
-            4'b0101: mem_out6 = {16'b0, data_out6[baddr6 + 1], data_out6[baddr6]};	    //i_lhu
+        unique case(mem_op6[2:0])
+            3'b101: mem_out6 = 32'(signed'(piton_out6[baddr6]));                            //i_lb
+            3'b011: mem_out6 = 32'(signed'({piton_out6[baddr6 + 1], piton_out6[baddr6]}));  //i_lh
+            3'b111: mem_out6 = piton_out6;	                                                //i_lw
+            3'b100: mem_out6 = {24'b0, piton_out6[baddr6]};     	                        //i_lbu
+            3'b010: mem_out6 = {16'b0, piton_out6[baddr6 + 1], piton_out6[baddr6]};	        //i_lhu
             default: mem_out6 = 0;
         endcase
     end
+endmodule
+
+module piton_fsm(
+    input logic clk, nrst,
+    //core -> memory controls
+    input logic [31:0] addr6,
+    input logic [31:0] data_in6,          //memory input data
+    //input logic [1:0]  baddr6,
+    //input logic gwe6,
+    input logic m_rd6,
+    input logic bw06,
+    input logic bw16,
+    input logic bw26,
+    input logic bw36,
+    input logic m_op6, 
+
+    //OpenPiton Request
+	output logic [5:0] core_l15_rqtype, 
+	output logic [2:0] core_l15_size,
+	output logic [31:0] core_l15_address,
+	output logic [31:0] core_l15_data,
+	
+    output logic core_l15_val,
+
+	//OpenPiton Response
+	input logic [63:0] l15_core_data_0, 
+    input logic [63:0] l15_core_data_1, 
+	input logic [3:0] l15_core_returntype,
+    
+    input logic l15_core_val,
+    input logic l15_core_ack,
+	input logic l15_core_header_ack,
+    output logic core_l15_req_ack,
+
+    output logic [31:0] piton_out
+);
+
+enum logic[1:0] {s_req, s_idle, s_resp} state_reg;
+
+logic req_fire;
+logic resp_int;
+logic resp_fire;
+
+logic [31:0] wdata;
+logic [3:0]  bw;
+
+logic [3:0] rqtypeReg;
+logic [31:0] addrReg, rdata;
+
+//fire request when: cache is ready, and a memory operation is under execution.
+assign req_fire  = l15_core_ack && l15_core_header_ack && core_l15_val && (state_reg == s_req) && m_op6;    
+//receive response when: data is available, and a response is required.
+assign resp_fire = l15_core_val && (state_reg == s_idle);
+
+//endian conversion
+assign wdata = {data_in6[7:0], data_in6[15:8], data_in6[23:16], data_in6[31:24]};
+
+assign bw = {bw36, bw26, bw16, bw06};
+
+always_ff @(posedge clk , negedge nrst) begin
+    if (!nrst) state_reg <= s_req;
+    else begin
+        case(state_reg)
+            s_req: begin
+                if (req_fire) begin 
+                    state_reg <= s_idle;
+                    rqtypeReg <= core_l15_rqtype;
+                    addrReg   <= addr6;
+                end
+            end s_idle: begin
+                if (resp_fire) begin
+                    case(rqtypeReg)
+                        `LOAD_RQ:  if (l15_core_returntype == `LOAD_RET) state_reg <= s_resp;
+                        `STORE_RQ: if (l15_core_returntype == `ST_ACK) state_reg <= s_resp;
+                        default: state_reg <= s_idle;
+                    endcase
+                end
+            end s_resp: state_reg <= s_req;
+        endcase
+
+    end
+end
+
+always_comb begin
+    case(state_reg)
+        s_req: begin
+            core_l15_address = addrReg;        
+            core_l15_data    = wdata;
+
+            core_l15_val	 = 1;
+            
+            //store operation
+            if (bw) begin
+                core_l15_rqtype  = `STORE_RQ;
+                core_l15_data    = wdata;
+                case (bw)
+                    4'b1111: core_l15_size	 = `MSG_DATA_SIZE_4B;
+                    4'b1100, 4'b0011: core_l15_size	 = `MSG_DATA_SIZE_2B;
+                    4'b0001, 4'b0010, 4'b0100, 4'b1000: core_l15_size	 = `MSG_DATA_SIZE_1B;
+                    default: core_l15_size	 = `MSG_DATA_SIZE_0B;
+                endcase
+
+            //load opertion
+            end else if (m_rd6) begin
+                core_l15_rqtype  = `LOAD_RQ;
+                core_l15_size    = `MSG_DATA_SIZE_4B;
+            end
+        
+        end s_idle: begin
+            core_l15_val	 = 0;
+            if (resp_fire) core_l15_req_ack = 1;
+            
+        end s_resp: begin
+            core_l15_val	 = 0;
+            core_l15_req_ack = 1;
+            case(addrReg[3:2])
+                2'b00: begin
+                    rdata = l15_core_data_0[63:32];
+                end 2'b01: begin
+                    rdata = l15_core_data_0[31:0];
+                end 2'b10: begin
+                    rdata = l15_core_data_1[63:32];
+                end 2'b11: begin
+                    rdata = l15_core_data_1[31:0];
+                end
+                default: begin
+                end
+            endcase 
+            piton_out = {rdata[7:0], rdata[15:8], rdata[23:16], rdata[31:24]};
+        end
+    endcase
+end
+endmodule
+
+module mem_wrap(
+    input logic clk, nrst,
+    input logic [3:0] mem_op4,       //memory operation type
+    input logic [31:0] op_a4,        //base address
+    input logic [31:0] op_b4,        //src for store ops, I_imm offset for load ops
+    input logic [31:0] S_imm4,       //S_imm offset
+
+    //OpenPiton Request
+	output logic [5:0] mem_l15_rqtype, 
+	output logic [2:0] mem_l15_size,
+	output logic [31:0] mem_l15_address,
+	output logic [31:0] mem_l15_data,
+	
+    output logic mem_l15_val,
+
+	//OpenPiton Response
+	input logic [31:0] l15_mem_data_0, 
+    input logic [31:0] l15_mem_data_1, 
+	input logic [3:0] l15_mem_returntype,
+    
+    input logic l15_mem_val,
+    input logic l15_mem_ack,
+	input logic l15_mem_header_ack,
+    output logic mem_l15_req_ack,
+
+    output logic [31:0] mem_out6,
+
+    output logic ld_addr_misaligned6,
+    output logic samo_addr_misaligned6
+);
+    logic [31:0] addr6;
+    logic [31:0] data_in6; 
+    logic [1:0]  baddr6;
+    logic gwe6, rd6;
+    logic bw06, bw16, bw26, bw36;
+    logic m_op6;
+    logic addr_misaligned6;
+    logic [31:0] piton_out6;
+    
+    mem_decode mem_decode (
+        //inputs
+    .clk                      (clk),
+    .nrst                     (nrst),
+    .mem_op4                  (mem_op4),    //memory operation type
+    .op_a4                    (op_a4),      //base address
+    .op_b4                    (op_b4),      //src for store ops, I_imm offset for load ops
+    .S_imm4                   (S_imm4),     //S_imm offset
+        //outputs
+    .addr6                    (addr6),
+    .data_in6                 (data_in6),
+    .baddr6                   (baddr6),
+    .gwe6                     (gwe6),
+    .rd6                      (m_rd6),
+    .bw06                     (bw06),
+    .bw16                     (bw16),
+    .bw26                     (bw26),
+    .bw36                     (bw36),
+    .m_op6                    (m_op6),
+    .addr_misaligned6         (addr_misaligned6),
+    .ld_addr_misaligned6      (ld_addr_misaligned6),
+    .samo_addr_misaligned6    (samo_addr_misaligned6),
+    .piton_out6               (piton_out6),
+    .mem_out6                 (mem_out6)
+);
+
+    piton_fsm piton_fsm(
+    //core -> memory controls
+    .addr6              (addr6),
+    .data_in6           (data_in6),          //memory input data
+    .m_rd6              (m_rd6),
+    .bw06               (bw06),
+    .bw16               (bw16),
+    .bw26               (bw26),
+    .bw36               (bw36),
+    .m_op6              (m_op6), 
+
+    //OpenPiton Request
+	.core_l15_rqtype    (mem_l15_rqtype), 
+	.core_l15_size      (mem_l15_size),
+	.core_l15_address   (mem_l15_address),
+	.core_l15_data      (mem_l15_data),
+	
+    .core_l15_val       (mem_l15_val),
+
+	//OpenPiton Response
+	.l15_core_data_0    (l15_mem_data_0), 
+    .l15_core_data_1    (l15_mem_data_1), 
+
+	.l15_core_returntype(l15_mem_returntype),
+    
+    .l15_core_val       (l15_mem_val),
+    .l15_core_ack       (l15_mem_ack),
+	.l15_core_header_ack(l15_mem_header_ack),
+    .core_l15_req_ack   (mem_l15_req_ack),
+
+    .piton_out          (piton_out6)
+);
 endmodule
