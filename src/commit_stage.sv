@@ -29,7 +29,7 @@ module commit_stage(
     );
 	
 	assign rd6Issue = rd6;
-	assign we6Issue = we6;
+	assign we6Issue = we6 &(~exception_pending);
  	assign wb_data6 = result6;
 
 	assign csr_wb = csr_wb6;
