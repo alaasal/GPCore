@@ -129,7 +129,7 @@ if (!nrst)
 mem_to_piton <= 0;
 else
 begin
-	if ( (!mem_to_piton) && (~|state_reg) && (!l15_transducer_header_ack) && mem_op3 )
+	if ( (!mem_to_piton) && (~|state_reg) && (!l15_transducer_header_ack) && |mem_op3 )
 	begin
 		mem_to_piton <= 1;
 	end
