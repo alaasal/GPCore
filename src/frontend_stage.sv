@@ -49,7 +49,9 @@ module frontend_stage(
 	input logic[31:0] l15_transducer_data_2, 
 	input logic[31:0] l15_transducer_data_3, 
 	input logic[3:0] l15_transducer_returntype,
-	output logic transducer_l15_req_ack
+	output logic transducer_l15_req_ack,
+	output logic[1:0] state_reg
+
     );
 
     // registers
@@ -61,7 +63,6 @@ module frontend_stage(
     logic [31:0] pc; 
 	//latches
 	logic wake_up;
-	logic[1:0] state_reg;
     localparam[1:0]   // 3 states are required for Moore
 	s_req = 0,
     s_idle = 1,

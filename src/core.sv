@@ -64,23 +64,7 @@ module core(
 	logic [3:0] mem_op3, mem_op4;
 	logic [31:0] mem_out6;
 
-    //OpenPiton Memory Request
-	logic [3:0] mem_l15_rqtype; 
-	logic [2:0] mem_l15_size;
-	logic [31:0] mem_l15_address;
-	logic [31:0] mem_l15_data;
-	
-    logic mem_l15_val;
 
-	//OpenPiton Memory Response
-    logic [63:0] l15_mem_data_0; 
-    logic [63:0] l15_mem_data_1;
-    logic [3:0] l15_mem_returntype;
-    
-    logic l15_mem_val;
-    logic l15_mem_ack;
-    logic l15_mem_header_ack;
-    logic mem_l15_req_ack;
 
     logic ld_addr_misaligned6;
     logic samo_addr_misaligned6;
@@ -97,6 +81,118 @@ module core(
 	logic stall;
 	logic bjtaken;
 	logic [6:0] opcode3;
+
+
+
+//OpenPiton Request
+logic[4:0] instr_l15_rqtype;
+logic[2:0] instr_l15_size;
+logic[31:0] instr_l15_address;
+logic[31:0] instr_l15_data;
+logic instr_l15_val;
+logic l15_instr_ack;
+logic l15_instr_header_ack;
+
+
+//OpenPiton Response
+logic l15_instr_val;
+logic[31:0] l15_instr_data_0;
+logic[31:0] l15_instr_data_1;
+logic[3:0] l15_instr_returntype;
+logic instr_l15_req_ack;
+
+//OpenPiton Request
+logic[4:0] mem_l15_rqtype; 
+logic[2:0] mem_l15_size;
+logic[31:0] mem_l15_address;
+logic[31:0] mem_l15_data;
+logic mem_l15_val;
+logic l15_mem_ack;
+logic l15_mem_header_ack;
+
+
+//OpenPiton Response
+logic l15_mem_val;
+logic[31:0] l15_mem_data_0; 
+logic[31:0] l15_mem_data_1;
+logic[3:0] l15_mem_returntype;
+logic mem_l15_req_ack;
+
+//Mem to Piton
+logic mem_to_piton;
+logic mem_op5;
+logic[1:0] state_reg;
+
+always @(posedge clk)
+begin
+if (!nrst)
+mem_to_piton <= 0;
+else
+begin
+	if ( (!mem_to_piton) && (~|state_reg) && (!(l15_transducer_header_ack && instr_l15_val)) && mem_op3 )
+	begin
+		mem_to_piton <= 1;
+	end
+	else if ( (mem_to_piton) && (transducer_l15_val) && (~|mem_op3) && (~|mem_op4) )
+	begin
+		mem_to_piton <= 0;
+	end
+end
+end
+
+always_comb
+begin
+if(mem_to_piton == 0)
+	begin
+
+	//OpenPiton Request
+	transducer_l15_rqtype 	<= instr_l15_rqtype; 
+	transducer_l15_size 	<= instr_l15_size;
+	transducer_l15_address 	<= instr_l15_address;
+	transducer_l15_data		<= instr_l15_data;
+	transducer_l15_val 		<= instr_l15_val;
+	l15_instr_ack 			<= l15_transducer_ack;
+	l15_instr_header_ack   	<= l15_transducer_header_ack;
+
+	//
+	l15_mem_header_ack <= 0;
+
+	//OpenPiton Response
+	l15_instr_val			<= l15_transducer_val;
+	l15_instr_data_0		<= l15_transducer_data_0;
+	l15_instr_data_1		<= l15_transducer_data_1;
+	l15_instr_returntype	<= l15_transducer_returntype;
+	transducer_l15_req_ack 	<= instr_l15_req_ack;
+
+	//
+	l15_mem_val <= 0;
+	end
+else
+    begin
+
+    //OpenPiton Request
+	transducer_l15_rqtype 	<= mem_l15_rqtype; 
+	transducer_l15_size 	<= mem_l15_size;
+	transducer_l15_address 	<= mem_l15_address;
+	transducer_l15_data		<= mem_l15_data;
+	transducer_l15_val 		<= mem_l15_val;
+	l15_mem_ack 			<= l15_transducer_ack;
+	l15_mem_header_ack  	<= l15_transducer_header_ack;
+
+	//
+	l15_instr_header_ack <= 0;
+
+	//OpenPiton Response
+	l15_mem_val 			<= l15_transducer_val;
+	l15_mem_data_0 			<= l15_transducer_data_0;
+	l15_mem_data_1			<= l15_transducer_data_1;
+	l15_mem_returntype		<= l15_transducer_returntype;
+	transducer_l15_req_ack	<= mem_l15_req_ack;
+
+	//
+	l15_instr_val <= 0;
+    end
+end
 
 	// =============================================== //
 	//			FrontEnd Stage		   //
@@ -119,25 +215,25 @@ module core(
 	.stall          (stall),
 	.stallnumin      (stallnum),
 	 
-	.l15_transducer_ack                 (l15_transducer_ack),
-    .l15_transducer_header_ack          (l15_transducer_header_ack),
+	.l15_transducer_ack                 (l15_instr_ack),
+    .l15_transducer_header_ack          (l15_instr_header_ack),
 
-    .transducer_l15_rqtype              (transducer_l15_rqtype),
-    .transducer_l15_size                (transducer_l15_size),
-    .transducer_l15_val                 (transducer_l15_val),
-    .transducer_l15_address             (transducer_l15_address),
-    .transducer_l15_data                (transducer_l15_data),
+    .transducer_l15_rqtype              (instr_l15_rqtype),
+    .transducer_l15_size                (instr_l15_size),
+    .transducer_l15_val                 (instr_l15_val),
+    .transducer_l15_address             (instr_l15_address),
+    .transducer_l15_data                (instr_l15_data),
 
 
-    .l15_transducer_val                 (l15_transducer_val),
-    .l15_transducer_returntype          (l15_transducer_returntype),
+    .l15_transducer_val                 (l15_instr_val),
+    .l15_transducer_returntype          (l15_instr_returntype),
 
-    .l15_transducer_data_0              (l15_transducer_data_0),
-    .l15_transducer_data_1              (l15_transducer_data_1),
-    .l15_transducer_data_2              (l15_transducer_data_2),
-    .l15_transducer_data_3              (l15_transducer_data_3),
+    .l15_transducer_data_0              (l15_instr_data_0),
+    .l15_transducer_data_1              (l15_instr_data_1),
 
-    .transducer_l15_req_ack             (transducer_l15_req_ack)
+    .transducer_l15_req_ack             (instr_l15_req_ack),
+	
+	.state_reg (state_reg)
 	);
 
 	// =============================================== //

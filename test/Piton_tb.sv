@@ -62,7 +62,7 @@ begin
 		l15_transducer_returntype <= 4'b0000;
         
 		l15_transducer_data_0 <= {SW,SW};
-		l15_transducer_data_1 <= {SW,SW};
+		l15_transducer_data_1 <= {SW,SW};  //*PASSED*
 
         // The following section is to be removed once the piton mux is established
         // It emulates piton response 
