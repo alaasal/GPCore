@@ -123,7 +123,7 @@ logic mem_to_piton;
 logic mem_op5;
 logic[1:0] state_reg;
 
-always @(posedge clk)
+always @(posedge clk, nrst)
 begin
 if (!nrst)
 mem_to_piton <= 0;
