@@ -499,6 +499,7 @@ end
     .l15_mem_ack           (l15_mem_ack),
 	.l15_mem_header_ack    (l15_mem_header_ack),
     .mem_l15_req_ack       (mem_l15_req_ack),
+    .memOp_done            (memOp_done),
     .ld_addr_misaligned6   (ld_addr_misaligned6),
     .samo_addr_misaligned6 (samo_addr_misaligned6),
     

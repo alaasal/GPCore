@@ -59,6 +59,7 @@ module exe_stage(
 	input logic l15_mem_header_ack,
     output logic mem_l15_req_ack,
 
+    output logic memOp_done,
     output logic ld_addr_misaligned6,
     output logic samo_addr_misaligned6,
 	
@@ -275,6 +276,7 @@ module exe_stage(
     .l15_mem_header_ack    (l15_mem_header_ack),
     .mem_l15_req_ack       (mem_l15_req_ack),
     .mem_out6              (mem_out6),   //memory read output
+    .memOp_done            (memOp_done),
     .ld_addr_misaligned6   (ld_addr_misaligned6),
     .samo_addr_misaligned6 (samo_addr_misaligned6)
 );

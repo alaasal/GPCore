@@ -259,7 +259,8 @@ module piton_fsm(
 	input logic l15_core_header_ack,
     output logic core_l15_req_ack,
 
-    output logic [31:0] piton_out
+    output logic [31:0] piton_out,
+    output logic memOp_done
 );
 
 enum logic[1:0] {s_req, s_idle, s_resp} state_reg;
@@ -354,6 +355,8 @@ always_comb begin
                 end
             endcase 
             piton_out = {rdata[7:0], rdata[15:8], rdata[23:16], rdata[31:24]};
+
+            memOp_done = 1;
         end
     endcase
 end
@@ -385,6 +388,7 @@ module mem_wrap(
     output logic mem_l15_req_ack,
 
     output logic [31:0] mem_out6,
+    output logic memOp_done,
 
     output logic ld_addr_misaligned6,
     output logic samo_addr_misaligned6
@@ -456,6 +460,7 @@ module mem_wrap(
 	.l15_core_header_ack(l15_mem_header_ack),
     .core_l15_req_ack   (mem_l15_req_ack),
 
-    .piton_out          (piton_out6)
+    .piton_out          (piton_out6),
+    .memOp_done         (memOp_done)
 );
 endmodule
