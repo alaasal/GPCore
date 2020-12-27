@@ -312,6 +312,7 @@ end
 always_comb begin
     case(state_reg)
         s_req: begin
+            memOp_done = 0;
             core_l15_address = addrReg;        
             core_l15_data    = wdata;
 
@@ -335,6 +336,7 @@ always_comb begin
             end
         
         end s_idle: begin
+            memOp_done = 0;
             core_l15_val	 = 0;
             if (resp_fire) core_l15_req_ack = 1;
             
