@@ -46,27 +46,27 @@ module frontend_stage(
 	input logic l15_transducer_val,
 	input logic[63:0] l15_transducer_data_0, 
 	input logic[63:0] l15_transducer_data_1, 
-	input logic[31:0] l15_transducer_data_2, 
-	input logic[31:0] l15_transducer_data_3, 
 	input logic[3:0] l15_transducer_returntype,
 	output logic transducer_l15_req_ack,
 	output logic[1:0] state_reg
 
     );
 
-    // registers
-	logic [31:0] pcReg; 	   // pipe #1 pc
-	logic [31:0] pcReg2;	   // pipe #2 from pc to inst mem
-	logic [1:0] stallnum;
-    // wires
-    logic [31:0] npc;   	   // next pc wire
-    logic [31:0] pc; 
-	//latches
-	logic wake_up;
-    localparam[1:0]   // 3 states are required for Moore
-	s_req = 0,
-    s_idle = 1,
-    s_resp = 2;
+// registers
+logic [31:0] pcReg; 	   // pipe #1 pc
+logic [31:0] pcReg2;	   // pipe #2 from pc to inst mem
+
+// wires
+logic [31:0] npc;   	   // next pc wire
+logic [31:0] pc; 
+//latches
+logic wake_up;
+localparam[1:0]   // 3 states are required for Moore
+s_req = 0,
+s_resp = 1;
+logic req_fire;
+logic resp_init;
+logic resp_fire;
 
 always_ff @(posedge clk , negedge nrst)
 begin
@@ -127,7 +127,7 @@ end
 
     always_comb
       begin
-      if (state_reg == s_resp)
+      if (state_reg == s_resp && (resp_fire))
       begin
         unique case(PCSEL)
             0: npc = pcReg +4;
@@ -158,13 +158,11 @@ end
 
 
 
-logic req_fire;
-logic resp_init;
-logic resp_fire;
+
 
 
 assign req_fire =  l15_transducer_header_ack && transducer_l15_val && (state_reg == s_req) && wake_up;
-assign resp_fire = l15_transducer_val && (state_reg == s_idle) && (!resp_init);
+assign resp_fire = l15_transducer_val && (state_reg == s_resp) && (!resp_init);
 assign resp_init = ( (l15_transducer_returntype != `LOAD_RET) && (l15_transducer_returntype != `IFILL_RET) && (l15_transducer_returntype != `ST_ACK) ) && l15_transducer_val;
 
 
@@ -184,16 +182,12 @@ case(state_reg)
 	s_req: 
 	begin
 		if (req_fire)
-			state_reg <= s_idle;
-	end
-	s_idle:
-	begin
-		if (resp_fire)
 			state_reg <= s_resp;
 	end
 	s_resp:
 	begin
-		state_reg <= s_req;
+		if (resp_fire)
+			state_reg <= s_req;
 	end
 endcase     
 end

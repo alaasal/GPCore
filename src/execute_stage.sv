@@ -295,6 +295,8 @@ module exe_stage(
 	
 	assign U_imm6 		= U_immReg6;
 	assign AU_imm6 		= AU_immReg6;
+
+	assign pc6 = pcReg6;
 	
 	assign bjtaken6 = btaken | jr4 |j4;
 	assign pcselect5=pcselect4;

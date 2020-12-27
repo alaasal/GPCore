@@ -57,19 +57,16 @@ begin
 	// Step 31: Sending Add Instruction
 	//OpenPiton Response 10110011
 		l15_transducer_val <= 1;
-		//l15_transducer_data_0 <= 64'h1080B3001080B3;
-		//l15_transducer_data_1 <= 64'h1080B3001080B3;
+		l15_transducer_data_0 <= 64'h1080B3;
+		l15_transducer_data_1 <= 64'h1080B3;
 		l15_transducer_returntype <= 4'b0000;
         
-		l15_transducer_data_0 <= {SW,SW};
-		l15_transducer_data_1 <= {SW,SW};  //*PASSED*
+		//l15_transducer_data_0 <= {SW,SW};
+		//l15_transducer_data_1 <= {SW,SW};  //*PASSED*
 
         // The following section is to be removed once the piton mux is established
         // It emulates piton response 
-        testCore.l15_mem_val <= 1;
-        testCore.l15_mem_ack <= 1;
-        testCore.l15_mem_header_ack <= 1;
-        testCore.l15_mem_returntype <= 4'b0100; //test core acknowledgement
+ 
 
 	
 

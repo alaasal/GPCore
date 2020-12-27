@@ -3,12 +3,6 @@
 module core(
 	input logic clk, nrst,
 
-	input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
-	input logic [31:0] DEBUG_addr,
-	input logic [31:0] DEBUG_instr,
-	input logic clk_debug,
-
-
 
 	//OpenPiton Request
 	output logic[4:0] transducer_l15_rqtype, 
@@ -24,21 +18,19 @@ module core(
 	input logic l15_transducer_val,
 	input logic[63:0] l15_transducer_data_0, 
 	input logic[63:0] l15_transducer_data_1, 
-	input logic[31:0] l15_transducer_data_2, 
-	input logic[31:0] l15_transducer_data_3, 
 	input logic[31:0] l15_transducer_returntype,
 	output logic transducer_l15_req_ack
     );
 
 	// Wires
-	logic [31:0] pc, pc2, pc3, pc4, pc5, pc6;         // Program Counter Signals in each pipe 
+	logic [31:0] pc, pc2, pc3, pc4, pc6;         // Program Counter Signals in each pipe 
 	logic [31:0] instr2;   	   // output wire of IF stage
 
 	logic [4:0] rs1, rs2;
 	logic [1:0] B_SEL3;
 	logic [31:0] opa, opb;     // operands value output from issue stage
-	logic [4:0] rd3, rd4, rd5, rd6;
-	logic we3, we4, we5, we6;
+	logic [4:0] rd3, rd4, rd6;
+	logic we3, we4, we6;
 	logic [31:0] wb6;	   // data output from commit stage to regfile to be written
 
 	logic [2:0] fn3, fn4;
@@ -62,7 +54,7 @@ module core(
 	 
 	
 	logic [3:0] mem_op3, mem_op4;
-	logic [31:0] mem_out6;
+
 
 
 
@@ -96,8 +88,8 @@ logic l15_instr_header_ack;
 
 //OpenPiton Response
 logic l15_instr_val;
-logic[31:0] l15_instr_data_0;
-logic[31:0] l15_instr_data_1;
+logic[63:0] l15_instr_data_0;
+logic[63:0] l15_instr_data_1;
 logic[3:0] l15_instr_returntype;
 logic instr_l15_req_ack;
 
@@ -113,37 +105,73 @@ logic l15_mem_header_ack;
 
 //OpenPiton Response
 logic l15_mem_val;
-logic[31:0] l15_mem_data_0; 
-logic[31:0] l15_mem_data_1;
+logic[63:0] l15_mem_data_0; 
+logic[63:0] l15_mem_data_1;
 logic[3:0] l15_mem_returntype;
 logic mem_l15_req_ack;
 
 //Mem to Piton
-logic mem_to_piton;
-logic mem_op5;
 logic[1:0] state_reg;
+
+/***********************************************************
+# Arbiter to pretend like cache has two ports
+States: 
+0: No memOps and Instruction fetch is connected to cache
+1: There is a memOps waiting to get access to cache
+2: data mem is connected to cache
+************************************************************/
+logic[1:0] arb_state;
+localparam[1:0]   // 3 states are required for Moore
+arb_instr = 0,
+arb_wait = 1,
+arb_mem = 2;
+logic dmem_waiting;
+logic dmem_finished;
+logic instr_left_cache;
+logic noMore_memOps;
+
+assign dmem_waiting = |mem_op3;
+assign dmem_finished = (arb_state == arb_mem) && l15_transducer_val;
+assign noMore_memOps = (|mem_op3 || |mem_op4); 
+assign instr_left_cache = (arb_state == arb_wait)&& l15_transducer_val;
 
 always @(posedge clk, nrst)
 begin
 if (!nrst)
-mem_to_piton <= 0;
+	arb_state <= arb_instr;
 else
 begin
-	if ( (!mem_to_piton) && (~|state_reg) && (!l15_transducer_header_ack || instr_l15_val) && |mem_op3 )
-	//Dmem is not connected to cache, cache is not waiting for a response, cache is not ready or instr req is not vali, there is a memop going to the issue stage
+case(arb_state)
+	arb_instr: 
 	begin
-		mem_to_piton <= 1;
+		if(dmem_waiting)
+			arb_state <= arb_wait;
 	end
-	else if ( (mem_to_piton) && (transducer_l15_val) && (~|mem_op3) && (~|mem_op4) )
+	arb_wait:
 	begin
-		mem_to_piton <= 0;
+		if(state_reg == 1 )
+		begin
+			if(instr_left_cache)
+				arb_state <= arb_mem;
+		end
+		else
+		begin
+			arb_state <= arb_mem;
+		end
 	end
+	arb_mem:
+	begin
+		if(dmem_finished && noMore_memOps)
+			arb_state <= arb_instr;
+	end
+endcase
 end
 end
 
+
 always_comb
 begin
-if(mem_to_piton == 0)
+if( arb_state == arb_instr )
 	begin
 
 	//OpenPiton Request
@@ -168,6 +196,21 @@ if(mem_to_piton == 0)
 	//
 	l15_mem_val <= 0;
 	end
+
+else if (arb_state == arb_wait)
+begin
+	// Appear unready for both instr and data mem
+	l15_instr_header_ack <= 0;
+	l15_mem_header_ack <= 0;
+
+	// Send the coming response to the instr fetch
+	l15_instr_val			<= l15_transducer_val;
+	l15_instr_data_0		<= l15_transducer_data_0;
+	l15_instr_data_1		<= l15_transducer_data_1;
+	l15_instr_returntype	<= l15_transducer_returntype;
+	transducer_l15_req_ack 	<= instr_l15_req_ack;
+end
+
 else
     begin
 
@@ -194,6 +237,8 @@ else
 	l15_instr_val <= 0;
     end
 end
+
+/***********************************************************/
 
 	// =============================================== //
 	//			FrontEnd Stage		   //
