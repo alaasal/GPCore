@@ -145,8 +145,8 @@ end
 
     // output
 
-	assign pc = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg-1: pcReg;
-	assign pc2 = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg2 - 1 : pcReg2;
+	assign pc = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg-4: pcReg;
+	assign pc2 = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg2 -4 : pcReg2;
 
 /************************************************/
 /*			First Pipe 							*/
