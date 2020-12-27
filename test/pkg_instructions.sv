@@ -8,11 +8,15 @@ package pkg_instructions;
     logic [31:0] jal0  = {imm, dest, JAL}; //JAL x0, 1 (unconditional jump)
     //logic [31:0] jal1  = {,};
 
-    logic [6:0] s_opcode = 7'b010_0011;
-    logic [6:0] l_opcode = 7'b000_0011;
-    logic [6:0] m_opcode = 7'b011_0011;
+    logic [6:0] s_opcode   = 7'b010_0011;
+    logic [6:0] l_opcode   = 7'b000_0011;
+    logic [6:0] m_opcode   = 7'b011_0011;
+    logic [6:0] imm_opcode = 7'b001_0011;
+    logic [6:0] I_opcode   = 7'b011_0011;
     /**********************************/
     logic [6:0] m_func7  = 7'b000_0001;
+    logic [6:0] i_func7  = 7'b000_0000;
+    logic [6:0] sub_func7= 7'b010_0000;
     /**********************************/
     logic [2:0] sw_func = 3'b010;
     logic [2:0] sb_func = 3'b000;
@@ -33,7 +37,26 @@ package pkg_instructions;
     logic [2:0] rem_func    = 3'b110;
     logic [2:0] remu_func   = 3'b111; 
     /**********************************/
-    logic [11:0] S_imm = 12'h000;
+    logic [3:0] addi_func   = 3'b000;
+    logic [3:0] slti_func   = 3'b010;
+    logic [3:0] sltiu_func  = 3'b011;
+    logic [3:0] xori_func   = 3'b100;
+    logic [3:0] andi_func   = 3'b111;
+    /**********************************/
+    logic [3:0] add_func    = 3'b000;   //also works for sub_func
+    logic [3:0] xor_func    = 3'b100;
+    logic [3:0] and_func    = 3'b111;
+    /**********************************/
+    logic [3:0] slli_func   = 3'b001;
+    logic [3:0] srli_func   = 3'b101;
+    logic [3:0] srai_func   = 3'b101;
+    /**********************************/
+    logic [11:0] S_imm     = 12'h000;
+    logic [11:0] I_imm     = 12'h001;   //Imm = 1
+    logic [4:0] shamt      = 5; //shift immediate
+    logic [11:0] slli_imm  = {7'b000_0000, shamt};   //also works for srli
+    logic [11:0] srai_imm  = {7'b010_0000, shamt};
+    /**********************************/
     logic [4:0] rs1  = 5'b00000;
     logic [4:0] rs2  = 1;
     logic [4:0] rs3  = 2;
@@ -41,22 +64,35 @@ package pkg_instructions;
     logic [4:0] rs5  = 4;
     logic [4:0] rs6  = 5;
     logic [4:0] rs7  = 6;
-    logic [4:0] rd1  = 20;
-    logic [4:0] rd2  = 21;
-    logic [4:0] rd3  = 22;
-    logic [4:0] rd4  = 23;
-    logic [4:0] rd5  = 24;
+    logic [4:0] rd2  = 20;
+    logic [4:0] rd3  = 21;
+    logic [4:0] rd4  = 22;
+    logic [4:0] rd5  = 23;
+    logic [4:0] rd6  = 24;
 
+//immediate operations
+    logic [31:0] ADDI = {I_imm, rs2, addi_func, rd2, imm_opcode};
+    logic [31:0] XORI = {I_imm, rs3, xori_func, rd3, imm_opcode};
+    logic [31:0] ANDI = {I_imm, rs4, andi_func, rd4, imm_opcode};
+
+    logic [31:0] ADD  = {i_func7,   rs3, rs2, add_func, rd2, I_opcode};
+    logic [31:0] SUB  = {sub_func7, rs3, rs2, add_func, rd2, I_opcode};
+    logic [31:0] XOR  = {i_func7,   rs3, rs2, xor_func, rd2, I_opcode};
+    logic [31:0] AND  = {i_func7,   rs3, rs2, and_func, rd2, I_opcode}; 
+
+//store operations
     logic [31:0] SW = {S_imm[11:5], rs2, rs1, sw_func, S_imm[4:0], s_opcode}; 
     logic [31:0] SB = {S_imm[11:5], rs2, rs1, sb_func, S_imm[4:0], s_opcode};
     logic [31:0] SH = {S_imm[11:5], rs2, rs2, sh_func, S_imm[4:0], s_opcode};
 
+//load operations
     logic [31:0] LB  ={S_imm, rs1, lb_func, rd1, l_opcode};
     logic [31:0] LH  ={S_imm, rs1, lh_func, rd2, l_opcode};
     logic [31:0] LW  ={S_imm, rs1, lw_func, rd3, l_opcode};
     logic [31:0] LBU ={S_imm, rs1, lbu_func, rd4, l_opcode};
     logic [31:0] LHU ={S_imm, rs1, lhu_func, rd5, l_opcode};
 
+//multiply/devide operations
     logic [31:0] MUL    ={m_func7, rs2, rs3, mul_func   , rd1, m_opcode};
     logic [31:0] MULH   ={m_func7, rs4, rs5, mulh_func  , rd1, m_opcode};
     logic [31:0] MULHSU ={m_func7, rs6, rs3, mulhsu_func, rd1, m_opcode};
