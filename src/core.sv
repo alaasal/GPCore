@@ -135,6 +135,25 @@ assign dmem_finished = (arb_state == arb_mem) && (l15_transducer_val || l15_tran
 assign noMore_memOps = !(|mem_op3 || |mem_op4); 
 assign instr_left_cache = (arb_state == arb_wait)&& l15_transducer_val;
 
+/***********************
+1- Stall issue stage when there is 
+mem op in the exc stage
+until the memop finish
+Exce_stage_output (memOp_done)
+store (l15_mem_ack)
+load (resp_fire)
+
+2- Stall issue stage when there is
+memOp in the issue but the datamem is 
+not connected to the cache
+datamem is not connected when (arb_state !=
+arb_mem)
+
+3- When (arb_state == arb_wait) discard cache_to_
+intruction_fetch and don't update pc then stall until 
+(arb_state == arb_instr)
+********************************************/
+
 always @(posedge clk, nrst)
 begin
 if (!nrst)
