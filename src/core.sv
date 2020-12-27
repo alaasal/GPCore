@@ -131,8 +131,8 @@ logic instr_left_cache;
 logic noMore_memOps;
 
 assign dmem_waiting = |mem_op3;
-assign dmem_finished = (arb_state == arb_mem) && l15_transducer_val;
-assign noMore_memOps = (|mem_op3 || |mem_op4); 
+assign dmem_finished = (arb_state == arb_mem) && (l15_transducer_val || l15_transducer_ack) ;
+assign noMore_memOps = !(|mem_op3 || |mem_op4); 
 assign instr_left_cache = (arb_state == arb_wait)&& l15_transducer_val;
 
 always @(posedge clk, nrst)
