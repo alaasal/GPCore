@@ -52,7 +52,7 @@ package pkg_instructions;
     logic [3:0] srai_func   = 3'b101;
     /**********************************/
     logic [11:0] S_imm     = 12'h000;
-    logic [11:0] I_imm     = 12'h001;   //Imm = 1
+    logic [11:0] I_imm     = 12'h005;   //Imm = 1
     logic [4:0] shamt      = 5; //shift immediate
     logic [11:0] slli_imm  = {7'b000_0000, shamt};   //also works for srli
     logic [11:0] srai_imm  = {7'b010_0000, shamt};
@@ -71,24 +71,24 @@ package pkg_instructions;
     logic [4:0] rd6  = 24;
 
 //immediate operations
-    logic [31:0] ADDI = {I_imm, rs2, addi_func, rd2, imm_opcode};
+    logic [31:0] ADDI = {I_imm, rs1, addi_func, rd2, imm_opcode};           //rd2 = I_imm + 0
     logic [31:0] XORI = {I_imm, rs3, xori_func, rd3, imm_opcode};
     logic [31:0] ANDI = {I_imm, rs4, andi_func, rd4, imm_opcode};
 
-    logic [31:0] ADD  = {i_func7,   rs3, rs2, add_func, rd2, I_opcode};
+    logic [31:0] ADD  = {i_func7,   rd2, rd2, add_func, rs3, I_opcode};     //rs3 = rd2 + rd2
     logic [31:0] SUB  = {sub_func7, rs3, rs2, add_func, rd2, I_opcode};
     logic [31:0] XOR  = {i_func7,   rs3, rs2, xor_func, rd2, I_opcode};
     logic [31:0] AND  = {i_func7,   rs3, rs2, and_func, rd2, I_opcode}; 
 
 //store operations
-    logic [31:0] SW = {S_imm[11:5], rs2, rs1, sw_func, S_imm[4:0], s_opcode}; 
+    logic [31:0] SW = {S_imm[11:5], rs3, rs1, sw_func, S_imm[4:0], s_opcode}; //10 -> address 0
     logic [31:0] SB = {S_imm[11:5], rs2, rs1, sb_func, S_imm[4:0], s_opcode};
     logic [31:0] SH = {S_imm[11:5], rs2, rs2, sh_func, S_imm[4:0], s_opcode};
 
 //load operations
     logic [31:0] LB  ={S_imm, rs1, lb_func, rd1, l_opcode};
     logic [31:0] LH  ={S_imm, rs1, lh_func, rd2, l_opcode};
-    logic [31:0] LW  ={S_imm, rs1, lw_func, rd3, l_opcode};
+    logic [31:0] LW  ={S_imm, rs1, lw_func, rd3, l_opcode}; // address 0 -> rd3
     logic [31:0] LBU ={S_imm, rs1, lbu_func, rd4, l_opcode};
     logic [31:0] LHU ={S_imm, rs1, lhu_func, rd5, l_opcode};
 

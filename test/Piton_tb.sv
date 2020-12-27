@@ -61,8 +61,16 @@ begin
 		//l15_transducer_data_1 <= 64'h1080B3;
 		l15_transducer_returntype <= 4'b0000;
         
-		l15_transducer_data_0 <= {X1,X2};
-		l15_transducer_data_1 <= {X3,X4};  //*PASSED*
+		l15_transducer_data_0 <= {ADDI,ADD};
+		l15_transducer_data_1 <= {SW,LW};  //*PASSED*
+        /*After the above instructions run:
+            1- reg 20 = 5
+            2- reg 2 = 10
+            3- reg 21 = 10
+
+            That is if they are executed in this order ADDI, ADD, SW, LW.
+            IF not, just change the order. 
+        */
 
 
         // The following section is to be removed once the piton mux is established
