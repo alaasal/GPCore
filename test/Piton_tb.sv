@@ -22,14 +22,13 @@ logic[63:0] l15_transducer_data_1;
 logic[31:0] l15_transducer_returntype;
 logic transducer_l15_req_ack;
 
-assign l15_transducer_ack = transducer_l15_val && l15_transducer_header_ack;
+assign l15_transducer_ack = transducer_l15_val;
 //OpenPitonFSM with 4 Instruction and Interrupt
 initial
 begin
 	if (!nrst)
 	begin
 		l15_transducer_val			<= 0;
-		l15_transducer_ack			<= 0;
 		l15_transducer_header_ack 	<= 0;
 	end
 	else 
@@ -40,17 +39,14 @@ begin
 	#100
 	// Step 2: Sending WAKE UP Int
 		l15_transducer_val			<= 1;
-		l15_transducer_ack			<= 0;
 		l15_transducer_header_ack 	<= 0;
 		l15_transducer_returntype	<= 4'b0111;
 	#50 
 	//reset
 		l15_transducer_val			<= 0;
-		l15_transducer_ack			<= 0;
 		l15_transducer_header_ack 	<= 0;
 	#50
 	//Setting the cache ready
-		l15_transducer_ack			<= 1;
 		l15_transducer_header_ack 	<= 1;
 	#200
 	// Step 3: Sending Instruction with no MemOps or hazards
@@ -66,7 +62,8 @@ begin
         /*After the above instructions run:
             1- reg 20 = 5
             2- reg 2 = 10
-            3- reg 21 = 10
+			3- sw address 0 data 10
+           	4- reg 21 = 10
 
             That is if they are executed in this order ADDI, ADD, SW, LW.
             IF not, just change the order. 

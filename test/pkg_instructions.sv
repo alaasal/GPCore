@@ -86,19 +86,19 @@ package pkg_instructions;
     logic [31:0] SH = {S_imm[11:5], rs2, rs2, sh_func, S_imm[4:0], s_opcode};
 
 //load operations
-    logic [31:0] LB  ={S_imm, rs1, lb_func, rd1, l_opcode};
+    logic [31:0] LB  ={S_imm, rs1, lb_func, rd2, l_opcode};
     logic [31:0] LH  ={S_imm, rs1, lh_func, rd2, l_opcode};
     logic [31:0] LW  ={S_imm, rs1, lw_func, rd3, l_opcode}; // address 0 -> rd3
     logic [31:0] LBU ={S_imm, rs1, lbu_func, rd4, l_opcode};
     logic [31:0] LHU ={S_imm, rs1, lhu_func, rd5, l_opcode};
 
 //multiply/devide operations
-    logic [31:0] MUL    ={m_func7, rs2, rs3, mul_func   , rd1, m_opcode};
-    logic [31:0] MULH   ={m_func7, rs4, rs5, mulh_func  , rd1, m_opcode};
-    logic [31:0] MULHSU ={m_func7, rs6, rs3, mulhsu_func, rd1, m_opcode};
-    logic [31:0] MULHU  ={m_func7, rs3, rs4, mulhu_func , rd1, m_opcode};
-    logic [31:0] DIV    ={m_func7, rs3, rs2, div_func   , rd1, m_opcode};
-    logic [31:0] DIVU   ={m_func7, rs2, rs3, divu_func  , rd1, m_opcode};
-    logic [31:0] REM    ={m_func7, rs5, rs4, rem_func   , rd1, m_opcode};
-    logic [31:0] REMU   ={m_func7, rs2, rs3, remu_func  , rd1, m_opcode};
+    logic [31:0] MUL    ={m_func7, rs2, rs3, mul_func   , rd2, m_opcode};
+    logic [31:0] MULH   ={m_func7, rs4, rs5, mulh_func  , rd2, m_opcode};
+    logic [31:0] MULHSU ={m_func7, rs6, rs3, mulhsu_func, rd2, m_opcode};
+    logic [31:0] MULHU  ={m_func7, rs3, rs4, mulhu_func , rd2, m_opcode};
+    logic [31:0] DIV    ={m_func7, rs3, rs2, div_func   , rd2, m_opcode};
+    logic [31:0] DIVU   ={m_func7, rs2, rs3, divu_func  , rd2, m_opcode};
+    logic [31:0] REM    ={m_func7, rs5, rs4, rem_func   , rd2, m_opcode};
+    logic [31:0] REMU   ={m_func7, rs2, rs3, remu_func  , rd2, m_opcode};
 endpackage
