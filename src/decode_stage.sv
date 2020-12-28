@@ -47,7 +47,10 @@ module instdec_stage(
 	// Scoreboard Signals
 	input logic stall,
 	output logic [6:0]opcode3,
-	input logic [1:0]stallnumin
+	input logic [1:0]stallnumin,
+	input logic stall_mem,
+	input logic arb_eqmem,
+	input logic memOp_done	
     );
 
 	// Wires
@@ -88,7 +91,7 @@ module instdec_stage(
 		instrReg3	<= instr2;
 		pcReg3		<=pc2;
 	end 
-	else if(stall ) 
+	else if(stall || stall_mem ||  ( arb_eqmem && ~memOp_done ) ) 
 	begin 
 		instrReg3	<=instrReg3;
 		pcReg3		<=pcReg3;

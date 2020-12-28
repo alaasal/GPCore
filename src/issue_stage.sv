@@ -74,7 +74,10 @@ module issue_stage (
 	// Socreboard Signals
 	input bjtaken,
 	output logic stall,
-	output logic [1:0]stallnum
+	output logic [1:0]stallnum,
+	input logic stall_mem,
+	input logic arb_eqmem,
+	input logic memOp_done	
     );
 
 	// Wires
@@ -118,7 +121,35 @@ module issue_stage (
 	// Scoreboard Regs
 	logic [1:0]killnum;
 	
+/*********************************************
+at cycle 1
+frontend connected to cache (state_reg == req)
+deocde intrX (stall)
+issue memOp (stall) stall if (arb_state != arb_mem) feedback the wire to the decode stage 
 
+
+at cycle 2
+frontend stalled
+decode (noOp)   
+issue (intrX) 
+exce(memOp) connected to cache
+
+################################################
+#case2
+frontend connected to cache (state_reg == resp)
+deocde intrX (stall) stall if (arb_state != arb_mem) feedback the wire to the decode stage 
+issue memOp (stall)  stall if (arb_state != arb_mem) feedback the wire to the decode stage 
+
+at cycle 2+n
+frontend stalled
+decode (intrY)   
+issue (intrX)
+exce(memOp) connected to cache
+***********************************************
+Stall#2
+if there is any memOp in the exce unit stall
+decode and issue until memDone
+****************************************************/
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
@@ -206,7 +237,41 @@ module issue_stage (
 		I_immdReg4	<= 32'b0;
 		rdReg4		<= 5'b0;
 		end
-		else
+		else if (stall_mem ||  ( arb_eqmem && ~memOp_done ) ) 
+		begin 
+		killnum		<= 2'b0;
+		BSELReg4	<= BSELReg4;
+		rdReg4		<=rdReg4 ;
+
+		shamtReg4 	<= shamtReg4;
+		I_immdReg4	<= I_immdReg4;
+		B_immdReg4	<= B_immdReg4;
+		J_immReg4	<= J_immReg4;
+		S_immReg4       <= S_immReg4;
+		U_immReg4       <= U_immReg4;
+		
+		alufnReg4	<= alufnReg4;
+		fnReg4		<= fnReg4;
+
+		weReg4		<=weReg4;
+		
+		bneqReg4	<= bneqReg4;	
+		btypeReg4	<= btypeReg4;
+		
+		jReg4 		<= jReg4;
+		jrReg4 		<=jrReg4;
+
+		LUIReg4         <=LUIReg4;
+		auipcReg4       <= auipcReg4;
+
+		mem_opReg4 	<=mem_opReg4;
+		mulDiv_opReg4 	<= mulDiv_opReg4; 
+
+		pcReg4		<= pcReg4;
+		pcselectReg4	<= pcselectReg4;
+		
+		end 
+		else 
 		begin
 		killnum		<= 2'b0;
 		pcselectReg4	<= pcselect3;

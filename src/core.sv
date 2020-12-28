@@ -129,15 +129,19 @@ logic dmem_waiting;
 logic dmem_finished;
 logic instr_left_cache;
 logic noMore_memOps;
-
+logic stall_mem;
+logic arb_eqmem;
+logic memOp_done;
+//assign stall_mem = (arb_state == arb_wait) ;
+//assign arb_eqmem = (arb_state == arb_mem);
 assign dmem_waiting = |mem_op3;
-assign dmem_finished = (arb_state == arb_mem) && (l15_transducer_val || l15_transducer_ack) ;
+assign dmem_finished = (arb_state == arb_mem) && (l15_transducer_val || l15_transducer_ack ) ;
 assign noMore_memOps = !(|mem_op3 || |mem_op4); 
 assign instr_left_cache = (arb_state == arb_wait)&& l15_transducer_val;
 
 /***********************
 1- Stall issue stage when there is 
-mem op in the exc stage
+mem op in the exc stage // stall the instru2 from frontend
 until the memop finish
 Exce_stage_output (memOp_done)
 store (l15_mem_ack)
@@ -151,45 +155,65 @@ arb_mem)
 
 3- When (arb_state == arb_wait) discard cache_to_
 intruction_fetch and don't update pc then stall until 
-(arb_state == arb_instr)
+(arb_state == arb_instr) 
 ********************************************/
 
 always @(posedge clk, nrst)
 begin
 if (!nrst)
+	begin
 	arb_state <= arb_instr;
+	stall_mem <=0;
+	arb_eqmem <=0;
+	end 
 else
 begin
+
+
+end
 case(arb_state)
 	arb_instr: 
 	begin
-		if(dmem_waiting)
+		if(dmem_waiting)	
+		begin 
 			arb_state <= arb_wait;
+			stall_mem <=1; 
+		end
 	end
 	arb_wait:
 	begin
-		if(state_reg == 1 )
+		if(state_reg == 1 ) //response 
 		begin
-			if(instr_left_cache)
+			if(instr_left_cache) 
+				begin 
 				arb_state <= arb_mem;
+				
+				stall_mem <=0; 
+				end 
 		end
 		else
 		begin
 			arb_state <= arb_mem;
+			stall_mem <=0; 
 		end
 	end
 	arb_mem:
 	begin
-		if(dmem_finished && noMore_memOps)
+		arb_eqmem<=1; 
+		if(memOp_done && noMore_memOps)
+			begin
 			arb_state <= arb_instr;
+			arb_eqmem <=0;
+			end 
 	end
 endcase
-end
+
 end
 
 
 always_comb
 begin
+
 if( arb_state == arb_instr )
 	begin
 
@@ -348,7 +372,10 @@ end
 	// Scoreboared Signals
 	.stall          (stall),
 	.opcode3 	(opcode3),
-	.stallnumin	(stallnum)
+	.stallnumin	(stallnum),
+	.stall_mem 	(stall_mem),
+	.arb_eqmem	(arb_eqmem),
+	.memOp_done 	(memOp_done)	
 	);
 
 	// =============================================== //
@@ -429,7 +456,10 @@ end
 	.stall          (stall),
 	.bjtaken	(bjtaken),
 	.opcode3	(opcode3),
-	.stallnum	(stallnum)
+	.stallnum	(stallnum),
+	.stall_mem 	(stall_mem),
+	.arb_eqmem	(arb_eqmem),
+	.memOp_done 	(memOp_done)	
     );
 
 	// =============================================== //
