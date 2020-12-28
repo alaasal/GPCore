@@ -35,8 +35,7 @@ module mem_decode(
     output logic ld_addr_misaligned6,
     output logic samo_addr_misaligned6,
 
-    input  logic [31:0] piton_out6,
-    output logic [31:0] mem_out6
+    output logic [3:0] mem_op6
 );
     //pipe5 registers
     logic [3:0] mem_opReg5; 
@@ -67,7 +66,6 @@ module mem_decode(
     logic bw0Reg6, bw1Reg6, bw2Reg6, bw3Reg6;
 
     //pipe5 memory controls
-    logic [3:0] mem_op6; 
     logic [3:0][7:0] data_out6;
 
 
@@ -213,18 +211,6 @@ module mem_decode(
     .data_out   (data_out6)
     );
 */
-    assign baddr6 = addr6[1:0];
-
-    always_comb begin
-        unique case(mem_op6[2:0])
-            3'b101: mem_out6 = 32'(signed'(piton_out6[baddr6]));                            //i_lb
-            3'b011: mem_out6 = 32'(signed'({piton_out6[baddr6 + 1], piton_out6[baddr6]}));  //i_lh
-            3'b111: mem_out6 = piton_out6;	                                                //i_lw
-            3'b100: mem_out6 = {24'b0, piton_out6[baddr6]};     	                        //i_lbu
-            3'b010: mem_out6 = {16'b0, piton_out6[baddr6 + 1], piton_out6[baddr6]};	        //i_lhu
-            default: mem_out6 = 0;
-        endcase
-    end
 endmodule
 
 module piton_fsm(
@@ -240,6 +226,7 @@ module piton_fsm(
     input logic bw26,
     input logic bw36,
     input logic m_op6, 
+    input logic [3:0] mem_op6,
 
     //OpenPiton Request
 	output logic [3:0] core_l15_rqtype, 
@@ -259,7 +246,7 @@ module piton_fsm(
 	input logic l15_core_header_ack,
     output logic core_l15_req_ack,
 
-    output logic [31:0] piton_out,
+    output logic [31:0] mem_out6,
     output logic memOp_done
 );
 
@@ -271,9 +258,12 @@ logic resp_fire;
 
 logic [31:0] wdata;
 logic [3:0]  bw;
+logic [3:0] mem_opReg;
+logic [1:0] baddr;
 
 logic [3:0] rqtypeReg;
 logic [31:0] addrReg, rdata;
+logic [31:0] piton_out;
 
 //fire request when: cache is ready, and a memory operation is under execution.
 assign req_fire  = l15_core_ack && l15_core_header_ack && core_l15_val && (state_reg == s_req) && m_op6;    
@@ -285,39 +275,24 @@ assign wdata = {data_in6[7:0], data_in6[15:8], data_in6[23:16], data_in6[31:24]}
 
 assign bw = {bw36, bw26, bw16, bw06};
 
+assign core_l15_req_ack = (resp_fire)? 1 : 0;
+
 always_ff @(posedge clk , negedge nrst) begin
-    if (!nrst) state_reg <= s_req;
-    else begin
+    if (!nrst) begin
+        state_reg <= s_req;
+        memOp_done<= 0;
+    end else begin
         case(state_reg)
             s_req: begin
                 if (req_fire) begin 
-                    state_reg <= s_idle;
-                    rqtypeReg <= core_l15_rqtype;
-                    addrReg   <= addr6;
+                    state_reg        <= s_idle;
+                    core_l15_address <= addr6;
+                    mem_opReg        <= mem_op6;
+                    baddr           <= addr6[1:0];
                 end
-            end s_idle: begin
-                if (resp_fire) begin
-                    case(rqtypeReg)
-                        `LOAD_RQ:  if (l15_core_returntype == `LOAD_RET) state_reg <= s_resp;
-                        `STORE_RQ: if (l15_core_returntype == `ST_ACK) state_reg <= s_resp;
-                        default: state_reg <= s_idle;
-                    endcase
-                end
-            end s_resp: state_reg <= s_req;
-        endcase
+            core_l15_data    <= wdata;
+            core_l15_val	 <= 1;
 
-    end
-end
-
-always_comb begin
-    case(state_reg)
-        s_req: begin
-            memOp_done = 0;
-            core_l15_address = addrReg;        
-            core_l15_data    = wdata;
-
-            core_l15_val	 = 1;
-            
             //store operation
             if (bw) begin
                 core_l15_rqtype  = `STORE_RQ;
@@ -335,32 +310,38 @@ always_comb begin
                 core_l15_size    = `MSG_DATA_SIZE_4B;
             end
         
-        end s_idle: begin
-            memOp_done = 0;
-            core_l15_val	 = 0;
-            if (resp_fire) core_l15_req_ack = 1;
-            
-        end s_resp: begin
-            core_l15_val	 = 0;
-            core_l15_req_ack = 1;
-            case(addrReg[3:2])
-                2'b00: begin
-                    rdata = l15_core_data_0[63:32];
-                end 2'b01: begin
-                    rdata = l15_core_data_0[31:0];
-                end 2'b10: begin
-                    rdata = l15_core_data_1[63:32];
-                end 2'b11: begin
-                    rdata = l15_core_data_1[31:0];
+            end s_idle: begin
+                core_l15_val	 = 0;
+                if (resp_fire) begin
+                    case(core_l15_rqtype)
+                        `LOAD_RQ:  if (l15_core_returntype == `LOAD_RET) state_reg <= s_resp;
+                        `STORE_RQ: if (l15_core_returntype == `ST_ACK) state_reg <= s_resp;
+                        default: state_reg <= s_idle;
+                    endcase
                 end
-                default: begin
-                end
-            endcase 
-            piton_out = {rdata[7:0], rdata[15:8], rdata[23:16], rdata[31:24]};
+            end s_resp: begin
+                state_reg  <= s_req;
+                memOp_done <= 1;
+                core_l15_val	 <= 0;
+                case(core_l15_address[3:2])
+                    2'b00: rdata = l15_core_data_0[63:32];
+                    2'b01: rdata = l15_core_data_0[31:0];
+                    2'b10: rdata = l15_core_data_1[63:32];
+                    2'b11: rdata = l15_core_data_1[31:0];
+                endcase
 
-            memOp_done = 1;
-        end
-    endcase
+                piton_out = {rdata[7:0], rdata[15:8], rdata[23:16], rdata[31:24]};
+                unique case(mem_opReg[2:0])
+                    3'b101: mem_out6 = 32'(signed'(piton_out[baddr]));                            //i_lb
+                    3'b011: mem_out6 = 32'(signed'({piton_out[baddr + 1], piton_out[baddr]}));  //i_lh
+                    3'b111: mem_out6 = piton_out;	                                                //i_lw
+                    3'b100: mem_out6 = {24'b0, piton_out[baddr]};     	                        //i_lbu
+                    3'b010: mem_out6 = {16'b0, piton_out[baddr + 1], piton_out[baddr]};	        //i_lhu
+                    default: mem_out6 = 0;
+                endcase
+            end
+        endcase 
+    end
 end
 endmodule
 
@@ -402,7 +383,7 @@ module mem_wrap(
     logic bw06, bw16, bw26, bw36;
     logic m_op6;
     logic addr_misaligned6;
-    logic [31:0] piton_out6;
+    logic [3:0] mem_op6;
     
     mem_decode mem_decode (
         //inputs
@@ -426,8 +407,7 @@ module mem_wrap(
     .addr_misaligned6         (addr_misaligned6),
     .ld_addr_misaligned6      (ld_addr_misaligned6),
     .samo_addr_misaligned6    (samo_addr_misaligned6),
-    .piton_out6               (piton_out6),
-    .mem_out6                 (mem_out6)
+    .mem_op6                 (mem_op6)
 );
 
     piton_fsm piton_fsm(
@@ -442,6 +422,7 @@ module mem_wrap(
     .bw26               (bw26),
     .bw36               (bw36),
     .m_op6              (m_op6), 
+    .mem_op6            (mem_op6),
 
     //OpenPiton Request
 	.core_l15_rqtype    (mem_l15_rqtype), 
@@ -462,7 +443,7 @@ module mem_wrap(
 	.l15_core_header_ack(l15_mem_header_ack),
     .core_l15_req_ack   (mem_l15_req_ack),
 
-    .piton_out          (piton_out6),
+    .mem_out6           (mem_out6),
     .memOp_done         (memOp_done)
 );
 endmodule
