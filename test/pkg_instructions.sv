@@ -37,19 +37,19 @@ package pkg_instructions;
     logic [2:0] rem_func    = 3'b110;
     logic [2:0] remu_func   = 3'b111; 
     /**********************************/
-    logic [3:0] addi_func   = 3'b000;
-    logic [3:0] slti_func   = 3'b010;
-    logic [3:0] sltiu_func  = 3'b011;
-    logic [3:0] xori_func   = 3'b100;
-    logic [3:0] andi_func   = 3'b111;
+    logic [2:0] addi_func   = 3'b000;
+    logic [2:0] slti_func   = 3'b010;
+    logic [2:0] sltiu_func  = 3'b011;
+    logic [2:0] xori_func   = 3'b100;
+    logic [2:0] andi_func   = 3'b111;
     /**********************************/
-    logic [3:0] add_func    = 3'b000;   //also works for sub_func
-    logic [3:0] xor_func    = 3'b100;
-    logic [3:0] and_func    = 3'b111;
+    logic [2:0] add_func    = 3'b000;   //also works for sub_func
+    logic [2:0] xor_func    = 3'b100;
+    logic [2:0] and_func    = 3'b111;
     /**********************************/
-    logic [3:0] slli_func   = 3'b001;
-    logic [3:0] srli_func   = 3'b101;
-    logic [3:0] srai_func   = 3'b101;
+    logic [2:0] slli_func   = 3'b001;
+    logic [2:0] srli_func   = 3'b101;
+    logic [2:0] srai_func   = 3'b101;
     /**********************************/
     logic [11:0] S_imm     = 12'h000;
     logic [11:0] I_imm     = 12'h005;   //Imm = 1

@@ -279,71 +279,74 @@ assign core_l15_req_ack = (resp_fire)? 1 : 0;
 
 always_ff @(posedge clk , negedge nrst) begin
     if (!nrst) begin
-        state_reg <= s_req;
-        memOp_done<= 0;
+        state_reg       <= s_req;
+        memOp_done      <= 0;
+        core_l15_val    <= 1;
     end else begin
         case(state_reg)
             s_req: begin
-                if (req_fire) begin 
-                    state_reg        <= s_idle;
-                    core_l15_address <= addr6;
-                    mem_opReg        <= mem_op6;
-                    baddr           <= addr6[1:0];
+                mem_opReg        <= mem_op6;
+                baddr            <= addr6[1:0];
+                core_l15_data    <= wdata;
+                core_l15_address <= addr6;
+                core_l15_val	 <= 1;
+                //store operation
+                if (bw) begin
+                    core_l15_rqtype  <= `STORE_RQ;
+                    core_l15_data    <= wdata;
+                    case (bw)
+                        4'b1111: core_l15_size	 <= `MSG_DATA_SIZE_4B;
+                        4'b1100, 4'b0011: core_l15_size	 <= `MSG_DATA_SIZE_2B;
+                        4'b0001, 4'b0010, 4'b0100, 4'b1000: core_l15_size	 <= `MSG_DATA_SIZE_1B;
+                        default: core_l15_size	 <= `MSG_DATA_SIZE_0B;
+                    endcase
+
+                //load opertion
+                end else if (m_rd6) begin
+                    core_l15_rqtype  <= `LOAD_RQ;
+                    core_l15_size    <= `MSG_DATA_SIZE_4B;
                 end
-            core_l15_data    <= wdata;
-            core_l15_val	 <= 1;
+                if (req_fire) state_reg <= s_idle;                    
 
-            //store operation
-            if (bw) begin
-                core_l15_rqtype  = `STORE_RQ;
-                core_l15_data    = wdata;
-                case (bw)
-                    4'b1111: core_l15_size	 = `MSG_DATA_SIZE_4B;
-                    4'b1100, 4'b0011: core_l15_size	 = `MSG_DATA_SIZE_2B;
-                    4'b0001, 4'b0010, 4'b0100, 4'b1000: core_l15_size	 = `MSG_DATA_SIZE_1B;
-                    default: core_l15_size	 = `MSG_DATA_SIZE_0B;
-                endcase
-
-            //load opertion
-            end else if (m_rd6) begin
-                core_l15_rqtype  = `LOAD_RQ;
-                core_l15_size    = `MSG_DATA_SIZE_4B;
-            end
-        
             end s_idle: begin
-                core_l15_val	 = 0;
+                core_l15_val	 <= 1;
                 if (resp_fire) begin
                     case(core_l15_rqtype)
                         `LOAD_RQ:  if (l15_core_returntype == `LOAD_RET) state_reg <= s_resp;
                         `STORE_RQ: if (l15_core_returntype == `ST_ACK) state_reg <= s_resp;
-                        default: state_reg <= s_idle;
+                        default: state_reg <= state_reg;
                     endcase
                 end
             end s_resp: begin
-                state_reg  <= s_memOp_0;
-                memOp_done <= 1;
-                core_l15_val	 <= 0;
-                case(core_l15_address[3:2])
-                    2'b00: rdata = l15_core_data_0[63:32];
-                    2'b01: rdata = l15_core_data_0[31:0];
-                    2'b10: rdata = l15_core_data_1[63:32];
-                    2'b11: rdata = l15_core_data_1[31:0];
-                endcase
-
-                piton_out = {rdata[7:0], rdata[15:8], rdata[23:16], rdata[31:24]};
-                unique case(mem_opReg[2:0])
-                    3'b101: mem_out6 = 32'(signed'(piton_out[baddr]));                            //i_lb
-                    3'b011: mem_out6 = 32'(signed'({piton_out[baddr + 1], piton_out[baddr]}));  //i_lh
-                    3'b111: mem_out6 = piton_out;	                                                //i_lw
-                    3'b100: mem_out6 = {24'b0, piton_out[baddr]};     	                        //i_lbu
-                    3'b010: mem_out6 = {16'b0, piton_out[baddr + 1], piton_out[baddr]};	        //i_lhu
-                    default: mem_out6 = 0;
-                endcase
+                state_reg    <= s_memOp_0;
+                memOp_done   <= 1;
+                core_l15_val <= 1;
             end s_memOp_0:begin
-                state_reg <= s_req;
+                state_reg  <= s_req;
                 memOp_done <= 0;
             end
         endcase 
+    end
+end
+
+always_comb begin
+    if (core_l15_rqtype == `LOAD_RQ) begin
+        case(core_l15_address[3:2])
+            2'b00: rdata = l15_core_data_0[63:32];
+            2'b01: rdata = l15_core_data_0[31:0];
+            2'b10: rdata = l15_core_data_1[63:32];
+            2'b11: rdata = l15_core_data_1[31:0];
+        endcase
+
+        piton_out = {rdata[7:0], rdata[15:8], rdata[23:16], rdata[31:24]};
+        unique case(mem_opReg[2:0])
+            3'b101: mem_out6 = 32'(signed'(piton_out[baddr]));                            //i_lb
+            3'b011: mem_out6 = 32'(signed'({piton_out[baddr + 1], piton_out[baddr]}));  //i_lh
+            3'b111: mem_out6 = piton_out;	                                                //i_lw
+            3'b100: mem_out6 = {24'b0, piton_out[baddr]};     	                        //i_lbu
+            3'b010: mem_out6 = {16'b0, piton_out[baddr + 1], piton_out[baddr]};	        //i_lhu
+            default: mem_out6 = 0;
+        endcase
     end
 end
 endmodule
