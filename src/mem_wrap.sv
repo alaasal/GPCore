@@ -250,7 +250,7 @@ module piton_fsm(
     output logic memOp_done
 );
 
-enum logic[1:0] {s_req, s_idle, s_resp} state_reg;
+enum logic[1:0] {s_req, s_idle, s_resp, s_memOp_0} state_reg;
 
 logic req_fire;
 logic resp_int;
@@ -320,7 +320,7 @@ always_ff @(posedge clk , negedge nrst) begin
                     endcase
                 end
             end s_resp: begin
-                state_reg  <= s_req;
+                state_reg  <= s_memOp_0;
                 memOp_done <= 1;
                 core_l15_val	 <= 0;
                 case(core_l15_address[3:2])
@@ -339,6 +339,9 @@ always_ff @(posedge clk , negedge nrst) begin
                     3'b010: mem_out6 = {16'b0, piton_out[baddr + 1], piton_out[baddr]};	        //i_lhu
                     default: mem_out6 = 0;
                 endcase
+            end s_memOp_0:begin
+                state_reg <= s_req;
+                memOp_done <= 0;
             end
         endcase 
     end
