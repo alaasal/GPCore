@@ -277,6 +277,7 @@ module exe_stage(
     .mem_l15_req_ack       (mem_l15_req_ack),
     .mem_out6              (mem_out6),   //memory read output
     .memOp_done            (memOp_done),
+    .m_op6                 (m_op6),
     .ld_addr_misaligned6   (ld_addr_misaligned6),
     .samo_addr_misaligned6 (samo_addr_misaligned6)
 );
@@ -293,7 +294,19 @@ module exe_stage(
 	// =============================================== //
 	assign fn6 = fnReg6;
 	assign rd6 = rdReg6;
-	assign we6 = weReg6;
+    /*
+    --------------------------------
+    | m_op6 | memOp_done |   we6   |
+    --------------------------------
+    |   0   |      0     |  weReg6 |
+    |   0   |      1     |   WTF   |
+    |   1   |      0     |    0    |
+    |   1   |      1     | weReg6  |
+    --------------------------------
+
+    we6 = (m_op6 XNOR memOp_done) AND weReg6
+    */
+	assign we6 = (m_op6 ~^ memOp_done) & weReg6;
 	
 	assign U_imm6 		= U_immReg6;
 	assign AU_imm6 		= AU_immReg6;

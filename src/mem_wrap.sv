@@ -378,6 +378,7 @@ module mem_wrap(
 
     output logic [31:0] mem_out6,
     output logic memOp_done,
+    output logic m_op6,
 
     output logic ld_addr_misaligned6,
     output logic samo_addr_misaligned6
@@ -387,7 +388,6 @@ module mem_wrap(
     logic [1:0]  baddr6;
     logic gwe6, rd6;
     logic bw06, bw16, bw26, bw36;
-    logic m_op6;
     logic addr_misaligned6;
     logic [3:0] mem_op6;
     
