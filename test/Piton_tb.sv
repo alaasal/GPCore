@@ -59,6 +59,8 @@ begin
         
 		l15_transducer_data_0 <= {ADDI,ADD};
 		l15_transducer_data_1 <= {SW,LW};  //*PASSED*
+			#700
+	l15_transducer_returntype <= 4'b0000;
         /*After the above instructions run:
             1- reg 20 = 5
             2- reg 2 = 10
