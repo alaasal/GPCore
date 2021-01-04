@@ -281,36 +281,13 @@ always_ff @(posedge clk , negedge nrst) begin
     if (!nrst) begin
         state_reg       <= s_req;
         memOp_done      <= 0;
-        core_l15_val    <= 0;
     end else begin
         case(state_reg)
             s_req: begin
-                mem_opReg        <= mem_op6;
-                baddr            <= addr6[1:0];
-                core_l15_data    <= wdata;
-                core_l15_address <= addr6;
-                core_l15_val	 <= 0;
                 memOp_done       <= 0;
-                //store operation
-                if (bw) begin
-                    core_l15_rqtype  <= `STORE_RQ;
-                    core_l15_data    <= wdata;
-                    case (bw)
-                        4'b1111: core_l15_size	 <= `MSG_DATA_SIZE_4B;
-                        4'b1100, 4'b0011: core_l15_size	 <= `MSG_DATA_SIZE_2B;
-                        4'b0001, 4'b0010, 4'b0100, 4'b1000: core_l15_size	 <= `MSG_DATA_SIZE_1B;
-                        default: core_l15_size	 <= `MSG_DATA_SIZE_0B;
-                    endcase
-
-                //load opertion
-                end else if (m_rd6) begin
-                    core_l15_rqtype  <= `LOAD_RQ;
-                    core_l15_size    <= `MSG_DATA_SIZE_4B;
-                end
                 if (req_fire) state_reg <= s_idle;                    
 
             end s_idle: begin
-                core_l15_val	 <= 1;
                 if (resp_fire) begin
                     case(core_l15_rqtype)
                         `LOAD_RQ:  if (l15_core_returntype == `LOAD_RET) state_reg <= s_resp;
@@ -321,10 +298,40 @@ always_ff @(posedge clk , negedge nrst) begin
             end s_resp: begin
                 state_reg    <= s_req;
                 memOp_done   <= 1;
-                core_l15_val <= 0;
             end
         endcase 
     end
+end
+
+always_comb begin
+    case(state_reg)
+    s_req: begin
+        baddr            <= addr6[1:0];
+        core_l15_data    <= wdata;
+        core_l15_address <= addr6;
+        core_l15_val	 <= 0;
+        //store operation
+        if (bw) begin
+            core_l15_rqtype  <= `STORE_RQ;
+            core_l15_data    <= wdata;
+            case (bw)
+                4'b1111: core_l15_size	 <= `MSG_DATA_SIZE_4B;
+                4'b1100, 4'b0011: core_l15_size	 <= `MSG_DATA_SIZE_2B;
+                4'b0001, 4'b0010, 4'b0100, 4'b1000: core_l15_size	 <= `MSG_DATA_SIZE_1B;
+                default: core_l15_size	 <= `MSG_DATA_SIZE_0B;
+            endcase
+
+        //load opertion
+        end else if (m_rd6) begin
+            core_l15_rqtype  <= `LOAD_RQ;
+            core_l15_size    <= `MSG_DATA_SIZE_4B;
+        end                 
+
+    end s_idle: core_l15_val	 <= 1;
+    s_resp: begin
+        core_l15_val <= 0;
+    end
+endcase 
 end
 
 always_comb begin
