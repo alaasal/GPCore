@@ -322,7 +322,10 @@ end
 
     .transducer_l15_req_ack             (instr_l15_req_ack),
 	
-	.state_reg (state_reg)
+	.state_reg (state_reg),
+	.stall_mem 	(stall_mem),
+	.arb_eqmem	(arb_eqmem),
+	.memOp_done 	(memOp_done)	
 	);
 
 	// =============================================== //

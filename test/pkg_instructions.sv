@@ -71,11 +71,11 @@ package pkg_instructions;
     logic [4:0] rd6  = 24;
 
 //immediate operations
-    logic [31:0] ADDI = {I_imm, rs1, addi_func, rd2, imm_opcode};           //rd2 = I_imm + 0
+    logic [31:0] ADDI = {I_imm, rs1, addi_func, rd4, imm_opcode};           //rd2 = I_imm + 0
     logic [31:0] XORI = {I_imm, rs3, xori_func, rd3, imm_opcode};
     logic [31:0] ANDI = {I_imm, rs4, andi_func, rd4, imm_opcode};
 
-    logic [31:0] ADD  = {i_func7,   rd2, rd2, add_func, rs3, I_opcode};     //rs3 = rd2 + rd2
+    logic [31:0] ADD  = {i_func7,   rd2, rd2, add_func, rs7, I_opcode};     //rs3 = rd2 + rd2
     logic [31:0] ADD2 = {i_func7,   rs2, rs2, add_func, rd6, I_opcode};     //rs3 = rd2 + rd2
     logic [31:0] SUB  = {sub_func7, rs3, rs2, add_func, rd2, I_opcode};
     logic [31:0] XOR  = {i_func7,   rs3, rs2, xor_func, rd2, I_opcode};

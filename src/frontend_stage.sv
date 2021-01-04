@@ -48,7 +48,10 @@ module frontend_stage(
 	input logic[63:0] l15_transducer_data_1, 
 	input logic[3:0] l15_transducer_returntype,
 	output logic transducer_l15_req_ack,
-	output logic[1:0] state_reg
+	output logic[1:0] state_reg,	
+	input logic stall_mem,
+	input logic arb_eqmem,
+	input logic memOp_done	
 
     );
 
@@ -110,7 +113,7 @@ end
 		pcReg		<= npc;		
 		pcReg2		<= pcReg;
 	end 
-	else if(stall  ) 
+	else if( stall || stall_mem ||  ( arb_eqmem && ~memOp_done )  ) 
 	begin 
 		pcReg		<= pcReg;		
 		pcReg2		<= pcReg2;
