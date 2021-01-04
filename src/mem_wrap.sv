@@ -250,7 +250,7 @@ module piton_fsm(
     output logic memOp_done
 );
 
-enum logic[1:0] {s_req, s_idle, s_resp, s_memOp_0} state_reg;
+enum logic[1:0] {s_req, s_idle, s_resp} state_reg;
 
 logic req_fire;
 logic resp_int;
@@ -266,7 +266,7 @@ logic [31:0] addrReg, rdata;
 logic [31:0] piton_out;
 
 //fire request when: cache is ready, and a memory operation is under execution.
-assign req_fire  = l15_core_ack && l15_core_header_ack && core_l15_val && (state_reg == s_req) && m_op6;    
+assign req_fire  = l15_core_header_ack && (state_reg == s_req) && m_op6;    
 //receive response when: data is available, and a response is required.
 assign resp_fire = l15_core_val && (state_reg == s_idle);
 
@@ -281,7 +281,7 @@ always_ff @(posedge clk , negedge nrst) begin
     if (!nrst) begin
         state_reg       <= s_req;
         memOp_done      <= 0;
-        core_l15_val    <= 1;
+        core_l15_val    <= 0;
     end else begin
         case(state_reg)
             s_req: begin
@@ -289,7 +289,8 @@ always_ff @(posedge clk , negedge nrst) begin
                 baddr            <= addr6[1:0];
                 core_l15_data    <= wdata;
                 core_l15_address <= addr6;
-                core_l15_val	 <= 1;
+                core_l15_val	 <= 0;
+                memOp_done       <= 0;
                 //store operation
                 if (bw) begin
                     core_l15_rqtype  <= `STORE_RQ;
@@ -318,19 +319,16 @@ always_ff @(posedge clk , negedge nrst) begin
                     endcase
                 end
             end s_resp: begin
-                state_reg    <= s_memOp_0;
+                state_reg    <= s_req;
                 memOp_done   <= 1;
-                core_l15_val <= 1;
-            end s_memOp_0:begin
-                state_reg  <= s_req;
-                memOp_done <= 0;
+                core_l15_val <= 0;
             end
         endcase 
     end
 end
 
 always_comb begin
-    if (core_l15_rqtype == `LOAD_RQ) begin
+    if (core_l15_rqtype == `LOAD_RQ & l15_core_val == 1) begin
         case(core_l15_address[3:2])
             2'b00: rdata = l15_core_data_0[63:32];
             2'b01: rdata = l15_core_data_0[31:0];
