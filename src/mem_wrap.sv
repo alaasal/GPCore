@@ -250,7 +250,7 @@ module piton_fsm(
     output logic memOp_done
 );
 
-enum logic[1:0] {s_req, s_idle, s_resp} state_reg;
+enum logic[1:0] {s_req, s_resp} state_reg;
 
 logic req_fire;
 logic resp_int;
@@ -268,7 +268,7 @@ logic [31:0] piton_out;
 //fire request when: cache is ready, and a memory operation is under execution.
 assign req_fire  = l15_core_header_ack && (state_reg == s_req) && m_op6;    
 //receive response when: data is available, and a response is required.
-assign resp_fire = l15_core_val && (state_reg == s_idle);
+assign resp_fire = l15_core_val && (state_reg == s_resp);
 
 //endian conversion
 assign wdata = {data_in6[7:0], data_in6[15:8], data_in6[23:16], data_in6[31:24]};
@@ -280,25 +280,20 @@ assign core_l15_req_ack = (resp_fire)? 1 : 0;
 always_ff @(posedge clk , negedge nrst) begin
     if (!nrst) begin
         state_reg       <= s_req;
-        memOp_done      <= 0;
     end else begin
         case(state_reg)
             s_req: begin
-                memOp_done       <= 0;
-                if (req_fire) state_reg <= s_idle;                    
+                if (req_fire) state_reg <= s_resp;                    
 
-            end s_idle: begin
+            end s_resp: begin
                 if (resp_fire) begin
                     case(core_l15_rqtype)
-                        `LOAD_RQ:  if (l15_core_returntype == `LOAD_RET) state_reg <= s_resp;
-                        `STORE_RQ: if (l15_core_returntype == `ST_ACK) state_reg <= s_resp;
+                        `LOAD_RQ:  if (l15_core_returntype == `LOAD_RET) state_reg <= s_req;
+                        `STORE_RQ: if (l15_core_returntype == `ST_ACK) state_reg <= s_req;
                         default: state_reg <= state_reg;
                     endcase
                 end
-            end s_resp: begin
-                state_reg    <= s_req;
-                memOp_done   <= 1;
-            end
+            end 
         endcase 
     end
 end
@@ -306,30 +301,31 @@ end
 always_comb begin
     case(state_reg)
     s_req: begin
-        baddr            <= addr6[1:0];
-        core_l15_data    <= wdata;
-        core_l15_address <= addr6;
-        core_l15_val	 <= req_fire;
+        memOp_done       = 0;
+        baddr            = addr6[1:0];
+        core_l15_data    = wdata;
+        core_l15_address = addr6;
+        core_l15_val	 = req_fire;
         //store operation
         if (bw) begin
-            core_l15_rqtype  <= `STORE_RQ;
-            core_l15_data    <= wdata;
+            core_l15_rqtype  = `STORE_RQ;
+            core_l15_data    = wdata;
             case (bw)
-                4'b1111: core_l15_size	 <= `MSG_DATA_SIZE_4B;
-                4'b1100, 4'b0011: core_l15_size	 <= `MSG_DATA_SIZE_2B;
-                4'b0001, 4'b0010, 4'b0100, 4'b1000: core_l15_size	 <= `MSG_DATA_SIZE_1B;
-                default: core_l15_size	 <= `MSG_DATA_SIZE_0B;
+                4'b1111: core_l15_size	= `MSG_DATA_SIZE_4B;
+                4'b1100, 4'b0011: core_l15_size	 = `MSG_DATA_SIZE_2B;
+                4'b0001, 4'b0010, 4'b0100, 4'b1000: core_l15_size	 = `MSG_DATA_SIZE_1B;
+                default: core_l15_size	 = `MSG_DATA_SIZE_0B;
             endcase
 
         //load opertion
         end else if (m_rd6) begin
-            core_l15_rqtype  <= `LOAD_RQ;
-            core_l15_size    <= `MSG_DATA_SIZE_4B;
+            core_l15_rqtype  = `LOAD_RQ;
+            core_l15_size    = `MSG_DATA_SIZE_4B;
         end                 
 
-    end s_idle: core_l15_val	 <= 1;
-    s_resp: begin
-        core_l15_val <= 0;
+    end s_resp: begin
+        core_l15_val = 0;
+        memOp_done = 1;
     end
 endcase 
 end
