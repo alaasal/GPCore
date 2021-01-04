@@ -309,7 +309,7 @@ always_comb begin
         baddr            <= addr6[1:0];
         core_l15_data    <= wdata;
         core_l15_address <= addr6;
-        core_l15_val	 <= 0;
+        core_l15_val	 <= req_fire;
         //store operation
         if (bw) begin
             core_l15_rqtype  <= `STORE_RQ;
