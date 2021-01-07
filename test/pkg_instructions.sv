@@ -76,7 +76,7 @@ package pkg_instructions;
     logic [31:0] ANDI = {I_imm, rs4, andi_func, rd4, imm_opcode};
 
     logic [31:0] ADD  = {i_func7,   rd2, rd2, add_func, rs7, I_opcode};     //rs3 = rd2 + rd2
-    logic [31:0] ADD2 = {i_func7,   rs2, rs2, add_func, rd6, I_opcode};     //rs3 = rd2 + rd2
+    logic [31:0] ADD2 = {i_func7,   rs7, rd4, add_func, rd6, I_opcode};     //rs3 = rd2 + rd2
     logic [31:0] SUB  = {sub_func7, rs3, rs2, add_func, rd2, I_opcode};
     logic [31:0] XOR  = {i_func7,   rs3, rs2, xor_func, rd2, I_opcode};
     logic [31:0] AND  = {i_func7,   rs3, rs2, and_func, rd2, I_opcode}; 
