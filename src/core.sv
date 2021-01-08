@@ -158,7 +158,7 @@ intruction_fetch and don't update pc then stall until
 (arb_state == arb_instr) 
 ********************************************/
 
-always @(posedge clk, nrst)
+always @(posedge clk, negedge nrst)
 begin
 if (!nrst)
 	begin
