@@ -72,17 +72,25 @@ package pkg_instructions;
 
 //immediate operations
     logic [31:0] ADDI = {I_imm, rs1, addi_func, rd4, imm_opcode};           //rd2 = I_imm + 0
+    logic [31:0] ADDIH = {I_imm, rs1, addi_func, rd6, imm_opcode};          //Hazard
     logic [31:0] XORI = {I_imm, rs3, xori_func, rd3, imm_opcode};
     logic [31:0] ANDI = {I_imm, rs4, andi_func, rd4, imm_opcode};
 
     logic [31:0] ADD  = {i_func7,   rd2, rd2, add_func, rs7, I_opcode};     //rs3 = rd2 + rd2
+    logic [31:0] ADDH  = {i_func7,   rd2, rd2, add_func, rd6, I_opcode};     //Hazard
     logic [31:0] ADD2 = {i_func7,   rs7, rd4, add_func, rd6, I_opcode};     //rs3 = rd2 + rd2
     logic [31:0] SUB  = {sub_func7, rs3, rs2, add_func, rd2, I_opcode};
     logic [31:0] XOR  = {i_func7,   rs3, rs2, xor_func, rd2, I_opcode};
     logic [31:0] AND  = {i_func7,   rs3, rs2, and_func, rd2, I_opcode}; 
 
+    logic [31:0] ADD_INV  = {ADD[7:0], ADD[15:8], ADD[23:16], ADD[31:24]};
+    logic [31:0] ADDH_INV  = {ADDH[7:0], ADDH[15:8], ADDH[23:16], ADDH[31:24]};
+    logic [31:0] ADDI_INV = {ADDI[7:0], ADDI[15:8], ADDI[23:16], ADDI[31:24]};
+    logic [31:0] ADDIH_INV = {ADDIH[7:0], ADDIH[15:8], ADDIH[23:16], ADDIH[31:24]};
+
 //store operations
     logic [31:0] SW = {S_imm[11:5], rs3, rs1, sw_func, S_imm[4:0], s_opcode}; //10 -> address 0
+    logic [31:0] SWH = {S_imm[11:5], rd6, rs1, sw_func, S_imm[4:0], s_opcode}; //Hazard
     logic [31:0] SB = {S_imm[11:5], rs2, rs1, sb_func, S_imm[4:0], s_opcode};
     logic [31:0] SH = {S_imm[11:5], rs2, rs2, sh_func, S_imm[4:0], s_opcode};
 
@@ -92,6 +100,10 @@ package pkg_instructions;
     logic [31:0] LW  ={S_imm, rs1, lw_func, rd3, l_opcode}; // address 0 -> rd3
     logic [31:0] LBU ={S_imm, rs1, lbu_func, rd4, l_opcode};
     logic [31:0] LHU ={S_imm, rs1, lhu_func, rd5, l_opcode};
+
+    logic [31:0] SW_INV = {SW[7:0], SW[15:8], SW[23:16], SW[31:24]};
+    logic [31:0] SWH_INV = {SWH[7:0], SWH[15:8], SWH[23:16], SWH[31:24]};
+    logic [31:0] LW_INV = {LW[7:0], LW[15:8], LW[23:16], LW[31:24]};
 
 //multiply/devide operations
     logic [31:0] MUL    ={m_func7, rs2, rs3, mul_func   , rd2, m_opcode};

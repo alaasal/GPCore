@@ -178,7 +178,7 @@ module instr_decoder(
 	
     assign mem_op[0] = i_sw | i_sh | i_sb | i_lw | i_lh | i_lb; //sign 
 	assign mem_op[1] = i_sw | i_lw | i_sh | i_lh | i_lhu;       //size
-	assign mem_op[2] = i_sw | i_lb | i_lbu;                     //size
+	assign mem_op[2] = i_sw | i_lb | i_lbu| i_sb | i_lw;        //size
 	assign mem_op[3] = i_sw  | i_sb  | i_sh;                    //store op
          
     // generate control signals
