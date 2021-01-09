@@ -2,33 +2,26 @@
 echo "PITON & RISCV ENVIRONMENT SETUP"
 echo "A directory called riscv-piton will be created"
 echo "BY: Omar Younis"
-#Probably, 
-#You are asking yourself "why these comments?"
-#Well,
-#I wanted to make it 100 lines :)
 echo "******************************"
 echo "--- UPDATING PACKAGE LISTS ---"
 echo "******************************"
-sudo apt update -y
-
+sudo apt update 
 echo "**************************"
 echo "--- UPGRADING PACKAGES ---"
 echo "**************************"
-sudo apt upgrade -y
-
+sudo apt upgrade 
 echo "**************************************"
 echo "--- INSTALLING ADDITIONAL PACKAGES ---"
 echo "**************************************" 
-sudo apt install -y build-essential git
+sudo apt install -y build-essential git subversion
 sudo apt install -y python2 python2-dev libpython2-dev
 sudo apt install -y python3 python3-dev libpython3-dev
-sudo apt install -y perl
+sudo apt install -y perl python
 sudo apt install -y apache2 apache2-dev pkg-config perl
-sudo apt install -y lipapr1 lipapr1-dev libreadline6 libreadline6-dev bison flex
+sudo apt install -y libapr1 libapr1-dev libreadline5 libreadline-dev bison flex
 sudo apt install -y libncurses5 libncurses5-dev gperf 
-sudo apt install -y autoconf automake autotools-dev curl python3 
+sudo apt install -y autoconf automake autotools-dev curl
 sudo apt install -y libmpc-dev libmpfr-dev libgmp-dev gawk texinfo libtool patchutils bc zlib1g-dev libexpat-dev
-
 echo "********************************"
 echo "--- INSTALLING CORE PACKAGES ---"
 echo "********************************"
@@ -48,7 +41,6 @@ make
 sudo make install
 echo "PyHP INSTALLATION COMPLETE"
 cd
-
 echo "--- MAKING DIRECTORY riscv-piton"
 mkdir riscv-piton
 cd riscv-piton
@@ -62,10 +54,9 @@ git submodule update --init --recursive piton/design/chip/tile/gpcore
 cd piton/design/chip/tile/gpcore
 git checkout OpenPiton
 cd 
-cd risriscv-piton/openpiton
+cd riscv-piton/openpiton
 mkdir -p build/manycore/rel-0.1
 cd
-
 echo "******************************************"
 echo "--- Grapping Riscv Gnu Toolchain Repo. ---"
 echo "******************************************"
@@ -74,12 +65,10 @@ echo "1- Make sure you have sufficeint internet capacity and sufficient space."
 echo "2- Make sure you are ready to wait for it to finish"
 echo "If YES enter a capital y, MUST BE Y"
 read -p "Are You Ready? [Y/N]: " READY && [[ $READY == [yY] || $READY == [yY][eE][sS] ]] || exit 1
-
 cd riscv-piton
 git clone --recursive https://github.com/riscv/riscv-gnu-toolchain
 cd riscv-gnu-toolchain
 git submodule update --init --recursive
-
 echo "******************************"
 echo "--- RISCV elf make process ---"
 echo "******************************"
