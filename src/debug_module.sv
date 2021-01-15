@@ -59,7 +59,7 @@ logic [9:0] instrs_index;
 		if (!nrst)
 		  begin
 			DEBUG_SIG <= 0;
-			DEBUG_addr <= -1;
+			DEBUG_addr <= -4;
 			instrs_index <= 0;
 			DEBUG_instr <= instrs[0];
 			START <= 0;
@@ -68,7 +68,7 @@ logic [9:0] instrs_index;
 		  begin
 			DEBUG_instr <= instrs[instrs_index];
 			instrs_index <= instrs_index + 1;
-			DEBUG_addr <= DEBUG_addr + 1'b1;
+			DEBUG_addr <= DEBUG_addr + 4;
 			START <= (instrs_index > (NUM_Of_INSTRS) ) ;
 			DEBUG_SIG <= ~(instrs_index == (NUM_Of_INSTRS));
 		  end
