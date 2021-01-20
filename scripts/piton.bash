@@ -74,10 +74,10 @@ echo "--- RISCV elf make process ---"
 echo "******************************"
 echo "WARNING: THE FOLLOWING IS A LONG MAKE PROCESS "
 read -p "ARE YOU READ?!! [Y/N]: " READY1 && [[ $READY1 == [yY] || $READY1 == [yY][eE][sS] ]] || exit 1
-./configure --prefix=/${HOME}/riscv-piton/riscv
+./configure --prefix=$HOME/riscv-piton/riscv
 make
 echo "Hooray! The make process is complete"
-export PATH="/${HOME}/riscv-piton/riscv/bin:$PATH"
+export PATH="$HOME/riscv-piton/riscv/bin:$PATH"
 cd 
 cd riscv-piton/openpiton
 export PITON_ROOT=$PWD
