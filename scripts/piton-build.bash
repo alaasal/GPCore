@@ -13,7 +13,7 @@ echo "-------------- Building SOC --------------"
 echo "******************************************"
 cd riscv-piton/openpiton
 export PATH="$HOME/riscv-piton/riscv/bin:$PATH"
-export PATH=$PWD
+export PITON_ROOT=$PWD
 source piton/piton_settings.bash
 cd build
 sims -sys=manycore -vlt_build -vlt_build_args=--trace -vlt_build_args=-CFLAGS -vlt_build_args=-DVERILATOR_VCD -gpcore
