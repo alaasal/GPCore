@@ -239,8 +239,11 @@ case(state_reg)
 		transducer_l15_val	<= 0;
 		transducer_l15_req_ack	<= resp_init || l15_transducer_val;
 		instr2 <= (l15_transducer_val) ? {l15_data[7:0], l15_data[15:8], l15_data[23:16], l15_data[31:24]} : 32'h33;	 //Inster no op when cache is busy
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> fa65cb9580e4798d946dbfeefde2180db212782f
 	end  // issue will stall next pipes untill arb_state=arb_mem 
 endcase
        

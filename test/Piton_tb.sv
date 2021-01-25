@@ -57,11 +57,38 @@ begin
 		//l15_transducer_data_1 <= 64'h1080B3;
 		l15_transducer_returntype <= 4'b0100;
         
-		l15_transducer_data_0 <= {ADDI,ADD};
-		l15_transducer_data_1 <= {SW,LW};  //*PASSED*
-			#699
+
+//Scenario 1
+/*
+		l15_transducer_data_0 <= {ADD_INV,ADDI_INV};
+		l15_transducer_data_1 <= {ADD_INV,32'h33000000};
+*/ 
+//Scenario 2
+/* 
+		l15_transducer_data_0 <= {ADD_INV,SW_INV};
+		l15_transducer_data_1 <= {ADDI_INV,32'h33000000};   //PASSED
+*/
+//Scenario 3
+/*
+		l15_transducer_data_0 <= {ADD_INV,SW_INV};
+		l15_transducer_data_1 <= {SW_INV,ADDI_INV};        //PASSED
+*/
+//Scenario 4
+/*
+		l15_transducer_data_0 <= {ADD,ADD2};
+		l15_transducer_data_1 <= {ADDI,ADD2};
+*/
+//Senario 5
+/*
+		l15_transducer_data_0 <= {ADDIH_INV,ADDH_INV};
+		l15_transducer_data_1 <= {SWH_INV,32'h33000000};  //PASSED
+*/
+//Senario 6
+		l15_transducer_data_0 <= {ADDIH_INV,ADDH_INV};
+		l15_transducer_data_1 <= {SWH_INV,LW_INV};  //PASSED	
+    #700
 	l15_transducer_returntype <= 4'b0000;
-l15_transducer_val <= 4'b0;
+	l15_transducer_val <= 4'b1;
         /*After the above instructions run:
             1- reg 20 = 5
             2- reg 2 = 10
@@ -132,3 +159,4 @@ core testCore(
 
 
 endmodule 
+

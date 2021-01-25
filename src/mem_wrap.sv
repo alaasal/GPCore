@@ -283,6 +283,7 @@ always_ff @(posedge clk , negedge nrst) begin
     end else begin
         case(state_reg)
             s_req: begin
+                mem_opReg <= mem_op6;
                 if (req_fire) state_reg <= s_resp;                    
 
             end s_resp: begin
@@ -325,7 +326,13 @@ always_comb begin
 
     end s_resp: begin
         core_l15_val = 0;
-        memOp_done = 1;
+        if (resp_fire) begin
+            case(core_l15_rqtype)
+                `LOAD_RQ:  if (l15_core_returntype == `LOAD_RET) memOp_done = 1;
+                `STORE_RQ: if (l15_core_returntype == `ST_ACK) memOp_done = 1;
+                default: memOp_done = 0;
+            endcase
+        end
     end
 endcase 
 end
