@@ -263,7 +263,7 @@ logic [1:0] baddr;
 
 logic [3:0] rqtypeReg;
 logic [31:0] addrReg, rdata;
-logic [31:0] piton_out;
+logic [3:0][7:0] piton_out;
 
 //fire request when: cache is ready, and a memory operation is under execution.
 assign req_fire  = l15_core_header_ack && (state_reg == s_req) && m_op6;    
