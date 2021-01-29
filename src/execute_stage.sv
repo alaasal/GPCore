@@ -299,14 +299,16 @@ module exe_stage(
     | m_op6 | memOp_done |   we6   |
     --------------------------------
     |   0   |      0     |  weReg6 |
-    |   0   |      1     |   WTF   |
+    |   0   |      1     |  weReg6 |  //though this may not seem logical, but this is the case that happens
     |   1   |      0     |    0    |
     |   1   |      1     | weReg6  |
     --------------------------------
 
-    we6 = (m_op6 XNOR memOp_done) AND weReg6
+    we6 = ((m_op6 XNOR memOp_done) AND weReg6) OR ((NOT(m_op6) XNOR memOp_done) AND weReg6)
+
+    This is not optimal, but it works. I hate it too!!!
     */
-	assign we6 = (m_op6 ~^ memOp_done) & weReg6;
+	assign we6 = ((m_op6 ~^ memOp_done) & weReg6) | ((!m_op6 ~^ memOp_done) & weReg6);
 	
 	assign U_imm6 		= U_immReg6;
 	assign AU_imm6 		= AU_immReg6;

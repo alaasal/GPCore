@@ -283,8 +283,10 @@ always_ff @(posedge clk , negedge nrst) begin
     end else begin
         case(state_reg)
             s_req: begin
-                if (req_fire) state_reg <= s_resp;                    
-
+                if (req_fire) begin
+                    state_reg <= s_resp;         
+                    mem_opReg <= mem_op6;     
+                end
             end s_resp: begin
                 if (resp_fire) begin
                     case(core_l15_rqtype)
@@ -299,27 +301,17 @@ always_ff @(posedge clk , negedge nrst) begin
 end
 
 logic got_header;
-always @(posedge clk, negedge nrst)
-begin
-
-if (!nrst)
-begin
-    got_header <= 0;
-end
-else
-begin
-if (state_reg == s_req)
-begin
-    if(l15_core_header_ack)
-    begin
-        got_header <= 1;
+always @(posedge clk, negedge nrst) begin
+    if (!nrst) begin
+        got_header <= 0;
+    end else begin
+        if (state_reg == s_req) begin
+            if(l15_core_header_ack) begin
+                got_header <= 1;
+            end
+        end else got_header <= 0;
     end
 end
-else
-got_header <= 0;
-end
-end
-
 
 always_comb begin
     case(state_reg)
