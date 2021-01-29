@@ -83,8 +83,8 @@ module instr_decoder(
 	assign ltype  = ~op[6] & ~op[5] & ~op[4] & ~op[3] & ~op[2] & op[1] & op[0];     //0000011
 	//store
 	assign stype  = ~op[6] & op[5] & ~op[4] & ~op[3] & ~op[2] & op[1] & op[0];      //0100011
-	assign utype = ~op[6] & ~op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];     //0010111 LUI
-	assign autype = ~op[6] & op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];    //0110111 auipc
+	assign autype = ~op[6] & ~op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];     //0010111 LUI
+	assign utype = ~op[6] & op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];    //0110111 auipc
 
 	// rtype op								  // instr[30] funct3
 	assign i_add  = rtype & ~instr_30 & (~&funct3);				  //   	0	000
@@ -243,7 +243,7 @@ module instr_decoder(
 	// 011 -> immediate
 	// 100 -> auipcimm
 	// 111 -> load
-	assign fn[0] = i_jal | i_jalr | lui | aupc;
+	assign fn[0] = i_jal | i_jalr | lui ;
 	assign fn[1] = i_mul | i_mulh | i_mulhsu | i_mulhu | i_rem | i_remu | i_div | i_divu | lui;
 	assign fn[2] = ltype| aupc;		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
 endmodule

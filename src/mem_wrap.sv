@@ -298,6 +298,29 @@ always_ff @(posedge clk , negedge nrst) begin
     end
 end
 
+logic got_header;
+always @(posedge clk, negedge nrst)
+begin
+
+if (!nrst)
+begin
+    got_header <= 0;
+end
+else
+begin
+if (state_reg == s_req)
+begin
+    if(l15_core_header_ack)
+    begin
+        got_header <= 1;
+    end
+end
+else
+got_header <= 0;
+end
+end
+
+
 always_comb begin
     case(state_reg)
     s_req: begin
@@ -305,7 +328,7 @@ always_comb begin
         baddr            = addr6[1:0];
         core_l15_data    = wdata;
         core_l15_address = addr6;
-        core_l15_val	 = req_fire;
+        core_l15_val	 = 1 && !got_header;
         //store operation
         if (bw) begin
             core_l15_rqtype  = `STORE_RQ;
@@ -325,7 +348,8 @@ always_comb begin
 
     end s_resp: begin
         core_l15_val = 0;
-        memOp_done = 1;
+        if(l15_core_val)
+            memOp_done = 1;
     end
 endcase 
 end

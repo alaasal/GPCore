@@ -66,7 +66,8 @@ logic [31:0] pc;
 logic wake_up;
 localparam[1:0]   // 3 states are required for Moore
 s_req = 0,
-s_resp = 1;
+s_wait_ack =1,
+s_resp = 2;
 logic req_fire;
 logic resp_init;
 logic resp_fire;
@@ -185,8 +186,16 @@ case(state_reg)
 	s_req: 
 	begin
 		if (req_fire)
-			state_reg <= s_resp;
+		begin
+			if(l15_transducer_ack)
+				state_reg <= s_resp;
+			else
+				state_reg <= s_wait_ack;
+		end
 	end
+	s_wait_ack:
+		if (l15_transducer_ack)
+			state_reg = s_resp;
 	s_resp:
 	begin
 		if (resp_fire)
@@ -231,6 +240,15 @@ case(state_reg)
 	    transducer_l15_rqtype	<= 0;
 		transducer_l15_size	<= 8;
 		transducer_l15_val	<= 1 && wake_up;
+		transducer_l15_req_ack	<= resp_init && wake_up;
+		instr2 <= 32'h33;				//Inster no op when cache is busy
+	end
+	s_wait_ack:
+	begin
+		transducer_l15_address <= pc;
+	    transducer_l15_rqtype	<= 0;
+		transducer_l15_size	<= 8;
+		transducer_l15_val	<= 0;
 		transducer_l15_req_ack	<= resp_init && wake_up;
 		instr2 <= 32'h33;				//Inster no op when cache is busy
 	end

@@ -182,19 +182,13 @@ case(arb_state)
 	end
 	arb_wait:
 	begin
-		if(state_reg == 1 ) //response 
+		if(state_reg == 2'b10) //response 
 		begin
 			if(instr_left_cache) 
 				begin 
-				arb_state <= arb_mem;
-				
-				stall_mem <=0; 
-				end 
-		end
-		else
-		begin
-			arb_state <= arb_mem;
-			stall_mem <=0; 
+					arb_state <= arb_mem;
+					stall_mem <=0; 
+				end
 		end
 	end
 	arb_mem:
@@ -245,6 +239,7 @@ begin
 	// Appear unready for both instr and data mem
 	l15_instr_header_ack <= 0;
 	l15_mem_header_ack <= 0;
+	transducer_l15_val <= 0;
 
 	// Send the coming response to the instr fetch
 	l15_instr_val			<= l15_transducer_val;
@@ -252,6 +247,7 @@ begin
 	l15_instr_data_1		<= l15_transducer_data_1;
 	l15_instr_returntype	<= l15_transducer_returntype;
 	transducer_l15_req_ack 	<= instr_l15_req_ack;
+	l15_instr_ack 			<= l15_instr_ack;
 end
 
 else
