@@ -22,7 +22,7 @@ logic killReg;
 logic [1:0] killnum;
 
 logic stall_wire;
-
+logic kill_wire;
 
 
 	always_ff @(posedge clk, negedge nrst)
@@ -160,8 +160,8 @@ logic stall_wire;
 		endcase
 	end
 
-assign stall=stall_wire;
-assign kill=killReg;
+assign stall=kill ? 1'b0 :stall_wire;
+assign kill= btaken || killReg? 1'b1   :1'b0 ;
 
  always_ff @(posedge clk)
       begin
