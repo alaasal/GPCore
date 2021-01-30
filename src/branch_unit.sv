@@ -12,7 +12,7 @@ module branch_unit(
 logic [31:0] b_target, j_target;
 
 
-assign b_target = btaken ? pc+B_imm : pc+1; // overflow check!
+assign b_target = btaken ? pc+B_imm : pc+4; // overflow check!
 assign j_target = (jr)? operandA + I_imm : pc + J_imm; 
 
 

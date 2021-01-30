@@ -15,16 +15,17 @@ output logic [1:0] stallnum
 
 
 
-logic [5:0] scoreboard[0:31];
+logic [4:0] scoreboard[0:31];
 logic [2:0] function_unit;
 
-logic stallReg,killReg;
+logic killReg;
 logic [1:0] killnum;
 
+logic stall_wire;
+logic kill_wire;
 
-//assign stall = scoreboard[rd][5] /*in commit stage */ ? 1'b1 : 1'b0;  // zeroing pending 
 
-	always_ff @(negedge clk, negedge nrst)
+	always_ff @(posedge clk, negedge nrst)
 	begin
       	  if (!nrst)
           begin
@@ -34,7 +35,6 @@ logic [1:0] killnum;
 			
 		end
 	killnum<=2'b0;
-	stallReg<=0;
 	killReg <=0;
 	stallnum<=0;
           end
@@ -45,30 +45,38 @@ logic [1:0] killnum;
 
 			begin 	   // pending & write 
 				
+//something to be done
+				if( (|rd)&&  !stall  && !kill)   
+					begin 
+					scoreboard[rd][4]<=1; scoreboard[rd][3]<=1;
+					scoreboard[rd][2]<=1; 
+   					end 
+				else begin end 
+				
 				
 			end 
 		4'b010: 
 			begin 
-				if ((scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4] && !kill)   
+				if ((scoreboard[rs1][4]) && (|rd) && scoreboard[rs1][3] && !kill)   
 				begin
-				stallReg <= 1; 
+				
 				if (!stallnum[1] && stallnum[0]) stallnum<= 2'b00;
 				else begin end
 
 				end
 				else if( (|rd)&&  !stall  && !kill)   
 					begin 
-					scoreboard[rd][5]<=1; scoreboard[rd][4]<=1;
-					scoreboard[rd][3]<=1; 
+					scoreboard[rd][4]<=1; scoreboard[rd][3]<=1;
+					scoreboard[rd][2]<=1; 
    					end 
 				else begin end 
 				
 			end 
 		4'b011: 
 			begin 
-				if (  (scoreboard[rs1][5] || scoreboard[rs2][5]) &&(scoreboard[rs1][4] || scoreboard[rs2][4]) && !kill  )   
+				if (  (scoreboard[rs1][4] || scoreboard[rs2][4]) &&(scoreboard[rs1][3] || scoreboard[rs2][3]) && !kill  )   
 				begin
-				stallReg <= 1; 
+				
 				if (!stallnum[1] && stallnum[0]) stallnum<= 2'b00;
 				else begin end
 
@@ -79,26 +87,26 @@ logic [1:0] killnum;
 			end 
 		4'b100: 
 			begin 
-				if ((scoreboard[rs1][5]) && (|rd) && scoreboard[rs1][4] && !kill)  
+				if ((scoreboard[rs1][4]) && (|rd) && scoreboard[rs1][3] && !kill)  
 				begin
-				stallReg <= 1; 
+				 
 				if (!stallnum[1] && stallnum[0]) stallnum<= 2'b00;
 				else begin end
 
 				end
 				else if( (|rd) && !stall && !kill)   
 					begin 
-					scoreboard[rd][5]<=1; scoreboard[rd][4]<=1;
-					scoreboard[rd][3]<=1;
+					scoreboard[rd][4]<=1; scoreboard[rd][3]<=1;
+					scoreboard[rd][2]<=1; 
    					end 
 				else begin end 
 				
 			end 
 		4'b101: 
 			begin 
-				if ((  scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4]) && !kill  )  
+				if ((  scoreboard[rs1][4] || scoreboard[rs2][4] ) && (scoreboard[rs1][3] || scoreboard[rs2][3]) && !kill  )  
 				begin
-				stallReg <= 1; 
+				
 				if (!stallnum[1] && stallnum[0]) stallnum<= 2'b00;
 				else begin end
 
@@ -110,9 +118,9 @@ logic [1:0] killnum;
 			end 
 		4'b110: 
 			begin 
-				if (( scoreboard[rs1][5] || scoreboard[rs2][5] ) && (scoreboard[rs1][4] || scoreboard[rs2][4])&& (|rd) && !kill)  
+				if (( scoreboard[rs1][4] || scoreboard[rs2][4] ) && (scoreboard[rs1][3] || scoreboard[rs2][3])&& (|rd) && !kill)  
 				begin
-				stallReg <= 1; 
+				
 				if (!stallnum[1] && stallnum[0]) stallnum<= 2'b00;
 				else begin end
 
@@ -120,8 +128,8 @@ logic [1:0] killnum;
 				end
 				else if( !stall && (|rd) && !kill)
 					begin 
-					scoreboard[rd][5]<=1;scoreboard[rd][4]<=1;
-					scoreboard[rd][3]<=1; 
+					scoreboard[rd][4]<=1;scoreboard[rd][3]<=1;
+					scoreboard[rd][2]<=1; 
    					end 
 				else begin end
 				
@@ -138,36 +146,37 @@ logic [1:0] killnum;
  		always_comb
 	begin
 		unique case(op_code)
-			7'b0110111: function_unit =3'b001 ;			//lui
-			7'b0010111: function_unit =3'b001 ;			//auipc
-			7'b1101111: function_unit =3'b001 ;			//jal
-			7'b1100111: function_unit =3'b010 ;			//jalr
-			7'b0010011: function_unit =3'b010 ;			//addi
-			7'b1100011: function_unit =3'b011 ;			//branches	
-			7'b0000011: function_unit =3'b100 ;			//loads
-			7'b0100011: function_unit =3'b101 ;			//stores
-			7'b0110011: function_unit =3'b110 ;			//add 
+			7'b0110111:begin  function_unit =3'b001 ;		end 	//lui
+			7'b0010111:begin function_unit =3'b001 ;		end	//auipc
+			7'b1101111:begin function_unit =3'b001 ;		end	//jal
+			7'b1100111:begin function_unit =3'b010 ;	assign stall_wire = (scoreboard[rs1][3] && ~scoreboard[rs1][2])  /*in commit stage */ ? 1'b1 : 1'b0; 	end	//jalr
+			7'b0010011:begin function_unit =3'b010 ;	assign stall_wire = (scoreboard[rs1][3]&& ~scoreboard[rs1][2])  /*in commit stage */ ? 1'b1 : 1'b0; 	end	//addi
+			7'b1100011:begin function_unit =3'b011 ;	assign stall_wire = ((scoreboard[rs1][3] && ~scoreboard[rs1][2] || scoreboard[rs2][3]) && ~scoreboard[rs1][2])  /*in commit stage */ ? 1'b1 : 1'b0; 	end	//branches	
+			7'b0000011:begin function_unit =3'b100 ;	assign stall_wire = (scoreboard[rs1][3] )  /*in commit stage */ ? 1'b1 : 1'b0;    end	//loads
+			7'b0100011:begin function_unit =3'b101 ;	assign stall_wire = ((scoreboard[rs1][3]  || scoreboard[rs2][3]) && ~scoreboard[rs1][2])  /*in commit stage */ ? 1'b1 : 1'b0; 	end	//stores
+			7'b0110011:begin function_unit =3'b110 ;	assign stall_wire = ((scoreboard[rs1][3]  || scoreboard[rs2][3]) && ~scoreboard[rs1][2])  /*in commit stage */ ? 1'b1 : 1'b0; 	end	//add 
 			
 				default: function_unit = 0;
 		endcase
 	end
 
-assign stall=stallReg;
-assign kill=killReg;
+assign stall=kill ? 1'b0 :stall_wire;
+assign kill= btaken || killReg? 1'b1   :1'b0 ;
 
  always_ff @(posedge clk)
       begin
         for(int j=0;j<32;j=j+1)
 	begin 
-      	scoreboard[j][3:0]<={1'b0,scoreboard[j][3:1]};
+if(scoreboard[j][0] && !scoreboard[j][1]) 
+	 begin 
+	scoreboard[j][4]=0;   
+	scoreboard[j][3]=0; 
+	 end 
+      	scoreboard[j][2:0]={1'b0,scoreboard[j][2:1]};
+	
 	end
-	if (stallReg) begin 
-	if ( !scoreboard[rs1][5] && !scoreboard[rs2][5]&& !scoreboard[rs1][0] && !scoreboard[rs2][0]) //depends on instruction
-		begin 
-		stallReg<=0;
-		
-		end
-	else begin end
+	if (stall_wire) begin 
+	
 				
 				 if(scoreboard[rs1][2]) stallnum<= 2'b11;
 				else if(scoreboard[rs1][1]) stallnum<= 2'b10;
@@ -189,23 +198,23 @@ assign kill=killReg;
       begin
        for(int j=0;j<32;j=j+1)
 	begin 
-      	if(scoreboard[j][0] && !scoreboard[j][1])  begin scoreboard[j][5]<=0;   scoreboard[j][4]<=0;  end 
-	else  begin end    
+      
+	  
 	end
       end
-   always_ff@(negedge clk) begin 
+   always_ff@(posedge clk) begin 
 if (btaken)
 begin 
-	stallReg<=0;
+	//stallReg<=0; waiting test
 	killReg<=1;
 	killnum=killnum+1;
-	scoreboard[rd][5]<=0; scoreboard[rd][4]<=0;
-	scoreboard[rd][3]<=0;
+	scoreboard[rd][4]<=0; scoreboard[rd][3]<=0;
+	scoreboard[rd][2]<=0;
 
 end
 else if (!killnum[1] && killnum[0])
 begin 
-	stallReg<=0;
+	//stallReg<=0; waiting test
 	killReg<=1;
 	killnum=killnum+1;
 
@@ -220,3 +229,4 @@ end
 end 
 
 endmodule
+

@@ -143,14 +143,14 @@ end
       end
       else
       begin
-      	npc = pcReg;
+      	   npc = (PCSEL[1] && ~PCSEL[0]) ? target : pcReg;	
       end
       end
 
     // output
 
-	assign pc = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg-4: pcReg;
-	assign pc2 = (stall && !stallnumin[1] && !stallnumin[0]) ? pcReg2 - 4 : pcReg2;
+	assign pc = pcReg;
+	assign pc2 =  pcReg2;
 
 /************************************************/
 /*			First Pipe 							*/

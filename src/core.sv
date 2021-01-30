@@ -187,13 +187,14 @@ case(arb_state)
 			if(instr_left_cache) 
 				begin 
 					arb_state <= arb_mem;
-					stall_mem <=0; 
+					
 				end
 		end
 	end
 	arb_mem:
 	begin
 		arb_eqmem<=1; 
+		stall_mem <=0; 
 		if(memOp_done && noMore_memOps)
 			begin
 			arb_state <= arb_instr;
