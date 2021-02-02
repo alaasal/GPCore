@@ -316,7 +316,7 @@ module exe_stage(
 	assign pc6 = pcReg6;
 	
 	assign bjtaken6 = btaken | jr4 |j4;
-	assign pcselect5=pcselectReg5;
+	assign pcselect5= bjtaken6 ? pcselectReg5: 2'b00;
 	always_comb begin
         unique case(fn6)
             0: wb_data6  = alu_resReg6;

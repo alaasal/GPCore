@@ -101,8 +101,8 @@ end
         else begin	
 	//stallnumin<=stallnuminin;
 	if ( stall&&!stallnumin[1] && !stallnumin[0]) begin 
-		pcReg		<= pcReg-4;		
-		pcReg2		<= pcReg2-4;
+		pcReg		<= pcReg;		
+		pcReg2		<= pcReg2;
 	end
 	else if(stall && !(!stallnumin[1] && stallnumin[0]) ) 
 	begin 
@@ -259,7 +259,7 @@ case(state_reg)
 		transducer_l15_size	<= 8;
 		transducer_l15_val	<= 0;
 		transducer_l15_req_ack	<= resp_init || l15_transducer_val;
-		instr2 <= (l15_transducer_val) ? {l15_data[7:0], l15_data[15:8], l15_data[23:16], l15_data[31:24]} : 32'h33;	 //Inster no op when cache is busy
+		instr2 <= (l15_transducer_val) ? (stall ) ?  32'h33: {l15_data[7:0], l15_data[15:8], l15_data[23:16], l15_data[31:24]} : 32'h33;	 //Inster no op when cache is busy
 	end  // issue will stall next pipes untill arb_state=arb_mem 
 endcase
        
