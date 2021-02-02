@@ -236,7 +236,7 @@ begin
 case(state_reg)
 	s_req: 
 	begin
-		transducer_l15_address <= pc;
+		transducer_l15_address <= (PCSEL[1] && ~PCSEL[0]) ? target : pc;
 	    transducer_l15_rqtype	<= 0;
 		transducer_l15_size	<= 8;
 		transducer_l15_val	<= 1 && wake_up;
