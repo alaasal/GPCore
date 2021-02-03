@@ -124,8 +124,8 @@ logic kill_wire;
 		endcase
 	end
 
-assign stall=kill ? 1'b0 :stall_wire;
-assign kill= btaken || killReg? 1'b1   :1'b0 ;
+assign stall=kill && ~(~stallnum[1] && stallnum[0]) ? 1'b0 :stall_wire;
+assign kill= (btaken || killReg) && ~stall ? 1'b1   :1'b0 ;
 
  always_ff @(posedge clk)
       begin
@@ -162,11 +162,7 @@ begin
 	
 	killReg<=1;
 	killnum=killnum+1;
-	if (!jr4)begin 
-	scoreboard[rd][4]<=0; scoreboard[rd][3]<=0;
-	scoreboard[rd][2]<=0;
 
-			end 
 
 end
 else if (kill && !killnum[1] && killnum[0])

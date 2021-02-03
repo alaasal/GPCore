@@ -104,8 +104,23 @@ end
 		end
         else begin	
 	
+	if((npc == targetsave) )
+	begin 
+		pcReg		<= npc;	
+		
+		if(killafterreq && targetcame) pcReg2 <= pcReg2;
+		else pcReg2 <=pcReg;
 
-	if ( stall&&!stallnumin[1] && !stallnumin[0]) begin 
+		targetcame <=0;
+		
+		
+	end
+	else if(killafterreq || targetcame )
+	begin 
+		pcReg2		<= 0;
+
+	end	
+	else if ( stall&&!stallnumin[1] && !stallnumin[0]) begin 
 		pcReg		<= pcReg;		
 		pcReg2		<= pcReg2;
 	end
@@ -124,16 +139,12 @@ end
 		pcReg		<= pcReg;		
 		pcReg2		<= pcReg2;
 	end 
-	else if(npc == targetsave )
-	begin 
-		pcReg		<= npc;		// PIPE1
-		pcReg2		<= pcReg;
-		targetcame <=0;
-	end
+
 	else 
 	begin 
 		pcReg		<= npc;		// PIPE1
 		pcReg2		<= pcReg;
+	
 	end
 	end 
 
@@ -154,7 +165,7 @@ end
       else
       begin
       	   npc = (state_reg == s_req) && (PCSEL[1] && ~PCSEL[0]) ? target : pcReg;	
-	//targetsave = (PCSEL[1] && ~PCSEL[0]) ? target : pcReg;
+	
       end
       end
 
@@ -223,6 +234,10 @@ case(state_reg)
 	begin
 		if (req_fire)
 		begin
+			if(killafterreq) begin pcReg	<= targetsave;
+				killafterreq<=0;
+			end
+			else begin end
 			if(l15_transducer_ack)
 				state_reg <= s_resp;
 			else
@@ -237,7 +252,7 @@ case(state_reg)
 		if (resp_fire )
 			begin 
 				state_reg 	<= s_req;
-				killafterreq<=0;
+
 			end
 	end
 endcase     
@@ -298,7 +313,8 @@ case(state_reg)
 		transducer_l15_size	<= 8;
 		transducer_l15_val	<= 0;
 		transducer_l15_req_ack	<= resp_init || l15_transducer_val;
-		instr2 <= (l15_transducer_val) ? killafterreq ? 32'h33: {l15_data[7:0], l15_data[15:8], l15_data[23:16], l15_data[31:24]} : 32'h33;	 //Inster no op when cache is busy
+	
+		instr2 <= (l15_transducer_val) ? (killafterreq || (killnum[0] && !killnum[1])  )  ? 32'h33: {l15_data[7:0], l15_data[15:8], l15_data[23:16], l15_data[31:24]} : 32'h33;	 //Inster no op when cache is busy
 	end  // issue will stall next pipes untill arb_state=arb_mem 
 endcase
        

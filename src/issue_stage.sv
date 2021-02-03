@@ -194,6 +194,7 @@ decode and issue until memDone
 		J_immReg4	<= J_imm3;
 		U_immReg4  	<= U_imm3;
 		S_immReg4 	<= S_imm3;
+		I_immdReg4	<= I_imm3;
 
 		bneqReg4	<= bneq3;
 		btypeReg4	<= btype3;
@@ -214,7 +215,7 @@ decode and issue until memDone
 		BSELReg4	<= 2'b01;
 		alufnReg4	<= 3'b000;
 		fnReg4		<= 3'b000;
-		I_immdReg4	<= 32'b0;
+	
 		rdReg4		<= 5'b0;
 		pcReg4      <= 0;
 		end 
@@ -225,7 +226,7 @@ decode and issue until memDone
 		BSELReg4	<= 2'b01;
 		alufnReg4	<= 3'b000;
 		fnReg4		<= 3'b000;
-		I_immdReg4	<= 32'b0;
+
 		rdReg4		<= 5'b0;
 		pcReg4      <= 0;
 		end
@@ -282,7 +283,7 @@ decode and issue until memDone
 		BSELReg4	<= B_SEL3;
 		alufnReg4	<= alu_fn3;
 		fnReg4		<= fn3;
-		I_immdReg4	<= I_imm3;
+		
 		rdReg4		<= rd3;
 		end
 		
@@ -337,7 +338,7 @@ decode and issue until memDone
 	// =============================================== //
 	
 	// Assign Operand A and Operand B to the outputs wires
-	 assign op_a =  ( !(|rd4) && !(|I_immdReg4) && !(|alufnReg4) && !(|fnReg4) )? 32'b0: operand_a;
+	 assign op_a =  ( !(|rd4) && !(|I_immdReg4) && !(|alufnReg4) && !(|fnReg4) && ~jr3 )? 32'b0: operand_a;
 
 	// Piped Signals from Decode to Execute 
 	// Issue acts such as a cycle delay 
@@ -371,4 +372,5 @@ decode and issue until memDone
 	// Piped Signals ended
 
 endmodule
+
 

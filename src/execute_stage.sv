@@ -242,12 +242,12 @@ module exe_stage(
     // branch unit
 	branch_unit exe_bu (
 	.pc          (pcReg5),
-	.operandA    (op_a),
+	.operandA    (opaReg5),
 	.B_imm       (B_immReg5),
 	.J_imm       (J_immReg5),
-	.I_imm       (op_b),
+	.I_imm       (opbReg5),
 	.btaken      (btaken),
-	.jr          (jrReg5),
+	.jr          (jrReg5 && ~jr4),
 	.j           (jReg5 ),
 	.target      (target)
     );
@@ -315,7 +315,7 @@ module exe_stage(
 
 	assign pc6 = pcReg6;
 	
-	assign bjtaken6 = btaken | j4;
+	assign bjtaken6 = btaken | j4 | jr4;
 	assign pcselect5= btaken || jrReg5 || jReg5 ? pcselectReg5: 2'b00;
 	always_comb begin
         unique case(fn6)
