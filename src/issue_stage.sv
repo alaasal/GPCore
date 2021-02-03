@@ -216,6 +216,7 @@ decode and issue until memDone
 		fnReg4		<= 3'b000;
 		I_immdReg4	<= 32'b0;
 		rdReg4		<= 5'b0;
+		pcReg4      <= 0;
 		end 
 		else if ( killnum[1] && !killnum[0])begin 
 		killnum		<=killnum+1;
@@ -226,6 +227,7 @@ decode and issue until memDone
 		fnReg4		<= 3'b000;
 		I_immdReg4	<= 32'b0;
 		rdReg4		<= 5'b0;
+		pcReg4      <= 0;
 		end
 		else if(stall )
 		begin
