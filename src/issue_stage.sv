@@ -74,6 +74,7 @@ module issue_stage (
 	// Socreboard Signals
 	input bjtaken,
 	output logic stall,
+	output logic [1:0]killnum,
 	output logic [1:0]stallnum,
 	input logic stall_mem,
 	input logic arb_eqmem,
@@ -83,8 +84,8 @@ module issue_stage (
 	// Wires
 	logic [31:0] operand_a, operand_b;   	   // Operands value output from the register file
 	// Scoreboard Wires
+	
 	logic kill;
-
 	// =============================================== //
 	//			Pipe 4			   //
 	// =============================================== //
@@ -119,7 +120,7 @@ module issue_stage (
 	logic [1:0] pcselectReg4;
 	
 	// Scoreboard Regs
-	logic [1:0]killnum;
+	
 	
 /*********************************************
 at cycle 1
@@ -206,18 +207,7 @@ decode and issue until memDone
 		mulDiv_opReg4 	<= mulDiv_op3;
 
 		pcReg4		<= pc3;		
-		
-		if(stall )
-		begin
-		pcselectReg4	<= 2'b00;
-		weReg4		<= 1'b0;
-		BSELReg4	<= 2'b01;
-		alufnReg4	<= 3'b000;
-		fnReg4		<= 3'b000;
-		I_immdReg4	<= 32'b0;
-		rdReg4		<= 5'b0;
-		end
-		else if(kill ) begin 
+		if(kill ) begin 
 		killnum		<=killnum+1;
 		pcselectReg4	<= 2'b00;
 		weReg4		<= 1'b0;
@@ -237,6 +227,17 @@ decode and issue until memDone
 		I_immdReg4	<= 32'b0;
 		rdReg4		<= 5'b0;
 		end
+		else if(stall )
+		begin
+		pcselectReg4	<= 2'b00;
+		weReg4		<= 1'b0;
+		BSELReg4	<= 2'b01;
+		alufnReg4	<= 3'b000;
+		fnReg4		<= 3'b000;
+		I_immdReg4	<= 32'b0;
+		rdReg4		<= 5'b0;
+		end
+		
 		else if (stall_mem ||  ( arb_eqmem && ~memOp_done ) ) 
 		begin 
 		killnum		<= 2'b0;
@@ -303,6 +304,7 @@ decode and issue until memDone
 	.clk(clk),
 	.nrst(nrst),
 	.btaken(bjtaken),
+	.jr4(jr4),
 	.rs1(rs1),
 	.rs2(rs2),
 	.rd(rd3),

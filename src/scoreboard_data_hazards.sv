@@ -5,7 +5,7 @@ input logic [4:0] rs1, // instr[15:15]
 input logic [4:0] rs2, // instr[23:20]
 
 input logic [4:0] rd,
-
+input logic jr4,
 
 input logic [6:0] op_code,
 
@@ -159,18 +159,21 @@ if(scoreboard[j][0] && !scoreboard[j][1])
    always_ff@(posedge clk) begin 
 if (btaken)
 begin 
-	//stallReg<=0; waiting test
+	
 	killReg<=1;
 	killnum=killnum+1;
+	if (!jr4)begin 
 	scoreboard[rd][4]<=0; scoreboard[rd][3]<=0;
 	scoreboard[rd][2]<=0;
 
+			end 
+
 end
-else if (!killnum[1] && killnum[0])
+else if (kill && !killnum[1] && killnum[0])
 begin 
-	//stallReg<=0; waiting test
+	
 	killReg<=1;
-	killnum=killnum+1;
+	killnum<=killnum+1;
 
 end 
 else 

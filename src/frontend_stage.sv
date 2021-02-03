@@ -23,7 +23,7 @@ module frontend_stage(
     input logic clk, 
 	input logic nrst,
 	input logic stall,
-	
+	input logic [1:0]killnum,
     input logic [1:0] PCSEL,		// pc select control signal
     input logic [31:0] target,
 	input logic [1:0] stallnumin,
@@ -58,10 +58,13 @@ module frontend_stage(
 // registers
 logic [31:0] pcReg; 	   // pipe #1 pc
 logic [31:0] pcReg2;	   // pipe #2 from pc to inst mem
-
+logic [31:0] targetsave;
+logic targetcame;
+logic killafterreq;
 // wires
 logic [31:0] npc;   	   // next pc wire
 logic [31:0] pc; 
+;
 //latches
 logic wake_up;
 localparam[1:0]   // 3 states are required for Moore
@@ -77,6 +80,7 @@ begin
 if(!nrst)
 begin
 	wake_up <= 0;
+	
 end
 else
 begin
@@ -99,7 +103,8 @@ end
 
 		end
         else begin	
-	//stallnumin<=stallnuminin;
+	
+
 	if ( stall&&!stallnumin[1] && !stallnumin[0]) begin 
 		pcReg		<= pcReg;		
 		pcReg2		<= pcReg2;
@@ -119,12 +124,17 @@ end
 		pcReg		<= pcReg;		
 		pcReg2		<= pcReg2;
 	end 
+	else if(npc == targetsave )
+	begin 
+		pcReg		<= npc;		// PIPE1
+		pcReg2		<= pcReg;
+		targetcame <=0;
+	end
 	else 
 	begin 
 		pcReg		<= npc;		// PIPE1
 		pcReg2		<= pcReg;
 	end
-
 	end 
 
 	end 
@@ -134,7 +144,7 @@ end
       if (state_reg == s_resp && (resp_fire))
       begin
         unique case(PCSEL)
-            0: npc = pcReg +4;
+            0: npc = targetcame ? targetsave : pcReg +4;
             1: npc =  32'h40000000;
             2: npc = target;
             3: npc = npc;
@@ -143,7 +153,8 @@ end
       end
       else
       begin
-      	   npc = (PCSEL[1] && ~PCSEL[0]) ? target : pcReg;	
+      	   npc = (state_reg == s_req) && (PCSEL[1] && ~PCSEL[0]) ? target : pcReg;	
+	//targetsave = (PCSEL[1] && ~PCSEL[0]) ? target : pcReg;
       end
       end
 
@@ -157,19 +168,44 @@ end
 /*			INSTR FETCH							*/
 /************************************************/
 
+// logic for pcselect if not in req time 
+
+always_ff @(posedge clk , negedge nrst)
+begin
+
+	if (!nrst) begin
+		targetsave  <=0;
+		targetcame  <=0;
+		killafterreq<=0;
+				end
+
+	else
+	begin
+	   	if ( PCSEL[1] && ~PCSEL[0] && ~(state_reg == s_req) )
+		begin
+		targetsave<=target;
+		targetcame<=1;
+		 end 
+		else	 
+		targetsave<=targetsave;
+		
+	
+		if(~(!killnum[0] && !killnum[1]) && targetcame && state_reg == s_resp) 
+				killafterreq<=1;
+				
+			 
+	end
+end
 
 
 
 
 
-
-
-
-assign req_fire =  l15_transducer_header_ack && transducer_l15_val && (state_reg == s_req) && wake_up;
+assign req_fire =  l15_transducer_header_ack && transducer_l15_val && (state_reg == s_req) && wake_up ;
 assign resp_fire = l15_transducer_val && (state_reg == s_resp) && (!resp_init);
 assign resp_init = ( (l15_transducer_returntype != `LOAD_RET) && (l15_transducer_returntype != `IFILL_RET) && (l15_transducer_returntype != `ST_ACK) ) && l15_transducer_val;
 
-
+ 
 	
 always_ff @(posedge clk , negedge nrst)
 begin
@@ -198,8 +234,11 @@ case(state_reg)
 			state_reg = s_resp;
 	s_resp:
 	begin
-		if (resp_fire)
-			state_reg <= s_req;
+		if (resp_fire )
+			begin 
+				state_reg 	<= s_req;
+				killafterreq<=0;
+			end
 	end
 endcase     
 end
@@ -209,22 +248,22 @@ logic[31:0] l15_data;
 //code for flipping and choosing the right bits
 always_comb
 begin
-case(transducer_l15_address[3:2])
-2'b00: begin
-l15_data = l15_transducer_data_0[63:32];
-end
-2'b01: begin
-l15_data = l15_transducer_data_0[31:0];
-end
-2'b10: begin
-l15_data = l15_transducer_data_1[63:32];
-end
-2'b11: begin
-l15_data = l15_transducer_data_1[31:0];
-end
-default: begin
-end
-endcase
+	case(transducer_l15_address[3:2])
+	2'b00: begin
+		l15_data = l15_transducer_data_0[63:32];
+		end
+	2'b01: begin
+		l15_data = l15_transducer_data_0[31:0];
+		end
+	2'b10: begin
+		l15_data = l15_transducer_data_1[63:32];
+		end
+	2'b11: begin
+		l15_data = l15_transducer_data_1[31:0];
+		end
+	default: begin
+	end
+	endcase
 end
 
 
@@ -259,7 +298,7 @@ case(state_reg)
 		transducer_l15_size	<= 8;
 		transducer_l15_val	<= 0;
 		transducer_l15_req_ack	<= resp_init || l15_transducer_val;
-		instr2 <= (l15_transducer_val) ? (stall ) ?  32'h33: {l15_data[7:0], l15_data[15:8], l15_data[23:16], l15_data[31:24]} : 32'h33;	 //Inster no op when cache is busy
+		instr2 <= (l15_transducer_val) ? killafterreq ? 32'h33: {l15_data[7:0], l15_data[15:8], l15_data[23:16], l15_data[31:24]} : 32'h33;	 //Inster no op when cache is busy
 	end  // issue will stall next pipes untill arb_state=arb_mem 
 endcase
        

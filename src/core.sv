@@ -71,6 +71,7 @@ module core(
 	
 	//Scoreboared Logic 
 	logic stall;
+	logic [1:0]killnum;
 	logic bjtaken;
 	logic [6:0] opcode3;
 
@@ -300,6 +301,7 @@ end
 	//Scoreboared Signals
 	.stall          (stall),
 	.stallnumin      (stallnum),
+	.killnum			(killnum),
 	 
 	.l15_transducer_ack                 (l15_instr_ack),
     .l15_transducer_header_ack          (l15_instr_header_ack),
@@ -454,6 +456,7 @@ end
 	
 	// Scoreboared Signals
 	.stall          (stall),
+	.killnum 			(killnum),
 	.bjtaken	(bjtaken),
 	.opcode3	(opcode3),
 	.stallnum	(stallnum),

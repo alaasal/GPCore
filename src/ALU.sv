@@ -39,10 +39,10 @@ module alu(
 					if(bneq)  btaken =  |result ? 1'b1 : 1'b0 ; // result not equal 0 bne 
 					else      btaken = ~|result ? 1'b1 : 1'b0 ; // result equal 0 beq 
 						end 
-				4'b0010: 	  btaken =  |result ? 1'b1 : 1'b0 ; // blt
+				4'b0010: 	  btaken =  |result ? 1'b1 : 1'b0  ; // blt
 				4'b0011: 	  btaken =  |result ? 1'b1 : 1'b0 ; // bltu
-				4'b1001: 	  btaken =  |result ? 1'b1 : 1'b0 ; // bge
-				4'b1010: 	  btaken =  |result ? 1'b1 : 1'b0 ; // bgeu
+				4'b1001: 	  btaken =  |result ? 1'b1 : (operandA == operandB) ? 1'b1 : 1'b0 ; // bge
+				4'b1010: 	  btaken =  |result ? 1'b1 : (operandA == operandB) ? 1'b1 : 1'b0 ; // bgeu
 
 					default:  btaken = 0;
 				endcase

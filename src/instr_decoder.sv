@@ -69,7 +69,7 @@ module instr_decoder(
 
 
 
-	assign instr_25 = (~& funct7[6:1]) & funct7[0];     //funct7 == 0000_001
+	assign instr_25 = ~(& funct7[6:1]) & funct7[0];     //funct7 == 0000_001
 	//noOp
 	assign noOp = ~(|op); // if op code = 000000 then set opcode0 to 1
 	// decode instructions							                                // opcode
@@ -87,8 +87,8 @@ module instr_decoder(
 	assign utype = ~op[6] & op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];    //0110111 auipc
 
 	// rtype op								  // instr[30] funct3
-	assign i_add  = rtype & ~instr_30 & (~&funct3);				  //   	0	000
-	assign i_sub  = rtype &  instr_30 & (~&funct3);				  //   	1	000
+	assign i_add  = rtype & ~instr_30 & ~(|funct3);				  //   	0	000
+	assign i_sub  = rtype &  instr_30 & ~(|funct3);				  //   	1	000
 	assign i_sll  = rtype & ~instr_30 & ~funct3[2] & ~funct3[1] &  funct3[0];  //   0	001
 	assign i_slt  = rtype & ~instr_30 & ~funct3[2] &  funct3[1] & ~funct3[0];  //   0	010
 	assign i_sltu = rtype & ~instr_30 & ~funct3[2] &  funct3[1] &  funct3[0];  //   0	011
@@ -99,7 +99,7 @@ module instr_decoder(
 	assign i_and  = rtype & ~instr_30 & (&funct3); 				  //   	0	111
 
 	// rtype mul div                                                                  instr[25]  funct3
-	assign i_mul    = rtype & instr_25 & (~&funct3);                            //        0      000
+	assign i_mul    = rtype & instr_25 & ~(|funct3);                            //        0      000
 	assign i_mulh   = rtype & instr_25 & ~funct3[2] & ~funct3[1] &  funct3[0];  //        0      001
 	assign i_mulhsu = rtype & instr_25 & ~funct3[2] & funct3[1]  & ~funct3[0];  //        0      010
 	assign i_mulhu  = rtype & instr_25 & ~funct3[2] & funct3[1]  & funct3[0];   //        0      011
@@ -109,7 +109,7 @@ module instr_decoder(
 	assign i_remu   = rtype & instr_25 & (&funct3);                             //        0      111
     
 	// itype op
-	assign i_addi  = itype & (~&funct3);					  //   	x	000
+	assign i_addi  = itype & ~(|funct3);					  //   	x	000
 	assign i_slti  = itype & ~funct3[2] &  funct3[1] & ~funct3[0];		  //	x	010
 	assign i_sltiu = itype & ~funct3[2] &  funct3[1] &  funct3[0];		  //	x	011
 	assign i_xori  = itype &  funct3[2] & ~funct3[1] & ~funct3[0];		  //	x	100
@@ -119,8 +119,8 @@ module instr_decoder(
 	assign i_srli  = itype & ~instr_30  &  funct3[2] & ~funct3[1] & funct3[0]; //	0	101
 	assign i_srai  = itype &  instr_30  &  funct3[2] & ~funct3[1] & funct3[0]; //	1	101 
 
-	// btype op
-	assign BEQ  = btype & (~&funct3);					  //   	x	000
+	// btype o
+	assign BEQ  = btype & ~(|funct3);		  //   	x	000
 	assign BNE  = btype & ~funct3[2] &  ~funct3[1] & funct3[0];		  //	x	001
 	assign BLT  = btype & funct3[2] &  ~funct3[1] &  ~funct3[0];		  //	x	100
 	assign BGE  = btype &  funct3[2] & ~funct3[1] & funct3[0];		  //	x	101
@@ -129,7 +129,7 @@ module instr_decoder(
 	
 	//jmp op
 	assign i_jal	= jtype;
-	assign i_jalr	= jrtype & (~&funct3);
+	assign i_jalr	= jrtype & ~(|funct3);
 
 
 	//utype op
@@ -243,7 +243,7 @@ module instr_decoder(
 	// 011 -> immediate
 	// 100 -> auipcimm
 	// 111 -> load
-	assign fn[0] = i_jal | i_jalr | lui ;
+	assign fn[0] = i_jal | i_jalr | lui | aupc ;
 	assign fn[1] = i_mul | i_mulh | i_mulhsu | i_mulhu | i_rem | i_remu | i_div | i_divu | lui;
 	assign fn[2] = ltype| aupc;		// to set fn to 0 (will be edited when branch, jump, mul/div operations added)
 endmodule

@@ -83,8 +83,8 @@ module instdec_stage(
 	end
 	else if(stall&& stallnumin[1] && !stallnumin[0] ) 
 	begin 
-		instrReg3	<=instrReg3;
-		pcReg3		<=pcReg3;
+		instrReg3	<= instr2;
+		pcReg3		<=pc2;
 	end 
 	else if(!stall &&!stallnumin[1] && stallnumin[0] ) 
 	begin 

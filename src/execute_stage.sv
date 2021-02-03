@@ -220,7 +220,7 @@ module exe_stage(
 		weReg6 		<= weReg5;
 
 		U_immReg6 	<= U_immReg5;
-                AU_immReg6 	<= U_immReg5+pcReg5 ;
+        AU_immReg6 	<= U_immReg5+pcReg5 ;
 		
 		mul_divReg6 	<= mul_div5;
 
@@ -315,7 +315,7 @@ module exe_stage(
 
 	assign pc6 = pcReg6;
 	
-	assign bjtaken6 = btaken | jr4 | j4;
+	assign bjtaken6 = btaken | j4;
 	assign pcselect5= btaken || jrReg5 || jReg5 ? pcselectReg5: 2'b00;
 	always_comb begin
         unique case(fn6)
