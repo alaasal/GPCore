@@ -9,7 +9,7 @@ input logic jr4,
 
 input logic [6:0] op_code,
 
-output logic stall,kill,
+output logic stall,kill,bigstallwire,
 output logic [1:0] stallnum
 );
 
@@ -20,10 +20,13 @@ logic [2:0] function_unit;
 
 logic killReg;
 logic [1:0] killnum;
+logic bigstall;
 
 logic stall_wire;
 logic kill_wire;
 
+
+assign bigstallwire=bigstall;
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
@@ -37,6 +40,7 @@ logic kill_wire;
 	killnum<=2'b0;
 	killReg <=0;
 	stallnum<=0;
+	bigstall<=1;
           end
           else 
 	  begin 
@@ -144,12 +148,11 @@ if(scoreboard[j][0] && !scoreboard[j][1])
 	if (stall_wire) begin 
 	
 					
-				 if(scoreboard[rs1][2] || scoreboard[rs2][2]) stallnum<= 2'b11;
-				else if(scoreboard[rs1][1] || scoreboard[rs2][1]) stallnum<= 2'b10;
-				else if(scoreboard[rs1][0] || scoreboard[rs2][0]) stallnum<= 2'b01;
+				 if(scoreboard[rs1][2] || scoreboard[rs2][2]) begin stallnum<= 2'b11; bigstall<=0; end 
+				else if(scoreboard[rs1][1] || scoreboard[rs2][1]) begin stallnum<= 2'b10; bigstall<=0; end
+				else if(scoreboard[rs1][0] || scoreboard[rs2][0]) begin stallnum <= 2'b01; end
 				
-				else begin end
-
+				else  begin stallnum<= 2'b00; bigstall<=1; end
 		end
 	else begin end
 	

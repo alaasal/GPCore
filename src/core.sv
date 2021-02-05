@@ -71,6 +71,7 @@ module core(
 	
 	//Scoreboared Logic 
 	logic stall;
+	logic bigstallwire;
 	logic [1:0]killnum;
 	logic bjtaken;
 	logic [6:0] opcode3;
@@ -377,7 +378,8 @@ end
 	.stallnumin	(stallnum),
 	.stall_mem 	(stall_mem),
 	.arb_eqmem	(arb_eqmem),
-	.memOp_done 	(memOp_done)	
+	.memOp_done 	(memOp_done),
+	.bigstallwire(bigstallwire)
 	);
 
 	// =============================================== //
@@ -462,7 +464,8 @@ end
 	.stallnum	(stallnum),
 	.stall_mem 	(stall_mem),
 	.arb_eqmem	(arb_eqmem),
-	.memOp_done 	(memOp_done)	
+	.memOp_done 	(memOp_done),
+	.bigstallwire	(bigstallwire)	
     );
 
 	// =============================================== //

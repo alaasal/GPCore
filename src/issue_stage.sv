@@ -73,7 +73,7 @@ module issue_stage (
 	
 	// Socreboard Signals
 	input bjtaken,
-	output logic stall,
+	output logic stall,bigstallwire,
 	output logic [1:0]killnum,
 	output logic [1:0]stallnum,
 	input logic stall_mem,
@@ -230,7 +230,19 @@ decode and issue until memDone
 		rdReg4		<= 5'b0;
 		pcReg4      <= 0;
 		end
-		else if(stall )
+	//&& ~(~stallnum[1] && stallnum[0]) && ~bigstallwire
+	else if(stall && (~stallnum[1] && stallnum[0]) && ~bigstallwire )
+		begin
+		
+		pcselectReg4	<= pcselect3;
+		weReg4		<= we3;
+		BSELReg4	<= B_SEL3;
+		alufnReg4	<= alu_fn3;
+		fnReg4		<= fn3;
+		
+		rdReg4		<= rd3;
+		end
+		else if(stall  )
 		begin
 		pcselectReg4	<= 2'b00;
 		weReg4		<= 1'b0;
@@ -314,7 +326,8 @@ decode and issue until memDone
 	.op_code(opcode3),
 	.stall(stall),
 	.kill(kill),
-	.stallnum(stallnum)
+	.stallnum(stallnum),
+	.bigstallwire(bigstallwire)
 	);
 
  
