@@ -47,7 +47,7 @@ module exe_stage(
 	output logic [3:0] mem_l15_rqtype, 
 	output logic [2:0] mem_l15_size,
 	output logic [31:0] mem_l15_address,
-	output logic [31:0] mem_l15_data,
+	output logic [63:0] mem_l15_data,
     output logic mem_l15_val,
 
 	//OpenPiton Response

@@ -232,7 +232,7 @@ module piton_fsm(
 	output logic [3:0] core_l15_rqtype, 
 	output logic [2:0] core_l15_size,
 	output logic [31:0] core_l15_address,
-	output logic [31:0] core_l15_data,
+	output logic [63:0] core_l15_data,
 	
     output logic core_l15_val,
 
@@ -318,13 +318,13 @@ always_comb begin
     s_req: begin
         memOp_done       = 0;
         baddr            = addr6[1:0];
-        core_l15_data    = wdata;
+        core_l15_data    = {wdata, wdata};
         core_l15_address = addr6;
         core_l15_val	 = 1 && !got_header;
         //store operation
         if (bw) begin
             core_l15_rqtype  = `STORE_RQ;
-            core_l15_data    = wdata;
+            core_l15_data    = {wdata, wdata};
             case (bw)
                 4'b1111: core_l15_size	= `MSG_DATA_SIZE_4B;
                 4'b1100, 4'b0011: core_l15_size	 = `MSG_DATA_SIZE_2B;
@@ -379,7 +379,7 @@ module mem_wrap(
 	output logic [3:0] mem_l15_rqtype, 
 	output logic [2:0] mem_l15_size,
 	output logic [31:0] mem_l15_address,
-	output logic [31:0] mem_l15_data,
+	output logic [63:0] mem_l15_data,
 	
     output logic mem_l15_val,
 

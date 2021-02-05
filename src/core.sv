@@ -8,7 +8,7 @@ module core(
 	output logic[4:0] transducer_l15_rqtype, 
 	output logic[2:0] transducer_l15_size,
 	output logic[31:0] transducer_l15_address,
-	output logic[31:0] transducer_l15_data,
+	output logic[63:0] transducer_l15_data,
 	output logic transducer_l15_val,
 	input logic l15_transducer_ack,
 	input logic l15_transducer_header_ack,
@@ -82,7 +82,7 @@ module core(
 logic[4:0] instr_l15_rqtype;
 logic[2:0] instr_l15_size;
 logic[31:0] instr_l15_address;
-logic[31:0] instr_l15_data;
+logic[63:0] instr_l15_data;
 logic instr_l15_val;
 logic l15_instr_ack;
 logic l15_instr_header_ack;
@@ -99,7 +99,7 @@ logic instr_l15_req_ack;
 logic[4:0] mem_l15_rqtype; 
 logic[2:0] mem_l15_size;
 logic[31:0] mem_l15_address;
-logic[31:0] mem_l15_data;
+logic[63:0] mem_l15_data;
 logic mem_l15_val;
 logic l15_mem_ack;
 logic l15_mem_header_ack;

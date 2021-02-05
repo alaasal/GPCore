@@ -36,7 +36,7 @@ module frontend_stage(
 	output logic[4:0] transducer_l15_rqtype, 
 	output logic[2:0] transducer_l15_size,
 	output logic[31:0] transducer_l15_address,
-	output logic[31:0] transducer_l15_data,
+	output logic[63:0] transducer_l15_data,
 	output logic transducer_l15_val,
 	input logic l15_transducer_ack,
 	input logic l15_transducer_header_ack,
