@@ -43,7 +43,7 @@ module mul_div (
                 div = -(2**31);
             end else begin
                 rem = a % b;
-                div = a / b;
+                div = $signed({a[31] & sign_a, a}) / $signed({b[31] & sign_b, b});;
             end
                 case(mulDiv_op[1:0])
                     0, 1: res = div;
