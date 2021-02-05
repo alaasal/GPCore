@@ -26,7 +26,8 @@ module csr_regfile(
 	output logic m_eie, m_tie,s_eie, s_tie,
 
 	output logic u_eie, u_tie, u_sie,
-	output mode::mode_t     current_mode = mode::M,
+	//output mode::mode_t     current_mode = mode::M,
+	output mode::mode_t     current_mode,
 
 	// To front end
 	output logic [31:0] epc
@@ -43,7 +44,8 @@ module csr_regfile(
 	logic status_spie;
 	logic status_mpie;
 	logic status_spp;
-	mode::mode_t status_mpp  = mode::U;
+	//mode::mode_t status_mpp  = mode::U;
+	mode::mode_t status_mpp;
 	logic status_sum;
 
 	// ustatus
@@ -335,6 +337,7 @@ assign ucause = {
 always_ff @(posedge clk, negedge nrst) begin
 	if (!nrst)
 	  begin
+		current_mode 		<= mode::M; // M-mode is the first mode entered at reset.
 		status_sie  		<= 0;
     		status_mie  		<= 0;
     		status_spie 		<= 0;
