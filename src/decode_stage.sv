@@ -38,7 +38,7 @@ module instdec_stage(
 	// Memory Request
     output logic [3:0] mem_op3,
 	// MulDiv Operation 
-    output logic [2:0] mulDiv_op3,
+    output logic [3:0] mulDiv_op3,
 
 	// Program Counter Select Piped to Execute Unit
 	// until Branch and Jumps target is calculated

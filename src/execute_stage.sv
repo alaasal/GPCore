@@ -24,7 +24,7 @@ module exe_stage(
 	input logic auipc4,
 
 	input logic [3:0] mem_op4,
-	input logic [2:0] mulDiv_op4,
+	input logic [3:0] mulDiv_op4,
 
 	input logic [31:0] pc4,
 	input logic [1:0] pcselect4,
@@ -100,7 +100,7 @@ module exe_stage(
 	logic LUIReg5;
 	logic auipcReg5;
 
-	logic [2:0] mulDiv_opReg5;
+	logic [3:0] mulDiv_opReg5;
 
 	logic [31:0] pcReg5;	
 	logic [1:0] pcselectReg5;

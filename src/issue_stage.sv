@@ -32,7 +32,7 @@ module issue_stage (
 	input logic auipc3,
 
 	input logic [3:0] mem_op3,
-	input logic [2:0] mulDiv_op3,
+	input logic [3:0] mulDiv_op3,
 
 	input logic [31:0] pc3,
 	input logic [1:0] pcselect3,
@@ -65,7 +65,7 @@ module issue_stage (
 
 	output logic [3:0] mem_op4,
 
-	output logic [2:0] mulDiv_op4,
+	output logic [3:0] mulDiv_op4,
 
 	output logic [31:0] pc4,
 	output logic [1:0] pcselect4,
@@ -114,7 +114,7 @@ module issue_stage (
 	logic auipcReg4;
 
 	logic [3:0] mem_opReg4;
-	logic [2:0] mulDiv_opReg4;
+	logic [3:0] mulDiv_opReg4;
 
 	logic [31:0] pcReg4;
 	logic [1:0] pcselectReg4;

@@ -26,7 +26,7 @@ module instr_decoder(
 	output logic [3:0] mem_op,  //mem operation type
 
 	// Multiplier Decode Signals
-	output logic [2:0] mulDiv_op,
+	output logic [3:0] mulDiv_op,
 
 	// Program Counter Select Piped to Execute Unit
 	// until Branch and Jumps target is calculated	
@@ -213,20 +213,30 @@ module instr_decoder(
 	assign alu_fn[2] = i_xor | i_xori| i_srl  | i_srli  | i_or  | i_ori  | i_and | i_andi| i_sra | i_srai;
 	assign alu_fn[3] = i_sub | i_sra | i_srai | BEQ | BNE | BGE  | BGEU ;
 
-    
-	// inst signal controls the type of instruction done by the mul_div
-	// 000 -> mul 	
-	// 001 -> mulh
-	// 010 -> mulhsu
-	// 011 -> mulhu
-	// 101 -> div 
-	// 100 -> divu
-	// 111 -> rem
-	// 110 -> remu
+    /*
+    mulDiv_op
+    mulDiv_op[3]    -> mul[h][s][u] = 0, div[u]/rem[u] = 1
+    mulDiv_op[2]    -> div/mul = 0, mulh[s][u]/rem[u] = 1
+    mulDiv_op[1:0]  -> signed = 1, unsigned = 3, 
+    ----------------------|
+    mulDiv_op | operation |
+    ----------------------|
+    4'b0000   | no_op     |
+    4'b0011   | MUL       |
+    4'b0101   | MULH      |
+    4'b0111   | MULHU     |
+    4'b0110   | MULHSU    |
+    4'b1001   | DIV       |
+    4'b1011   | DIVU      |
+    4'b1101   | REM       |
+    4'b1111   | REMU      |
+    ----------------------|
+    */ 
         
-	assign mulDiv_op[0] =  i_div  | i_rem  | i_mulh   | i_mulhu;
-	assign mulDiv_op[1] =  i_remu | i_rem  | i_mulhsu | i_mulhu;
-	assign mulDiv_op[2] =  i_div  | i_divu | i_rem    | i_remu; 
+	assign mulDiv_op[0] =  i_mul | i_mulh  | i_mulhu | i_div | i_divu | i_rem | i_remu;
+	assign mulDiv_op[1] =  i_mul | i_mulhu | i_mulhsu| i_divu| i_remu;
+	assign mulDiv_op[2] =  i_mulh| i_mulhu | i_mulhsu| i_rem | i_remu; 
+    assign mulDiv_op[3] =  i_div | i_divu  | i_rem   | i_remu;
 
 	assign bneq = BNE ; 
 	assign j = i_jal;

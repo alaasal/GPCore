@@ -61,7 +61,7 @@ module core(
     logic ld_addr_misaligned6;
     logic samo_addr_misaligned6;
 
-	logic [2:0] mulDiv_op4, mulDiv_op3;
+	logic [3:0] mulDiv_op4, mulDiv_op3;
 	logic [31:0] mul_div6;	
 	
 	// Signals transfered from Execute results to Commit stage (Fall Throught)
