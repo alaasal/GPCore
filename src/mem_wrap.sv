@@ -24,6 +24,8 @@ module mem_decode(
     input logic [31:0] op_a4,        //base address
     input logic [31:0] op_b4,        //src for store ops, I_imm offset for load ops
     input logic [31:0] S_imm4,       //S_imm offset
+	input logic stall_mem,dmem_finished,
+	
 
     output logic [31:0] addr6,
     output logic [31:0] data_in6, 
@@ -67,8 +69,11 @@ module mem_decode(
 
     //pipe5 memory controls
     logic [3:0][7:0] data_out6;
+	logic memstallReg;
+	logic memstallwire;
 
-
+assign memstallwire = ( dmem_finished && stall_mem)  ? 1'b0 : memstallReg;
+ 
     //pipe5
     always_ff @(posedge clk, negedge nrst) begin
         if (!nrst) begin
@@ -76,11 +81,22 @@ module mem_decode(
             op_aReg5    <= 0;
             op_bReg5    <= 0;
             S_immReg5   <= 0;
-        end else begin
+			memstallReg	<= 0;
+        end else begin	
+		if(stall_mem && ~(memstallwire) ) begin
             mem_opReg5  <= mem_op4;
             op_aReg5    <= op_a4;
             op_bReg5    <= op_b4;
             S_immReg5   <= S_imm4;
+		end 
+		else if (stall_mem && memstallwire && memstallReg) begin 
+            mem_opReg5  <= mem_opReg5;
+            op_aReg5    <= op_aReg5;
+            op_bReg5    <= op_bReg5;
+            S_immReg5   <= S_immReg5;
+		end
+		if(stall_mem) memstallReg <=1;
+		if ( dmem_finished) memstallReg<=0;
         end
     end
 
@@ -371,6 +387,7 @@ module mem_wrap(
     input logic [31:0] op_a4,        //base address
     input logic [31:0] op_b4,        //src for store ops, I_imm offset for load ops
     input logic [31:0] S_imm4,       //S_imm offset
+	input logic stall_mem,dmem_finished,
 
     //OpenPiton Request
 	output logic [3:0] mem_l15_rqtype, 
@@ -413,6 +430,9 @@ module mem_wrap(
     .op_a4                    (op_a4),      //base address
     .op_b4                    (op_b4),      //src for store ops, I_imm offset for load ops
     .S_imm4                   (S_imm4),     //S_imm offset
+	.stall_mem			   (stall_mem),
+	.dmem_finished 		   (dmem_finished),
+	
         //outputs
     .addr6                    (addr6),
     .data_in6                 (data_in6),

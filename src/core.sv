@@ -508,7 +508,8 @@ end
 	
 	.pc4          (pc4),
 	.pcselect4    (pcselect4),
-	.stall_mem 	(stall_mem),
+	.stall_mem 	(stall_mem),	
+	.dmem_finished (dmem_finished),
 
 	// Outputs
 	.rd6          		(rd6),

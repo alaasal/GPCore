@@ -28,7 +28,7 @@ module exe_stage(
 
 	input logic [31:0] pc4,
 	input logic [1:0] pcselect4,
-	input logic stall_mem,
+	input logic stall_mem,dmem_finished,
     
 	output logic [31:0] wb_data6,
 	output logic we6,
@@ -74,6 +74,7 @@ module exe_stage(
 	logic j5; 
 	logic jr5;
 	logic [31:0] mul_div5;
+
 
 	// =============================================== //
 	//			Pipe 5			   //
@@ -268,6 +269,8 @@ module exe_stage(
     .op_a4                 (op_a),  //base address
     .op_b4                 (op_b), //src for store ops, I_imm offset for load ops
     .S_imm4                (S_imm4), //S_imm offset
+	.stall_mem			   (stall_mem),
+	.dmem_finished 		   (dmem_finished),
 
     //OpenPiton Request
 	.mem_l15_rqtype        (mem_l15_rqtype),
