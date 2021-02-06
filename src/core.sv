@@ -70,7 +70,7 @@ module core(
 	logic [4:0] rd6Issue;
 	
 	//Scoreboared Logic 
-	logic stall;
+	logic stall,discard,nostall;
 	logic bigstallwire;
 	logic [1:0]killnum;
 	logic bjtaken;
@@ -303,6 +303,9 @@ end
 	.stall          (stall),
 	.stallnumin      (stallnum),
 	.killnum			(killnum),
+	.bigstallwire(bigstallwire),
+	.discardwire(discard),
+	.nostall(nostall),
 	 
 	.l15_transducer_ack                 (l15_instr_ack),
     .l15_transducer_header_ack          (l15_instr_header_ack),
@@ -380,6 +383,7 @@ end
 	.arb_eqmem	(arb_eqmem),
 	.memOp_done 	(memOp_done),
 	.bigstallwire(bigstallwire)
+
 	);
 
 	// =============================================== //
@@ -465,7 +469,9 @@ end
 	.stall_mem 	(stall_mem),
 	.arb_eqmem	(arb_eqmem),
 	.memOp_done 	(memOp_done),
-	.bigstallwire	(bigstallwire)	
+	.bigstallwire	(bigstallwire),
+	.discard(discard),
+	.nostall(nostall)	
     );
 
 	// =============================================== //

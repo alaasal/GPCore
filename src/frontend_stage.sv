@@ -22,12 +22,13 @@
 module frontend_stage(
     input logic clk, 
 	input logic nrst,
-	input logic stall,
+	input logic stall,bigstallwire,nostall,
 	input logic [1:0]killnum,
     input logic [1:0] PCSEL,		// pc select control signal
     input logic [31:0] target,
 	input logic [1:0] stallnumin,
 
+	output logic discardwire,
     output logic [31:0] pc2,	// pc at instruction mem pipe #2
     output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
     
@@ -61,10 +62,11 @@ logic [31:0] pcReg2;	   // pipe #2 from pc to inst mem
 logic [31:0] targetsave;
 logic targetcame;
 logic killafterreq;
+logic discardReg;
 // wires
 logic [31:0] npc;   	   // next pc wire
 logic [31:0] pc; 
-;
+
 //latches
 logic wake_up;
 localparam[1:0]   // 3 states are required for Moore
@@ -89,7 +91,17 @@ if (wake_up == 0)
 	wake_up <= l15_transducer_val;
 end
 end
+// if bigstall happens rise signal delay execution it will do 
+/* 
+1 pcreg -> pcreg  
+  pcreg -> pcreg2
+  instrugreg3 will out noOp
 
+
+*/
+
+assign discard = (~bigstallwire && !stallnumin[1] && stallnumin[0] && stall) ? 1'b1 : 1'b0; 
+assign discardwire =discardReg;
 /************************************************/
 /*			First Pipe 							*/
 /*			PC FETCH							*/
@@ -104,7 +116,21 @@ end
 		end
         else begin	
 	
-	if((npc == targetsave) )
+
+	if ( discard || (stall && nostall ) )
+	begin 
+		pcReg		<= pcReg2;		
+		pcReg2		<= pcReg2;
+
+	end
+		else if ( discardReg && state_reg == s_resp  )
+	begin 
+		pcReg		<= pcReg2;		
+		pcReg2		<= pcReg2;
+		targetcame <=0;
+
+	end
+	else if((npc == targetsave) )
 	begin 
 		pcReg		<= npc;	
 		
@@ -188,6 +214,7 @@ begin
 		targetsave  <=0;
 		targetcame  <=0;
 		killafterreq<=0;
+		discardReg <=0;
 				end
 
 	else
@@ -205,6 +232,11 @@ begin
 				killafterreq<=1;
 				
 			 
+		if (discard || (stall && nostall ))
+		begin 
+		discardReg<=1;
+
+		end 
 	end
 end
 
@@ -234,10 +266,15 @@ case(state_reg)
 	begin
 		if (req_fire)
 		begin
-			if(killafterreq) begin pcReg	<= targetsave;
-				killafterreq<=0;
-			end
+			if(killafterreq)	
+			 begin 
+				pcReg	<= targetsave;
+				killafterreq<=0; 
+			 end
 			else begin end
+
+
+			
 			if(l15_transducer_ack)
 				state_reg <= s_resp;
 			else
@@ -252,6 +289,9 @@ case(state_reg)
 		if (resp_fire )
 			begin 
 				state_reg 	<= s_req;
+
+			if(discardReg) discardReg <=0;
+			else begin end
 
 			end
 	end
@@ -314,7 +354,7 @@ case(state_reg)
 		transducer_l15_val	<= 0;
 		transducer_l15_req_ack	<= resp_init || l15_transducer_val;
 	
-		instr2 <= (l15_transducer_val) ? (killafterreq || (killnum[0] && !killnum[1])  )  ? 32'h33: {l15_data[7:0], l15_data[15:8], l15_data[23:16], l15_data[31:24]} : 32'h33;	 //Inster no op when cache is busy
+		instr2 <= (l15_transducer_val) ? (killafterreq || (killnum[0] && !killnum[1]) || discardReg ||discard || (stall &&nostall ) )  ? 32'h33: {l15_data[7:0], l15_data[15:8], l15_data[23:16], l15_data[31:24]} : 32'h33;	 //Inster no op when cache is busy
 	end  // issue will stall next pipes untill arb_state=arb_mem 
 endcase
        

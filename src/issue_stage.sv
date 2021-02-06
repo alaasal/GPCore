@@ -72,14 +72,15 @@ module issue_stage (
 	// Piped Signals Ended
 	
 	// Socreboard Signals
-	input bjtaken,
-	output logic stall,bigstallwire,
+	input logic bjtaken,discard,
+	output logic stall,bigstallwire,nostall,
 	output logic [1:0]killnum,
 	output logic [1:0]stallnum,
 	input logic stall_mem,
 	input logic arb_eqmem,
 	input logic memOp_done	
     );
+	
 
 	// Wires
 	logic [31:0] operand_a, operand_b;   	   // Operands value output from the register file
@@ -207,8 +208,37 @@ decode and issue until memDone
 		mem_opReg4 	<= mem_op3;
 		mulDiv_opReg4 	<= mulDiv_op3;
 
-		pcReg4		<= pc3;		
-		if(kill ) begin 
+		pcReg4		<= pc3;	
+		
+		
+		if(discard)
+		begin
+		pcselectReg4<= 2'b00;
+		weReg4		<= 1'b0;
+		BSELReg4	<= 2'b01;
+		alufnReg4	<= 3'b000;
+		fnReg4		<= 3'b000;
+		I_immdReg4	<= 32'b0;
+		rdReg4		<= 5'b0;
+		shamtReg4	<= 0;
+		B_immdReg4	<= 0;
+		J_immReg4	<= 0;
+		U_immReg4  	<= 0;
+		S_immReg4 	<= 0;
+		I_immdReg4	<= 0;
+
+		bneqReg4	<= 0;
+		btypeReg4	<= 0;
+
+		jReg4 		<= 0;
+		jrReg4 		<= 0;
+		LUIReg4     	<= 0;
+ 		auipcReg4   	<= 0;
+
+		mem_opReg4 	<= 0;
+		mulDiv_opReg4 	<= 0;
+		end
+		else if(kill) begin 
 		killnum		<=killnum+1;
 		pcselectReg4	<= 2'b00;
 		weReg4		<= 1'b0;
@@ -230,7 +260,7 @@ decode and issue until memDone
 		rdReg4		<= 5'b0;
 		pcReg4      <= 0;
 		end
-	//&& ~(~stallnum[1] && stallnum[0]) && ~bigstallwire
+
 	else if(stall && (~stallnum[1] && stallnum[0]) && ~bigstallwire )
 		begin
 		
@@ -300,6 +330,7 @@ decode and issue until memDone
 		end
 		
         end
+
       end
     
     // register file
@@ -327,7 +358,9 @@ decode and issue until memDone
 	.stall(stall),
 	.kill(kill),
 	.stallnum(stallnum),
-	.bigstallwire(bigstallwire)
+	.bigstallwire(bigstallwire),
+	.nostall(nostall),
+	.discard(discard)
 	);
 
  

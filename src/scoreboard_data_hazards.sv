@@ -1,5 +1,5 @@
 module scoreboard_data_hazards (
-input logic clk,nrst,btaken,
+input logic clk,nrst,btaken,discard,
 //source registers
 input logic [4:0] rs1, // instr[15:15]
 input logic [4:0] rs2, // instr[23:20]
@@ -9,7 +9,7 @@ input logic jr4,
 
 input logic [6:0] op_code,
 
-output logic stall,kill,bigstallwire,
+output logic stall,kill,bigstallwire,nostall,
 output logic [1:0] stallnum
 );
 
@@ -23,7 +23,7 @@ logic [1:0] killnum;
 logic bigstall;
 
 logic stall_wire;
-logic kill_wire;
+
 
 
 assign bigstallwire=bigstall;
@@ -121,15 +121,18 @@ assign bigstallwire=bigstall;
 		7'b0110011:begin function_unit =3'b010 ;	assign stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3])  /*in commit stage */ ? 1'b1 : 1'b0; 	end	//add 
 		7'b1100011:begin function_unit =3'b011 ;	assign stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3])  /*in commit stage */ ? 1'b1 : 1'b0; 	end	//branches	
 		7'b0100011:begin function_unit =3'b011 ;	assign stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3])  /*in commit stage */ ? 1'b1 : 1'b0; 	end	//stores
-		7'b1100111:begin function_unit =3'b100 ;	assign stall_wire = (scoreboard[rs1][3])  /*in commit stage */ ? 1'b1 : 1'b0; 	end	//jalr
-		7'b0010011:begin function_unit =3'b100 ;	assign stall_wire = (scoreboard[rs1][3])  /*in commit stage */ ? 1'b1 : 1'b0; 	end	//addi
-		7'b0000011:begin function_unit =3'b100 ;	assign stall_wire = (scoreboard[rs1][3])  /*in commit stage */ ? 1'b1 : 1'b0;    end	//loads
+		7'b1100111:begin function_unit =3'b100 ;	assign stall_wire = (scoreboard[rs1][3])  ? 1'b1 : 1'b0; 	
+nostall = (scoreboard[rs1][3])  ? 1'b1 : 1'b0;end	//jalr
+		7'b0010011:begin function_unit =3'b100 ;	assign stall_wire = (scoreboard[rs1][3])  ? 1'b1 : 1'b0; 	
+nostall = (scoreboard[rs1][3])  ? 1'b1 : 1'b0;end	//addi
+		7'b0000011:begin function_unit =3'b100 ;	assign stall_wire = (scoreboard[rs1][3])  ? 1'b1 : 1'b0;    
+nostall = (scoreboard[rs1][3])  ? 1'b1 : 1'b0;end	//loads
 				default: function_unit = 0;
 		endcase
 	end
 
 assign stall=kill && ~(~stallnum[1] && stallnum[0]) ? 1'b0 :stall_wire;
-assign kill= (btaken || killReg) && ~stall ? 1'b1   :1'b0 ;
+assign kill= (btaken || killReg) && ~stall && (~discard)? 1'b1  :1'b0 ;
 
  always_ff @(posedge clk)
       begin
@@ -150,7 +153,7 @@ if(scoreboard[j][0] && !scoreboard[j][1])
 					
 				 if(scoreboard[rs1][2] || scoreboard[rs2][2]) begin stallnum<= 2'b11; bigstall<=0; end 
 				else if(scoreboard[rs1][1] || scoreboard[rs2][1]) begin stallnum<= 2'b10; bigstall<=0; end
-				else if(scoreboard[rs1][0] || scoreboard[rs2][0]) begin stallnum <= 2'b01; end
+				else if(scoreboard[rs1][0] || scoreboard[rs2][0]) begin stallnum <= 2'b01;  end
 				
 				else  begin stallnum<= 2'b00; bigstall<=1; end
 		end
