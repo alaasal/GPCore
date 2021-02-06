@@ -275,7 +275,7 @@ assign wdata = {data_in6[7:0], data_in6[15:8], data_in6[23:16], data_in6[31:24]}
 
 assign bw = {bw36, bw26, bw16, bw06};
 
-assign core_l15_req_ack = (resp_fire)? 1 : 0;
+assign core_l15_req_ack = resp_fire || l15_core_val;
 
 always_ff @(posedge clk , negedge nrst) begin
     if (!nrst) begin
@@ -305,11 +305,8 @@ always @(posedge clk, negedge nrst) begin
     if (!nrst) begin
         got_header <= 0;
     end else begin
-        if (state_reg == s_req) begin
-            if(l15_core_header_ack) begin
-                got_header <= 1;
-            end
-        end else got_header <= 0;
+        if(l15_core_header_ack) got_header <= 1;
+        else got_header <= 0;
     end
 end
 
@@ -320,7 +317,7 @@ always_comb begin
         baddr            = addr6[1:0];
         core_l15_data    = {wdata, wdata};
         core_l15_address = addr6;
-        core_l15_val	 = 1 && !got_header;
+        core_l15_val	 = m_op6;
         //store operation
         if (bw) begin
             core_l15_rqtype  = `STORE_RQ;
