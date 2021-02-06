@@ -13,8 +13,6 @@ output logic stall,kill,bigstallwire,nostall,
 output logic [1:0] stallnum
 );
 
-
-
 logic [4:0] scoreboard[0:31];
 logic [2:0] function_unit;
 
@@ -23,8 +21,6 @@ logic [1:0] killnum;
 logic bigstall;
 
 logic stall_wire;
-
-
 
 assign bigstallwire=bigstall;
 
@@ -112,22 +108,39 @@ assign bigstallwire=bigstall;
 	  end
 	end
 
- 		always_comb
-	begin
+ 	always_comb begin
 		unique case(op_code)
-		7'b0110111:begin function_unit =3'b001 ;		end 	//lui
-		7'b0010111:begin function_unit =3'b001 ;		end	//auipc
-		7'b1101111:begin function_unit =3'b001 ;		end	//jal
-		7'b0110011:begin function_unit =3'b010 ;	assign stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3])  /*in commit stage */ ? 1'b1 : 1'b0; 	end	//add 
-		7'b1100011:begin function_unit =3'b011 ;	assign stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3])  /*in commit stage */ ? 1'b1 : 1'b0; 	end	//branches	
-		7'b0100011:begin function_unit =3'b011 ;	assign stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3])  /*in commit stage */ ? 1'b1 : 1'b0; 	end	//stores
-		7'b1100111:begin function_unit =3'b100 ;	assign stall_wire = (scoreboard[rs1][3])  ? 1'b1 : 1'b0; 	
-nostall = (scoreboard[rs1][3])  ? 1'b1 : 1'b0;end	//jalr
-		7'b0010011:begin function_unit =3'b100 ;	assign stall_wire = (scoreboard[rs1][3])  ? 1'b1 : 1'b0; 	
-nostall = (scoreboard[rs1][3])  ? 1'b1 : 1'b0;end	//addi
-		7'b0000011:begin function_unit =3'b100 ;	assign stall_wire = (scoreboard[rs1][3])  ? 1'b1 : 1'b0;    
-nostall = (scoreboard[rs1][3])  ? 1'b1 : 1'b0;end	//loads
-				default: function_unit = 0;
+		7'b0110111: function_unit =3'b001; //lui
+		7'b0010111: function_unit =3'b001; //auipc
+		7'b1101111: function_unit =3'b001; //jal
+		7'b0110011:begin 
+            function_unit =3'b010; 
+            stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3]); /*in commit stage */ 
+        end	//add
+		7'b1100011:begin 
+            function_unit =3'b011;	
+            stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3]); /*in commit stage */ 	
+        end	//branches	
+		7'b0100011:begin 
+            function_unit =3'b011;	
+            stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3]);  /*in commit stage */ 	
+        end	//stores
+		7'b1100111:begin 
+            function_unit =3'b100;	
+            stall_wire = (scoreboard[rs1][3]); 	
+            nostall = (scoreboard[rs1][3]);
+        end	//jalr
+		7'b0010011:begin 
+            function_unit =3'b100;
+            stall_wire = (scoreboard[rs1][3]); 	
+            nostall = (scoreboard[rs1][3]);
+        end	//addi
+		7'b0000011:begin 
+            function_unit =3'b100;
+            stall_wire = (scoreboard[rs1][3]);    
+            nostall = (scoreboard[rs1][3]);
+        end	//loads
+		default: function_unit = 0;
 		endcase
 	end
 

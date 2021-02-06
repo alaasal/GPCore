@@ -160,20 +160,15 @@ intruction_fetch and don't update pc then stall until
 (arb_state == arb_instr) 
 ********************************************/
 
-always @(posedge clk, negedge nrst)
-begin
-if (!nrst)
-	begin
+always_ff @(posedge clk or negedge nrst) begin
+if (!nrst) begin
 	arb_state <= arb_instr;
 	stall_mem <=0;
 	arb_eqmem <=0;
 	end 
 else
 begin
-
-
-end
-case(arb_state)
+    case(arb_state)
 	arb_instr: 
 	begin
 		if(dmem_waiting)	
@@ -204,8 +199,9 @@ case(arb_state)
 			end 
 	end
 endcase
-
 end
+end
+
 
 
 always_comb
