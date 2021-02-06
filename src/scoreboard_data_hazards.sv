@@ -116,19 +116,22 @@ assign bigstallwire=bigstall;
 		7'b0110011:begin 
             function_unit =3'b010; 
             stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3]); /*in commit stage */ 
+			nostall = (scoreboard[rs1][3] || scoreboard[rs2][3]);
         end	//add
 		7'b1100011:begin 
             function_unit =3'b011;	
             stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3]); /*in commit stage */ 	
+			nostall = (scoreboard[rs1][3] || scoreboard[rs2][3]);
         end	//branches	
 		7'b0100011:begin 
             function_unit =3'b011;	
-            stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3]);  /*in commit stage */ 	
+            stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3]);  /*in commit stage */
+			nostall = (scoreboard[rs1][3] || scoreboard[rs2][3]); 	
         end	//stores
 		7'b1100111:begin 
-            function_unit =3'b100;	
-            stall_wire = (scoreboard[rs1][3]); 	
-            nostall = (scoreboard[rs1][3]);
+            function_unit =3'b011;	
+            stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3]); 	
+            nostall = (scoreboard[rs1][3] || scoreboard[rs2][3]);
         end	//jalr
 		7'b0010011:begin 
             function_unit =3'b100;
