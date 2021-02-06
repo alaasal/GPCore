@@ -171,7 +171,7 @@ begin
     case(arb_state)
 	arb_instr: 
 	begin
-		if(dmem_waiting)	
+		if(dmem_waiting && ~(stall && nostall))	
 		begin 
 			arb_state <= arb_wait;
 			stall_mem <=1; 
@@ -378,7 +378,9 @@ end
 	.stall_mem 	(stall_mem),
 	.arb_eqmem	(arb_eqmem),
 	.memOp_done 	(memOp_done),
-	.bigstallwire(bigstallwire)
+
+	.discardwire(discard),
+	.nostall(nostall)
 
 	);
 
@@ -506,6 +508,7 @@ end
 	
 	.pc4          (pc4),
 	.pcselect4    (pcselect4),
+	.stall_mem 	(stall_mem),
 
 	// Outputs
 	.rd6          		(rd6),
@@ -540,9 +543,10 @@ end
     .memOp_done            (memOp_done),
     .ld_addr_misaligned6   (ld_addr_misaligned6),
     .samo_addr_misaligned6 (samo_addr_misaligned6),
+
     
 	//signal to scoreboard
-	.bjtaken6		(bjtaken)
+	.bjtaken6		(bjtaken)	
 	);
 
 	// =============================================== //

@@ -28,6 +28,7 @@ module exe_stage(
 
 	input logic [31:0] pc4,
 	input logic [1:0] pcselect4,
+	input logic stall_mem,
     
 	output logic [31:0] wb_data6,
 	output logic we6,
@@ -63,6 +64,7 @@ module exe_stage(
     output logic ld_addr_misaligned6,
     output logic samo_addr_misaligned6,
 	
+	
 	output logic bjtaken6		//need some debug
     );
     
@@ -79,6 +81,8 @@ module exe_stage(
 
 	logic [31:0] opaReg5;		// Operand A at ALU input
 	logic [31:0] opbReg5;		// Operand B at ALU input	
+
+
 
 	logic [2:0] fnReg5;
 	logic [3:0] alufnReg5;	   // alu control in exe stage will be input to alu block
@@ -104,6 +108,7 @@ module exe_stage(
 
 	logic [31:0] pcReg5;	
 	logic [1:0] pcselectReg5;
+	
 
 
 	always_ff @(posedge clk, negedge nrst)
@@ -137,10 +142,14 @@ module exe_stage(
 		pcselectReg5	<=2'b0;
 		
 		bjtakenReg5		<= 0;
+
           end
         else
-          begin
+          begin	
+	
+		
 		opaReg5   	<= op_a;
+		
 		opbReg5   	<= op_b;	
 
  		alufnReg5 	<= alu_fn4;

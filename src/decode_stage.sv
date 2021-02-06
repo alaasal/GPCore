@@ -45,7 +45,7 @@ module instdec_stage(
 	output logic [1:0] pcselect3,
 	
 	// Scoreboard Signals
-	input logic stall,bigstallwire,
+	input logic stall,nostall,discardwire,
 	output logic [6:0]opcode3,
 	input logic [1:0]stallnumin,
 	input logic stall_mem,
@@ -76,12 +76,18 @@ module instdec_stage(
 	end
 	else
 	begin
-	if ( stall&& !stallnumin[1] && !stallnumin[0]) 
+	if ((stall && nostall) || discardwire) 
+	begin 
+		instrReg3	<=32'h33;
+		pcReg3		<=pcReg3;
+
+	end
+	else if ( stall&& !stallnumin[1] && !stallnumin[0]) 
 	begin 
 		instrReg3	<=instrReg3;
 		pcReg3		<=pcReg3;
 	end
-	else if(stall && stallnumin[1] && !stallnumin[0] && !bigstallwire ) 
+/*	else if(stall && stallnumin[1] && !stallnumin[0] && !bigstallwire ) 
 	begin 
 		instrReg3	<=instrReg3;
 		pcReg3		<=pcReg3;
@@ -91,7 +97,7 @@ module instdec_stage(
 		instrReg3	<= instr2;
 		pcReg3		<=pc2;
 	end 
-
+*/
 	else if(stall&& stallnumin[1] && !stallnumin[0] ) //01
 	begin 
 		instrReg3	<= instr2;
