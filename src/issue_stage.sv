@@ -384,7 +384,7 @@ decode and issue until memDone
 	// =============================================== //
 	
 	// Assign Operand A and Operand B to the outputs wires
-	 assign op_a =  ( !(|rd4) && !(|I_immdReg4) && !(|alufnReg4) && !(|fnReg4) && ~jr3  )? 32'b0: operand_a;
+	 assign op_a =  ( !(|rd4) && !(|I_immdReg4) && !(|alufnReg4) && !(|fnReg4) && ~jr3 && !(|mem_op4) )? 32'b0: operand_a;
 
 	// Piped Signals from Decode to Execute 
 	// Issue acts such as a cycle delay 

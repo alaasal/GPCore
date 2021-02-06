@@ -95,6 +95,13 @@ assign memstallwire = ( dmem_finished && stall_mem)  ? 1'b0 : memstallReg;
             op_bReg5    <= op_bReg5;
             S_immReg5   <= S_immReg5;
 		end
+		else begin
+            mem_opReg5  <= mem_op4;
+            op_aReg5    <= op_a4;
+            op_bReg5    <= op_b4;
+            S_immReg5   <= S_imm4;
+
+		end
 		if(stall_mem) memstallReg <=1;
 		if ( dmem_finished) memstallReg<=0;
         end
