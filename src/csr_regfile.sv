@@ -123,7 +123,7 @@ module csr_regfile(
 	
 
 	//logic s_timer;
-	logic [31:0] mtvec_out ;
+	logic [`XLEN-1:0] mtvec_out ;
 	assign mtvec_out = {mtvec, 2'b0};
 
 
@@ -139,7 +139,7 @@ module csr_regfile(
 		case(csr::csrs'(csr_address_r))
 		// System ID Registers
 		CSR_MISA: csr_data = {
-        		2'b00,       // MXL = 32
+        		2'b01,       // MXL = 1 for XLEN = 32
        			4'b0000,     // Reserved.
         		/* Extensions.
         		 *  ZYXWVUTSRQPONMLKJIHGFEDCBA */
