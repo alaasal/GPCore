@@ -204,7 +204,14 @@ assign memstallwire = ( dmem_finished && stall_mem)  ? 1'b0 : memstallReg;
     assign bw15 = (~addr5[1]   & ((addr5[0] & mem_op5[2])  | (~addr5[0] & mem_op5[1])) & mem_op5[3] & ~addr_misaligned5) | gwe5; 
     assign bw35 = (addr5[1]    & ((addr5[0] & mem_op5[2])  | (~addr5[0] & mem_op5[1])) & mem_op5[3] & ~addr_misaligned5) | gwe5;
     
-    assign data_in5 = op_b5; 
+    always_comb begin
+        case (mem_op5[2:1])
+            2'b11: data_in5 = op_b5; //SW
+            2'b01: data_in5 = {op_b5[15:0], op_b5[15:0]}; //SH
+            2'b10: data_in5 = {op_b5[7:0], op_b5[7:0], op_b5[7:0], op_b5[7:0]}; //SB
+            default: data_in5 = op_b5; //TO SUPPORT PREVIOUS CODE OF DATA_IN
+        endcase
+    end 
 
     assign gwe6                  = gweReg6;
     assign rd6                   = rdReg6;
