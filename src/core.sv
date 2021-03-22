@@ -19,7 +19,7 @@ module core(
 	input logic[63:0] l15_transducer_data_0,
 	input logic[63:0] l15_transducer_data_1,
 	input logic[31:0] l15_transducer_returntype,
-	output logic transducer_l15_req_ack
+	output logic transducer_l15_req_ack,
 
 	// Asynchronus interrupt
 	input logic external_interrupt

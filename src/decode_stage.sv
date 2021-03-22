@@ -55,7 +55,7 @@ module instdec_stage(
 	input logic [1:0]stallnumin,
 	input logic stall_mem,
 	input logic arb_eqmem,
-	input logic memOp_done
+	input logic memOp_done,
 	// CSR
 	output logic [2:0] funct3_3,
 	output logic [11:0] csr_addr3,

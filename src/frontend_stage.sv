@@ -35,8 +35,6 @@ module frontend_stage(
     	output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
 
 	output logic discardwire,
-    output logic [31:0] pc2,	// pc at instruction mem pipe #2
-    output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
 
 
     //OpenPiton Request

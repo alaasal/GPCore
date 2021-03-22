@@ -101,7 +101,7 @@ module issue_stage (
 	input logic stall_mem,
 	input logic arb_eqmem,
 	input logic exception,
-	input logic memOp_done
+	input logic memOp_done,
 
 	// csr
 	output logic [31:0] csr_data,
