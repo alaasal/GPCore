@@ -107,7 +107,6 @@ module exe_stage(
     );
 
 
-
 	// wires
 	logic btaken;
 	logic bjtaken4;
@@ -149,7 +148,7 @@ module exe_stage(
 
 	logic [31:0] pcReg5;
 	logic [1:0] pcselectReg5;
-	logic [31:0] mem_out6;
+	
 	// csr
 	logic [2:0]  funct3Reg5;
 	logic [31:0] csr_dataReg5, csr_immReg5;
@@ -255,112 +254,10 @@ module exe_stage(
 		mretReg5	<= mret4;
 		sretReg5	<= sret4;
 		uretReg5	<= uret4;
+end
+end
 
 
-
-	logic [31:0] pcReg6;
-
-	logic [31:0] mem_out6;
-
-	logic [2:0] fn6;
-
-
-
-	always @(posedge clk)
-	begin
-	if (!nrst)
-	  begin
-		fnReg6 		<= 3'b0;
-
-		rdReg6 		<= 5'b0;
-		alu_resReg6 	<= 32'b0;
-		weReg6 		<= 0;
-
-		U_immReg6 	<= 32'b0;
-                AU_immReg6 	<= 32'b0;
-
-		mul_divReg6 	<= 32'b0;
-
-		pcReg6 		<= 32'b0;
-	  end
-	else
-	  begin
-		fnReg6 		<= fnReg5;
-
-		rdReg6 		<= rdReg5;
-		alu_resReg6 	<= alu_res5;
-		weReg6 		<= weReg5;
-
-		U_immReg6 	<= U_immReg5;
-        AU_immReg6 	<= U_immReg5+pcReg5 ;
-
-		mul_divReg6 	<= mul_div5;
-
-		pcReg6 		<= pcReg5;
-
-	  end
-	end
-	  //ALU
-	alu exe_alu (
-	.alu_fn(alufnReg5),
-	.operandA(opaReg5),
-	.operandB(opbReg5),
-	.result(alu_res5),
-	.bneq(bneqReg5),
-	.btype(btypeReg5),
-	.btaken(btaken)
-	);
-
-    // branch unit
-	branch_unit exe_bu (
-	.pc          (pcReg5),
-	.operandA    (opaReg5),
-	.B_imm       (B_immReg5),
-	.J_imm       (J_immReg5),
-	.I_imm       (opbReg5),
-	.btaken      (btaken),
-	.jr          (jrReg5 && ~jr4),
-	.j           (jReg5 ),
-	.target      (target)
-    );
-
-    mem_wrap exe_mem_wrap(
-    .clk                   (clk),
-    .nrst                  (nrst),
-    .mem_op4               (mem_op4),//memory operation type
-    .op_a4                 (op_a),  //base address
-    .op_b4                 (op_b), //src for store ops, I_imm offset for load ops
-    .S_imm4                (S_imm4), //S_imm offset
-	.stall_mem			   (stall_mem),
-	.dmem_finished 		   (dmem_finished),
-
-    //OpenPiton Request
-	.mem_l15_rqtype        (mem_l15_rqtype),
-    .mem_l15_size          (mem_l15_size),
-    .mem_l15_address       (mem_l15_address),
-    .mem_l15_data          (mem_l15_data),
-    .mem_l15_val           (mem_l15_val),
-
-    //OpenPiton Response
-	.l15_mem_data_0        (l15_mem_data_0),
-    .l15_mem_data_1        (l15_mem_data_1),
-    .l15_mem_returntype    (l15_mem_returntype),
-    .l15_mem_val           (l15_mem_val),
-    .l15_mem_ack           (l15_mem_ack),
-    .l15_mem_header_ack    (l15_mem_header_ack),
-    .mem_l15_req_ack       (mem_l15_req_ack),
-    .mem_out6              (mem_out6),   //memory read output
-    .memOp_done            (memOp_done),
-    .m_op6                 (m_op6),
-    .ld_addr_misaligned6   (ld_addr_misaligned6),
-    .samo_addr_misaligned6 (samo_addr_misaligned6)
-);
-	mul_div mul1(
-	.a		(opaReg5),
-	.b		(opbReg5),
-	.mulDiv_op	(mulDiv_opReg5),
-	.res		(mul_div5)
-	);
 
 	csr_unit csr_1(
 	.func3(funct3Reg5),
@@ -390,7 +287,7 @@ module exe_stage(
 	logic [31:0] AU_immReg6;
 
 	logic [31:0] pcReg6;
-
+  logic [31:0] mem_out6;
 	logic [2:0] fn6;
 	// csr
 	logic [31:0] csr_rdReg6;	// this will be written back in regfile
@@ -484,6 +381,8 @@ module exe_stage(
 		    end
 	  end
 	end
+	
+	
 	// =============================================== //
 	//		  Exception Logic		   //
 	// =============================================== //
@@ -576,6 +475,68 @@ module exe_stage(
     			cause[`XLEN-2:0] = 0;
 		  end
 	  end
+	  
+	  //ALU
+	alu exe_alu (
+	.alu_fn(alufnReg5),
+	.operandA(opaReg5),
+	.operandB(opbReg5),
+	.result(alu_res5),
+	.bneq(bneqReg5),
+	.btype(btypeReg5),
+	.btaken(btaken)
+	);
+
+    // branch unit
+	branch_unit exe_bu (
+	.pc          (pcReg5),
+	.operandA    (opaReg5),
+	.B_imm       (B_immReg5),
+	.J_imm       (J_immReg5),
+	.I_imm       (opbReg5),
+	.btaken      (btaken),
+	.jr          (jrReg5 && ~jr4),
+	.j           (jReg5 ),
+	.target      (target)
+    );
+
+    mem_wrap exe_mem_wrap(
+    .clk                   (clk),
+    .nrst                  (nrst),
+    .mem_op4               (mem_op4),//memory operation type
+    .op_a4                 (op_a),  //base address
+    .op_b4                 (op_b), //src for store ops, I_imm offset for load ops
+    .S_imm4                (S_imm4), //S_imm offset
+	.stall_mem			   (stall_mem),
+	.dmem_finished 		   (dmem_finished),
+
+    //OpenPiton Request
+	.mem_l15_rqtype        (mem_l15_rqtype),
+    .mem_l15_size          (mem_l15_size),
+    .mem_l15_address       (mem_l15_address),
+    .mem_l15_data          (mem_l15_data),
+    .mem_l15_val           (mem_l15_val),
+
+    //OpenPiton Response
+	.l15_mem_data_0        (l15_mem_data_0),
+    .l15_mem_data_1        (l15_mem_data_1),
+    .l15_mem_returntype    (l15_mem_returntype),
+    .l15_mem_val           (l15_mem_val),
+    .l15_mem_ack           (l15_mem_ack),
+    .l15_mem_header_ack    (l15_mem_header_ack),
+    .mem_l15_req_ack       (mem_l15_req_ack),
+    .mem_out6              (mem_out6),   //memory read output
+    .memOp_done            (memOp_done),
+    .m_op6                 (m_op6),
+    .ld_addr_misaligned6   (ld_addr_misaligned6),
+    .samo_addr_misaligned6 (samo_addr_misaligned6)
+);
+	mul_div mul1(
+	.a		(opaReg5),
+	.b		(opbReg5),
+	.mulDiv_op	(mulDiv_opReg5),
+	.res		(mul_div5)
+	);
 
 
 	// =============================================== //
