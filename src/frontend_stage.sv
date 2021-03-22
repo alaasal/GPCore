@@ -20,21 +20,27 @@
 
 
 module frontend_stage(
-    input logic clk, 
+	input logic clk,
 	input logic nrst,
 	input logic stall,bigstallwire,nostall,
 	input logic [1:0]killnum,
     input logic [1:0] PCSEL,		// pc select control signal
     input logic [31:0] target,
 	input logic [1:0] stallnumin,
+	// exceptions
+	input logic exception_pending,
+	input logic [31:0] epc,
+
+    	output logic [31:0] pc2,	// pc at instruction mem pipe #2
+    	output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
 
 	output logic discardwire,
     output logic [31:0] pc2,	// pc at instruction mem pipe #2
     output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
-    
+
 
     //OpenPiton Request
-	output logic[4:0] transducer_l15_rqtype, 
+	output logic[4:0] transducer_l15_rqtype,
 	output logic[2:0] transducer_l15_size,
 	output logic[31:0] transducer_l15_address,
 	output logic[63:0] transducer_l15_data,
@@ -45,14 +51,14 @@ module frontend_stage(
 
 	//OpenPiton Response
 	input logic l15_transducer_val,
-	input logic[63:0] l15_transducer_data_0, 
-	input logic[63:0] l15_transducer_data_1, 
+	input logic[63:0] l15_transducer_data_0,
+	input logic[63:0] l15_transducer_data_1,
 	input logic[3:0] l15_transducer_returntype,
 	output logic transducer_l15_req_ack,
-	output logic[1:0] state_reg,	
+	output logic[1:0] state_reg,
 	input logic stall_mem,
 	input logic arb_eqmem,
-	input logic memOp_done	
+	input logic memOp_done
 
     );
 
@@ -63,9 +69,16 @@ logic [31:0] targetsave;
 logic targetcame;
 logic killafterreq;
 logic discardReg;
+
+// Exceptions at forntend
+//logic instruction_addr_misalignedReg1;
+logic instruction_addr_misalignedReg2;
+
 // wires
 logic [31:0] npc;   	   // next pc wire
-logic [31:0] pc; 
+logic [31:0] pc;
+
+assign pc_addr_ex = pcReg[1] & pcReg[0]; // instruction address misaligned
 
 //latches
 logic wake_up;
@@ -82,7 +95,7 @@ begin
 if(!nrst)
 begin
 	wake_up <= 0;
-	
+
 end
 else
 begin
@@ -91,16 +104,16 @@ if (wake_up == 0)
 	wake_up <= l15_transducer_val;
 end
 end
-// if bigstall happens rise signal delay execution it will do 
-/* 
-1 pcreg -> pcreg  
+// if bigstall happens rise signal delay execution it will do
+/*
+1 pcreg -> pcreg
   pcreg -> pcreg2
   instrugreg3 will out noOp
 
 
 */
 
-assign discard = (~bigstallwire && !stallnumin[1] && stallnumin[0] && stall) ? 1'b1 : 1'b0; 
+assign discard = (~bigstallwire && !stallnumin[1] && stallnumin[0] && stall) ? 1'b1 : 1'b0;
 assign discardwire =discardReg;
 /************************************************/
 /*			First Pipe 							*/
@@ -113,87 +126,107 @@ assign discardwire =discardReg;
 		pcReg		<= 32'h40000000;
 		pcReg2 		<= 32'h40000000;
 
+		instruction_addr_misalignedReg2 <= 0;
 		end
-        else begin	
-	
+        else begin
+
 
 	if ( discard || (stall && nostall ) )
-	begin 
-		pcReg		<= pcReg2;		
+	begin
+		pcReg		<= pcReg2;
 		pcReg2		<= pcReg2;
 
 	end
 		else if ( discardReg && state_reg == s_resp  )
-	begin 
-		pcReg		<= pcReg2;		
+	begin
+		pcReg		<= pcReg2;
 		pcReg2		<= pcReg2;
 		targetcame <=0;
 
 	end
 	else if((npc == targetsave) )
-	begin 
-		pcReg		<= npc;	
-		
+	begin
+		pcReg		<= npc;
+
 		if(killafterreq && targetcame) pcReg2 <= pcReg2;
 		else pcReg2 <=pcReg;
 
 		targetcame <=0;
-		
-		
+
+
 	end
 	else if(killafterreq || targetcame )
-	begin 
+	begin
 		pcReg2		<= 0;
 
-	end	
-	else if ( stall&&!stallnumin[1] && !stallnumin[0]) begin 
-		pcReg		<= pcReg;		
-		pcReg2		<= pcReg2;
 	end
-	else if(stall && !(!stallnumin[1] && stallnumin[0]) ) 
-	begin 
-		pcReg		<= pcReg;		
+	else if ( stall&&!stallnumin[1] && !stallnumin[0]) begin
+		pcReg		<= pcReg;
 		pcReg2		<= pcReg2;
-	end 
-	else if(stall &&!stallnumin[1] && stallnumin[0] )
-	begin 
-		pcReg		<= npc;		
-		pcReg2		<= pcReg;
-	end 
-	else if( stall || stall_mem ||  ( arb_eqmem && ~memOp_done )  ) 
-	begin 
-		pcReg		<= pcReg;		
-		pcReg2		<= pcReg2;
-	end 
 
-	else 
-	begin 
+		//instruction_addr_misalignedReg1 <= 0;
+			instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
+	end
+	else if(stall && !(!stallnumin[1] && stallnumin[0]) )
+	begin
+		pcReg		<= pcReg;
+		pcReg2		<= pcReg2;
+
+		//instruction_addr_misalignedReg1 <= 0;
+		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
+
+
+	end
+	else if(stall &&!stallnumin[1] && stallnumin[0] )
+	begin
+		pcReg		<= npc;
+		pcReg2		<= pcReg;
+
+		//instruction_addr_misalignedReg1 <= 0;
+		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
+	end
+	else if( stall || stall_mem ||  ( arb_eqmem && ~memOp_done )  )
+	begin
+		pcReg		<= pcReg;
+		pcReg2		<= pcReg2;
+		//instruction_addr_misalignedReg1 <= 0;
+		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
+	end
+
+	else
+	begin
 		pcReg		<= npc;		// PIPE1
 		pcReg2		<= pcReg;
-	
-	end
-	end 
 
-	end 
+		//instruction_addr_misalignedReg1 <= pc_addr_ex;
+		instruction_addr_misalignedReg2 <= pc_addr_ex;
+
+	end
+	end
+
+	end
 
     always_comb
       begin
       if (state_reg == s_resp && (resp_fire))
       begin
-        unique case(PCSEL)
+        unique casez({exception_pending, PCSEL})
             0: npc = targetcame ? targetsave : pcReg +4;
             1: npc =  32'h40000000;
             2: npc = target;
             3: npc = npc;
+						//Exception
+						3'b1??: npc = epc;
             default: npc = pcReg + 4 ;
-        endcase 
+        endcase
       end
       else
       begin
-      	   npc = (state_reg == s_req) && (PCSEL[1] && ~PCSEL[0]) ? target : pcReg;	
-	
+      	   npc = (state_reg == s_req) && (PCSEL[1] && ~PCSEL[0]) ? target : pcReg;
+
       end
       end
+
 
     // output
 
@@ -205,7 +238,7 @@ assign discardwire =discardReg;
 /*			INSTR FETCH							*/
 /************************************************/
 
-// logic for pcselect if not in req time 
+// logic for pcselect if not in req time
 
 always_ff @(posedge clk , negedge nrst)
 begin
@@ -223,20 +256,20 @@ begin
 		begin
 		targetsave<=target;
 		targetcame<=1;
-		 end 
-		else	 
+		 end
+		else
 		targetsave<=targetsave;
-		
-	
-		if(~(!killnum[0] && !killnum[1]) && targetcame && state_reg == s_resp) 
+
+
+		if(~(!killnum[0] && !killnum[1]) && targetcame && state_reg == s_resp)
 				killafterreq<=1;
-				
-			 
+
+
 		if (discard || (stall && nostall ))
-		begin 
+		begin
 		discardReg<=1;
 
-		end 
+		end
 	end
 end
 
@@ -248,8 +281,8 @@ assign req_fire =  l15_transducer_header_ack && transducer_l15_val && (state_reg
 assign resp_fire = l15_transducer_val && (state_reg == s_resp) && (!resp_init);
 assign resp_init = ( (l15_transducer_returntype != `LOAD_RET) && (l15_transducer_returntype != `IFILL_RET) && (l15_transducer_returntype != `ST_ACK) ) && l15_transducer_val;
 
- 
-	
+
+
 always_ff @(posedge clk , negedge nrst)
 begin
 
@@ -262,19 +295,19 @@ else
 begin
 // npc logic
 case(state_reg)
-	s_req: 
+	s_req:
 	begin
 		if (req_fire)
 		begin
-			if(killafterreq)	
+			if(killafterreq)
 			 begin 
 				pcReg	<= targetsave;
-				killafterreq<=0; 
+				killafterreq<=0;
 			 end
 			else begin end
 
 
-			
+
 			if(l15_transducer_ack)
 				state_reg <= s_resp;
 			else
@@ -287,7 +320,7 @@ case(state_reg)
 	s_resp:
 	begin
 		if (resp_fire )
-			begin 
+			begin
 				state_reg 	<= s_req;
 
 			if(discardReg) discardReg <=0;
@@ -295,7 +328,7 @@ case(state_reg)
 
 			end
 	end
-endcase     
+endcase
 end
 end
 
@@ -328,7 +361,7 @@ begin
 
 // npc logic
 case(state_reg)
-	s_req: 
+	s_req:
 	begin
 		transducer_l15_address <= (PCSEL[1] && ~PCSEL[0]) ? target : pc;
 	    transducer_l15_rqtype	<= 0;
@@ -353,12 +386,15 @@ case(state_reg)
 		transducer_l15_size	<= 8;
 		transducer_l15_val	<= 0;
 		transducer_l15_req_ack	<= resp_init || l15_transducer_val;
-	
+
 		instr2 <= (l15_transducer_val) ? (killafterreq || (killnum[0] && !killnum[1]) || discardReg ||discard || (stall &&nostall ) )  ? 32'h33: {l15_data[7:0], l15_data[15:8], l15_data[23:16], l15_data[31:24]} : 32'h33;	 //Inster no op when cache is busy
-	end  // issue will stall next pipes untill arb_state=arb_mem 
+	end  // issue will stall next pipes untill arb_state=arb_mem
 endcase
-       
+
 end
-       
+
+// output
+assign instruction_addr_misaligned2 = instruction_addr_misalignedReg2;
+
 
 endmodule

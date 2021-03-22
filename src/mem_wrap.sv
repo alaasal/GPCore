@@ -229,7 +229,7 @@ assign memstallwire = ( dmem_finished && stall_mem)  ? 1'b0 : memstallReg;
 /*
     data_mem dmem (
     .clk        (clk),
-	.nrst	(nrst),
+//	.nrst	(nrst),
     .gwe        (gwe6),
     .rd         (rd6),
     .bw0        (bw06),         

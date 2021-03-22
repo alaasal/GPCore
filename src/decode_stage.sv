@@ -3,11 +3,15 @@ module instdec_stage(
 
 	input logic  [31:0] pc2,		  // input from frontend stage (pc)
 	input logic  [31:0] instr2,		  // input from frontend stage (inst mem)
- 
+
+	input logic exception_pending,	// from commit stage
+
+	input logic instruction_addr_misaligned2,  // exception from frontend
+
 	// Operands and Destination
 	output logic [4:0] rs1, rs2,
 	output logic [4:0] rd3,
-  		  
+
 	// Operands Select Sginals
 	output logic [1:0] B_SEL3,
 
@@ -16,7 +20,7 @@ module instdec_stage(
 	output logic [31:0] B_imm3,		  //Branch Immediate
 	output logic [31:0] J_imm3,		  //Jumps Immediate
 	output logic [31:0] U_imm3,		  //LUI & AUIPC Immediate
-	output logic [31:0] S_imm3,		  //Store Immediate	
+	output logic [31:0] S_imm3,		  //Store Immediate
 	output logic [4:0]  shamt,		  //Shift Amount Immediate
 
 	// Write back Enable
@@ -26,7 +30,7 @@ module instdec_stage(
 	output logic bneq3, btype3, jr3, j3,
 
 	// Other Instr Control Signals
-	output logic LUI3, auipc3,  
+	output logic LUI3, auipc3,
 
 	// Function Control Signals
 	output logic [2:0] fn3,
@@ -36,33 +40,51 @@ module instdec_stage(
    	output logic [31:0] pc3,
 
 	// Memory Request
-    output logic [3:0] mem_op3,
-	// MulDiv Operation 
-    output logic [3:0] mulDiv_op3,
+    	output logic [3:0] mem_op3,
+	// MulDiv Operation
+   	 output logic [3:0] mulDiv_op3,
 
 	// Program Counter Select Piped to Execute Unit
 	// until Branch and Jumps target is calculated
 	output logic [1:0] pcselect3,
-	
+
 	// Scoreboard Signals
 	input logic stall,nostall,discardwire,
 	output logic [6:0]opcode3,
+
 	input logic [1:0]stallnumin,
 	input logic stall_mem,
 	input logic arb_eqmem,
 	input logic memOp_done
+	// CSR
+	output logic [2:0] funct3_3,
+	output logic [11:0] csr_addr3,
+	output logic [31:0] csr_imm3,
+	// exceptions
+	output logic instruction_addr_misaligned3,
+	output logic ecall3, ebreak3,
+	output logic illegal_instr3,
+	// return instructions
+	output logic mret3, sret3, uret3,
+	// Write back csr_regfile Enable
+	output logic csr_we3
     );
 
 	// Wires
 	logic [6:0] opcode;
 	logic [2:0] funct3;
 	logic [6:0] funct7;
+	logic [11:0] funct12;
 	logic instr_30;
-    
+
 	// Registers
-	logic [31:0] instrReg3;	
-	logic [31:0] pcReg3;	
-    
+	logic [31:0] instrReg3;
+	logic [31:0] pcReg3;
+
+	// Exception
+	logic instruction_addr_misalignedReg3;
+
+
 	// =============================================== //
 	//			Pipe 3			   //
 	// =============================================== //
@@ -72,51 +94,60 @@ module instdec_stage(
 	begin
             instrReg3 		<= 0;
             pcReg3		<= 0;
+						instruction_addr_misalignedReg3 <= 0;
 
 	end
 	else
 	begin
-	if ((stall && nostall) || discardwire) 
-	begin 
+	if ((stall && nostall) || discardwire)
+	begin
 		instrReg3	<=32'h33;
 		pcReg3		<=pcReg3;
+		instruction_addr_misalignedReg3	<= instruction_addr_misalignedReg3;
 
 	end
-	else if ( stall&& !stallnumin[1] && !stallnumin[0]) 
-	begin 
+	else if ( stall&& !stallnumin[1] && !stallnumin[0])
+	begin
 		instrReg3	<=instrReg3;
 		pcReg3		<=pcReg3;
+		instruction_addr_misalignedReg3	<= instruction_addr_misalignedReg3;
 	end
-/*	else if(stall && stallnumin[1] && !stallnumin[0] && !bigstallwire ) 
-	begin 
+/*	else if(stall && stallnumin[1] && !stallnumin[0] && !bigstallwire )
+	begin
 		instrReg3	<=instrReg3;
 		pcReg3		<=pcReg3;
-	end 
- 	else if(stall&& !stallnumin[1] && stallnumin[0] && ~bigstallwire ) 
-	begin 
+		instruction_addr_misalignedReg3	<= instruction_addr_misalignedReg3;
+	end
+ 	else if(stall&& !stallnumin[1] && stallnumin[0] && ~bigstallwire )
+	begin
 		instrReg3	<= instr2;
 		pcReg3		<=pc2;
-	end 
+		instruction_addr_misalignedReg3	<= instruction_addr_misaligned2;
+	end
 */
 	else if(stall&& stallnumin[1] && !stallnumin[0] ) //01
-	begin 
+	begin
 		instrReg3	<= instr2;
 		pcReg3		<=pc2;
-	end 
-	else if(!stall &&!stallnumin[1] && stallnumin[0] ) 
-	begin 
+		instruction_addr_misalignedReg3	<= instruction_addr_misaligned2;
+	end
+	else if(!stall &&!stallnumin[1] && stallnumin[0] )
+	begin
 		instrReg3	<= instr2;
 		pcReg3		<=pc2;
-	end 
-	else if(stall  || stall_mem ||  ( arb_eqmem && ~memOp_done ) ) 
-	begin 
+		instruction_addr_misalignedReg3	<= instruction_addr_misaligned2;
+	end
+	else if(stall  || stall_mem ||  ( arb_eqmem && ~memOp_done ) )
+	begin
 		instrReg3	<=instrReg3;
 		pcReg3		<=pcReg3;
-	end 
-	else 
-	begin 
+		instruction_addr_misalignedReg3	<= instruction_addr_misalignedReg3;
+	end
+	else
+	begin
 		instrReg3	<= instr2;
 		pcReg3		<=pc2;
+		instruction_addr_misalignedReg3	<= instruction_addr_misaligned2;
 	end
 	end
 	end
@@ -135,36 +166,52 @@ module instdec_stage(
 	assign U_imm3   = 32'(signed'({instrReg3[31:12] , {12'b0}}));
 	assign S_imm3   = 32'(signed'({instrReg3[31:25], instrReg3[11:7]}));
 	assign pc3 	= pcReg3;
-    
-	
+
+	// Exception
+	assign instruction_addr_misaligned3 = instruction_addr_misalignedReg3;
+
+
 	assign opcode   = instrReg3[6:0];
-	assign funct3   = instrReg3[14:12];
 	assign funct7   = instrReg3[31:25];
+	assign funct12	= instrReg3[31:20];
+	assign funct3   = instrReg3[14:12];
 	assign instr_30 = instrReg3[30];
 	assign opcode3  = opcode;
+	// to csr_unit
+	assign csr_addr3 = instrReg3[31:20];
+	assign csr_imm3	 = {27'b0, instrReg3[19:15]};
+	assign funct3_3  = instrReg3[14:12];
 
 	instr_decoder c1 (
 	.op          (opcode),
 	.funct3      (funct3),
 	.funct7      (funct7),
+	.funct12     (funct12),
 	.instr_30    (instr_30),		// instr[30]
+	.exception_pending(exception_pending),
+	//.nrst(nrst),
 
 	.pcselect    (pcselect3),		// Select pc source
 	.we          (we3),				// Regfile write enable
 	.B_SEL       (B_SEL3),			// Select Operand B at the end of the issue stage
 	.alu_fn      (alu_fn3),			// Select alu operation
 	.fn          (fn3),				// Select Function Unit
-	.bneq        (bneq3),			// to alu beq ~ bneq 
-	.btype       (btype3),		 
+	.bneq        (bneq3),			// to alu beq ~ bneq
+	.btype       (btype3),
 	.mulDiv_op   (mulDiv_op3),      //m extension opcode
 	.j           (j3),
 	.jr          (jr3),
 	.mem_op      (mem_op3),
 	.LUI         (LUI3),
-	.auipc       (auipc3)
-	
-	
-	
+	.auipc       (auipc3),
+	.ecall       (ecall3),
+	.ebreak	     (ebreak3),
+	.uret        (uret3),
+	.sret        (sret3),
+	.mret        (mret3),
+	.wfi	     (),
+	.illegal_instr(illegal_instr3),
+	.csr_we(csr_we3)
     );
-    
+
 endmodule

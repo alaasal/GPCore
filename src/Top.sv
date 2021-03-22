@@ -10,6 +10,7 @@ logic DEBUG_SIG;
 logic [31:0] DEBUG_addr;
 logic [31:0] DEBUG_instr;
 logic START;
+logic external_interrupt;
 
 always 
 begin
@@ -23,16 +24,16 @@ end
 assign clk_core = (START == 1'b1) ? clk : 0;
 assign clk_debug = (START == 1'b0) ? clk : 0;
 
-
-
-
+assign external_interrupt = 1;
 initial 
 begin 
 nrst = 0;
 nrst_core = 0;
+//external_interrupt =0;
 #10
 nrst = 1;
 nrst_core = 1;
+//external_interrupt = 0;
 end
 
 core testCore(
@@ -42,7 +43,8 @@ core testCore(
 
 		.clk(clk_core),
 		.nrst(nrst_core),
-		.clk_debug(clk_debug)
+		.clk_debug(clk_debug),
+		.external_interrupt(external_interrupt)
 	);
 
 
