@@ -1,5 +1,76 @@
 `define XLEN 32
 
+package mode;
+
+/* RISC-V execution mode. */
+typedef enum logic [1:0] {
+    	/* User. */
+    	U,
+    	/* Supervisor. */
+    	S,
+    	/* Reserved. */
+    	R,
+    	/* Machine. */
+    	M
+	}mode_t;
+
+endpackage
+
+
+package exceptions;
+
+// synchronous (interrupt = 0) values are defined here.
+
+typedef enum logic[30:0] {
+    	/* Instruction address misaligned. */
+    	I_ADDR_MISALIGNED = 0,
+    	/* Instruction access fault. */
+    	I_ACCESS_FAULT = 1,
+    	/* Illegal instruction. */
+    	I_ILLEGAL = 2,
+    	/* Breakpoint. */
+    	BREAKPOINT = 3,
+    	/* Load address misaligned. */
+    	L_ADDR_MISALIGNED = 4,
+    	/* Load access fault. */
+    	L_ACCESS_FAULT = 5,
+    	/* Store/AMO address misaligned. */
+    	S_ADDR_MISALIGNED = 6,
+    	/* Store/AMO access fault. */
+    	S_ACCESS_FAULT = 7,
+    	/* Environment call from U-mode. */
+    	U_CALL = 8,
+    	/* Environment call from S-mode. */
+    	S_CALL = 9,
+    	/* Environment call from M-mode. */
+    	M_CALL = 11
+	}sync_codes_t;
+
+ // asynchronous (interrupt = 1) values are defined here.
+
+typedef enum logic[30:0] {
+    	/* User software interrupt. */
+    	U_INT_SW = 0,
+    	/* Supervisor software interrupt. */
+    	S_INT_SW = 1,
+    	/* Machine software interrupt. */
+    	M_INT_SW = 3,
+    	/* User timer interrupt. */
+    	U_INT_TIMER = 4,
+    	/* Supervisor timer interrupt. */
+    	S_INT_TIMER = 5,
+    	/* Machine timer interrupt. */
+    	M_INT_TIMER = 7,
+    	/* User external interrupt. */
+    	U_INT_EXT = 8,
+    	/* Supervisor external interrupt. */
+    	S_INT_EXT = 9,
+    	/* Machine external interrupt. */
+    	M_INT_EXT = 11
+	}async_codes_t;
+
+endpackage
+
 module exe_stage(
 
 	input logic clk, nrst,
@@ -148,7 +219,7 @@ module exe_stage(
 
 	logic [31:0] pcReg5;
 	logic [1:0] pcselectReg5;
-	
+
 	// csr
 	logic [2:0]  funct3Reg5;
 	logic [31:0] csr_dataReg5, csr_immReg5;
@@ -381,8 +452,8 @@ end
 		    end
 	  end
 	end
-	
-	
+
+
 	// =============================================== //
 	//		  Exception Logic		   //
 	// =============================================== //
@@ -475,7 +546,7 @@ end
     			cause[`XLEN-2:0] = 0;
 		  end
 	  end
-	  
+
 	  //ALU
 	alu exe_alu (
 	.alu_fn(alufnReg5),
