@@ -1,75 +1,50 @@
 `define XLEN 32
 
-package mode;
-
-/* RISC-V execution mode. */
-typedef enum logic [1:0] {
-    	/* User. */
-    	U,
-    	/* Supervisor. */
-    	S,
-    	/* Reserved. */
-    	R,
-    	/* Machine. */
-    	M
-	}mode_t;
-
-endpackage
-
-
-package exceptions;
-
 // synchronous (interrupt = 0) values are defined here.
 
-typedef enum logic[30:0] {
-    	/* Instruction address misaligned. */
-    	I_ADDR_MISALIGNED = 0,
-    	/* Instruction access fault. */
-    	I_ACCESS_FAULT = 1,
-    	/* Illegal instruction. */
-    	I_ILLEGAL = 2,
-    	/* Breakpoint. */
-    	BREAKPOINT = 3,
-    	/* Load address misaligned. */
-    	L_ADDR_MISALIGNED = 4,
-    	/* Load access fault. */
-    	L_ACCESS_FAULT = 5,
-    	/* Store/AMO address misaligned. */
-    	S_ADDR_MISALIGNED = 6,
-    	/* Store/AMO access fault. */
-    	S_ACCESS_FAULT = 7,
-    	/* Environment call from U-mode. */
-    	U_CALL = 8,
-    	/* Environment call from S-mode. */
-    	S_CALL = 9,
-    	/* Environment call from M-mode. */
-    	M_CALL = 11
-	}sync_codes_t;
+/* Instruction address misaligned. */
+`define I_ADDR_MISALIGNED   32'h0
+/* Instruction access fault. */
+`define I_ACCESS_FAULT      32'h1
+/* Illegal instruction. */
+`define I_ILLEGAL           32'h2
+/* Breakpoint. */
+`define BREAKPOINT          32'h3
+/* Load address misaligned. */
+`define L_ADDR_MISALIGNED   32'h4
+/* Load access fault. */
+`define L_ACCESS_FAULT      32'h5
+/* Store/AMO address misaligned. */
+`define S_ADDR_MISALIGNED   32'h6
+/* Store/AMO access fault. */
+`define S_ACCESS_FAULT      32'h7
+/* Environment call from U-mode. */
+`define U_CALL              32'h8
+/* Environment call from S-mode. */
+`define S_CALL              32'h9
+/* Environment call from M-mode. */
+`define M_CALL              32'hb
 
- // asynchronous (interrupt = 1) values are defined here.
+// asynchronous (interrupt = 1) values are defined here.
 
-typedef enum logic[30:0] {
-    	/* User software interrupt. */
-    	U_INT_SW = 0,
-    	/* Supervisor software interrupt. */
-    	S_INT_SW = 1,
-    	/* Machine software interrupt. */
-    	M_INT_SW = 3,
-    	/* User timer interrupt. */
-    	U_INT_TIMER = 4,
-    	/* Supervisor timer interrupt. */
-    	S_INT_TIMER = 5,
-    	/* Machine timer interrupt. */
-    	M_INT_TIMER = 7,
-    	/* User external interrupt. */
-    	U_INT_EXT = 8,
-    	/* Supervisor external interrupt. */
-    	S_INT_EXT = 9,
-    	/* Machine external interrupt. */
-    	M_INT_EXT = 11
-	}async_codes_t;
-
-endpackage
+/* User software interrupt. */
+`define U_INT_SW            32'h0
+/* Supervisor software interrupt. */
+`define S_INT_SW            32'h1
+/* Machine software interrupt. */
+`define M_INT_SW            32'h3
+/* User timer interrupt. */
+`define U_INT_TIMER         32'h4
+/* Supervisor timer interrupt. */
+`define S_INT_TIMER         32'h5
+/* Machine timer interrupt. */
+`define M_INT_TIMER         32'h7
+/* User external interrupt. */
+`define U_INT_EXT           32'h8
+/* Supervisor external interrupt. */
+`define S_INT_EXT           32'h9
+/* Machine external interrupt. */
+`define M_INT_EXT           32'hb
 
 module exe_stage(
 
@@ -116,7 +91,9 @@ module exe_stage(
 	input logic mret4, sret4, uret4,
 
 	input logic m_timer,s_timer, u_timer,
-    	input mode::mode_t current_mode,
+ 	//input mode::mode_t current_mode,
+ 	input logic [1:0] current_mode,
+ 	
 	input logic m_tie, s_tie, m_eie, s_eie,u_eie,u_tie,u_sie,
 	input logic external_interrupt,
 	//input logic excep6,
@@ -219,7 +196,7 @@ module exe_stage(
 
 	logic [31:0] pcReg5;
 	logic [1:0] pcselectReg5;
-
+	
 	// csr
 	logic [2:0]  funct3Reg5;
 	logic [31:0] csr_dataReg5, csr_immReg5;
@@ -452,8 +429,8 @@ end
 		    end
 	  end
 	end
-
-
+	
+	
 	// =============================================== //
 	//		  Exception Logic		   //
 	// =============================================== //
@@ -485,60 +462,60 @@ end
     		if (m_interrupt_conditioned)
 		  begin
     			cause[`XLEN-1] = 1;
-        		cause[`XLEN-2:0] = exceptions::M_INT_EXT;
+        		cause[`XLEN-2:0] = `M_INT_EXT;
 		  end
     		else if (s_interrupt_conditioned)
 		  begin
         		cause[`XLEN-1] = 1;
-        		cause[`XLEN-2:0] = exceptions::S_INT_EXT;
+        		cause[`XLEN-2:0] = `S_INT_EXT;
     		  end
     		else if (m_timer_conditioned)
 		  begin
     			cause[`XLEN-1] = 1;
-    			cause[`XLEN-2:0] = exceptions::M_INT_TIMER;
+    			cause[`XLEN-2:0] = `M_INT_TIMER;
     		  end
     		else if (s_timer_conditioned)
 		  begin
     			cause[`XLEN-1] = 1;
-    		 	cause[`XLEN-2:0] = exceptions::S_INT_TIMER;
+    		 	cause[`XLEN-2:0] = `S_INT_TIMER;
     		  end
 		else if (u_interrupt_conditioned)
 		  begin
     			cause[`XLEN-1] = 1;
-        		cause[`XLEN-2:0] = exceptions::U_INT_EXT;
+        		cause[`XLEN-2:0] = `U_INT_EXT;
 		  end
 
     		else if (u_timer_conditioned)
 		  begin
     			cause[`XLEN-1] = 1;
-    			cause[`XLEN-2:0] = exceptions::U_INT_TIMER;
+    			cause[`XLEN-2:0] = `U_INT_TIMER;
     		  end
 
 		else if (instruction_addr_misalignedReg6)
 		  begin
-    			cause[`XLEN-2:0] = exceptions::I_ADDR_MISALIGNED;
+    			cause[`XLEN-2:0] = `I_ADDR_MISALIGNED;
     		  end
 		else if (illegal_instrReg6)
 		  begin
-    		    	cause[`XLEN-2:0] = exceptions::I_ILLEGAL;
+    		    	cause[`XLEN-2:0] = `I_ILLEGAL;
     		  end
 		else if (ecallReg6)
 		  begin
-			cause[`XLEN-2:0] = exceptions::U_CALL + {3'b0, current_mode};
+			cause[`XLEN-2:0] = `U_CALL + {3'b0, current_mode};
     		  end
     		else if (ebreakReg6)
 		  begin
-        		cause[`XLEN-2:0] = exceptions::BREAKPOINT;
+        		cause[`XLEN-2:0] = `BREAKPOINT;
     		  end
 		// addr_misaligned6 will divided to load & store exceptions
     		else if (addr_misaligned6)
 		  begin
-        		cause[`XLEN-2:0] = exceptions::L_ADDR_MISALIGNED;
+        		cause[`XLEN-2:0] = `L_ADDR_MISALIGNED;
     		  end
     		/*else if (store_address_misaligned)
 		  begin
 			exception = 1;
-        		cause[`XLEN-2:0] = exception::S_ADDR_MISALIGNED;
+        		cause[`XLEN-2:0] = `S_ADDR_MISALIGNED;
     		  end*/
 		else
 		  begin
@@ -546,7 +523,7 @@ end
     			cause[`XLEN-2:0] = 0;
 		  end
 	  end
-
+	  
 	  //ALU
 	alu exe_alu (
 	.alu_fn(alufnReg5),

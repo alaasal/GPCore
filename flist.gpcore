@@ -14,5 +14,4 @@ src/scoreboard_data_hazards.sv
 src/frontend_stage.sv
 src/decode_stage.sv
 src/csr.sv
-src/define_pack.sv
 src/csr_regfile.sv

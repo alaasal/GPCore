@@ -119,7 +119,8 @@ module issue_stage (
 	output logic mret4, sret4, uret4,
 
 	output logic m_timer,s_timer,u_timer,
-			output mode::mode_t current_mode,
+	//output mode::mode_t current_mode,
+	output logic [1:0] current_mode,
 	output logic m_tie, s_tie, m_eie, s_eie,u_eie,u_tie,u_sie
     );
 

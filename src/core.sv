@@ -1,20 +1,5 @@
 `timescale 1ns/1ns
 
-package mode;
-/* RISC-V execution mode. */
-typedef enum logic [1:0] {
-    	/* User. */
-    	U,
-    	/* Supervisor. */
-    	S,
-    	/* Reserved. */
-    	R,
-    	/* Machine. */
-    	M
-	}mode_t;
-
-endpackage
-
 module core(
 	input logic clk, nrst,
 
@@ -39,8 +24,6 @@ module core(
 	// Asynchronus interrupt
 	input logic external_interrupt
     );
-
-
 
 	// Wires
 	logic [31:0] pc, pc2, pc3, pc4, pc6;         // Program Counter Signals in each pipe
@@ -104,7 +87,8 @@ logic illegal_instr3, illegal_instr4;
 logic exception_pending, exception_pending6;
 logic [31:0] epc, cause;
 logic m_ret, s_ret, u_ret;
-mode::mode_t     current_mode;
+//mode::mode_t     current_mode;
+logic [1:0] current_mode;
 logic s_timer, m_timer, m_eie, m_tie, s_eie, s_tie, m_interrupt, s_interrupt, u_interrupt;
 logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
 logic external_interrupt_w;
