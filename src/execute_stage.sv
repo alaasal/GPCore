@@ -93,7 +93,7 @@ module exe_stage(
 	input logic m_timer,s_timer, u_timer,
  	//input mode::mode_t current_mode,
  	input logic [1:0] current_mode,
- 	
+
 	input logic m_tie, s_tie, m_eie, s_eie,u_eie,u_tie,u_sie,
 	input logic external_interrupt,
 	//input logic excep6,
@@ -196,7 +196,7 @@ module exe_stage(
 
 	logic [31:0] pcReg5;
 	logic [1:0] pcselectReg5;
-	
+
 	// csr
 	logic [2:0]  funct3Reg5;
 	logic [31:0] csr_dataReg5, csr_immReg5;
@@ -429,8 +429,8 @@ end
 		    end
 	  end
 	end
-	
-	
+
+
 	// =============================================== //
 	//		  Exception Logic		   //
 	// =============================================== //
@@ -523,7 +523,7 @@ end
     			cause[`XLEN-2:0] = 0;
 		  end
 	  end
-	  
+
 	  //ALU
 	alu exe_alu (
 	.alu_fn(alufnReg5),
