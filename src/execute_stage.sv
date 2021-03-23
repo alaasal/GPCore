@@ -45,7 +45,7 @@ module exe_stage(
 	input logic mret4, sret4, uret4,
 
 	input logic m_timer,s_timer, u_timer,
-    	input mode::mode_t current_mode,
+ 	input mode::mode_t current_mode,
 	input logic m_tie, s_tie, m_eie, s_eie,u_eie,u_tie,u_sie,
 	input logic external_interrupt,
 	//input logic excep6,

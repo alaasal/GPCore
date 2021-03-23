@@ -24,7 +24,9 @@ module core(
 	// Asynchronus interrupt
 	input logic external_interrupt
     );
-
+  
+  import mode::*;
+  
 	// Wires
 	logic [31:0] pc, pc2, pc3, pc4, pc6;         // Program Counter Signals in each pipe
 	logic [31:0] instr2;   	   // output wire of IF stage
