@@ -29,7 +29,7 @@ module core(
 	logic [31:0] pc, pc2, pc3, pc4, pc6;         // Program Counter Signals in each pipe
 	logic [31:0] instr2;   	   // output wire of IF stage
 
-	logic [4:0] rs1, rs2;
+	logic [4:0] rs1, rs2, rs1_4;
 	logic [1:0] B_SEL3;
 	logic [31:0] opa, opb;     // operands value output from issue stage
 	logic [4:0] rd3, rd4, rd6;
@@ -499,6 +499,7 @@ end
 	.op_b         (opb),		// operands A & B output from regfile in PIPE #4 (to exe stage)
 
 	.rd4          (rd4),
+	.rs1_4        (rs1_4),
 	.we4          (we4),
 
 	.fn4          (fn4),
@@ -584,6 +585,7 @@ end
 	.alu_fn4      (alu_fn4),
 
 	.rd4          (rd4),            // rd address from issue stage
+	.rs1_4        (rs1_4),
 	.we4          (we4),
 
 	.bneq4        (bneq4),

@@ -68,6 +68,7 @@ module issue_stage (
 
 	// Piped Signals from Issue to Execute
 	output logic [4:0] rd4,
+	output logic [4:0] rs1_4, // to execute stage -> csr_unit
 	output logic [3:0] alu_fn4,
 	output logic [2:0] fn4,
 
@@ -143,7 +144,8 @@ module issue_stage (
 	logic [31:0] U_immReg4;
 
 	logic [4:0] rdReg4;
-
+  logic [4:0] rs1Reg4;
+  
 	logic [3:0] alufnReg4;
 	logic [2:0] fnReg4;
 
@@ -212,7 +214,8 @@ logic mretReg4, sretReg4, uretReg4;
           begin
 		BSELReg4	<= 0;
 		rdReg4		<= 0;
-
+    rs1Reg4 <= 0;
+    
 		shamtReg4 	<= 0;
 		I_immdReg4	<= 0;
 		B_immdReg4	<= 0;
@@ -256,6 +259,8 @@ logic mretReg4, sretReg4, uretReg4;
           end
         else
           begin
+    rs1Reg4 <= rs1;
+    
 		shamtReg4	<= shamt;
 		B_immdReg4	<= B_imm3;
 		J_immReg4	<= J_imm3;
@@ -298,6 +303,7 @@ logic mretReg4, sretReg4, uretReg4;
 		fnReg4		<= 3'b000;
 		I_immdReg4	<= 32'b0;
 		rdReg4		<= 5'b0;
+		rs1Reg4 <= 0;
 		shamtReg4	<= 0;
 		B_immdReg4	<= 0;
 		J_immReg4	<= 0;
@@ -334,6 +340,8 @@ logic mretReg4, sretReg4, uretReg4;
 		fnReg4		<= 3'b000;
 
 		rdReg4		<= 5'b0;
+		rs1Reg4 <= 0;
+		
 		pcReg4      <= 0;
 		csr_weReg4		<= 0;
 		instruction_addr_misalignedReg4 <= 0;
@@ -353,6 +361,8 @@ logic mretReg4, sretReg4, uretReg4;
 		fnReg4		<= 3'b000;
 
 		rdReg4		<= 5'b0;
+		rs1Reg4 <= 0;
+		
 		pcReg4      <= 0;
 		end
 
@@ -366,6 +376,7 @@ logic mretReg4, sretReg4, uretReg4;
 		fnReg4		<= fn3;
 
 		rdReg4		<= rd3;
+		rs1Reg4 <= rs1;
 		end
 		else if(stall  )
 		begin
@@ -375,8 +386,10 @@ logic mretReg4, sretReg4, uretReg4;
 		alufnReg4	<= 3'b000;
 		fnReg4		<= 3'b000;
 		I_immdReg4	<= 32'b0;
+		
 		rdReg4		<= 5'b0;
-
+    rs1Reg4 <= 0;
+    
 		csr_weReg4		<= 0;
 		instruction_addr_misalignedReg4 <= 0;
 		ecallReg4	<= 0;
@@ -391,7 +404,9 @@ logic mretReg4, sretReg4, uretReg4;
 		begin
 		killnum		<= 2'b0;
 		BSELReg4	<= BSELReg4;
-		rdReg4		<=rdReg4 ;
+		
+		rdReg4		<=rdReg4;
+		rs1Reg4 <= rs1Reg4;
 
 		shamtReg4 	<= shamtReg4;
 		I_immdReg4	<= I_immdReg4;
@@ -431,6 +446,7 @@ logic mretReg4, sretReg4, uretReg4;
 		fnReg4		<= fn3;
 
 		rdReg4		<= rd3;
+		rs1Reg4 <= rs1;
 		csr_weReg4 	<= csr_we3;
 
 		// exceptions
@@ -535,6 +551,7 @@ logic mretReg4, sretReg4, uretReg4;
 	// Issue acts such as a cycle delay
 	// Issue stage may or may not use this signals
 	assign rd4		= rdReg4;
+	assign rs1_4 = rs1Reg4;
 
 	assign B_imm4		= B_immdReg4;
 	assign J_imm4		= J_immReg4;

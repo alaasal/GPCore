@@ -53,6 +53,7 @@ module exe_stage(
 	input logic [31:0] op_a,
  	input logic [31:0] op_b,
 	input logic [4:0] rd4,			// rd address from issue stage
+	input logic [4:0] rs1_4, // rs1 from issue to execute to csr_unit
 
 	input logic [2:0] fn4,
 	input logic [3:0] alu_fn4,
@@ -109,7 +110,7 @@ module exe_stage(
 	output logic [31:0] AU_imm6 ,
 
 	//output logic [31:0] mem_out6,
-	output logic addr_misaligned6,
+	//output logic addr_misaligned6,
 
 	output logic [31:0] mul_divReg6,
 
@@ -178,6 +179,7 @@ module exe_stage(
 	logic [31:0] alu_res5;
 	logic weReg5;
 	logic [4:0] rdReg5;
+	logic [4:0] rs1Reg5;
 
 	logic bneqReg5;
 	logic btypeReg5;
@@ -200,7 +202,7 @@ module exe_stage(
 	// csr
 	logic [2:0]  funct3Reg5;
 	logic [31:0] csr_dataReg5, csr_immReg5;
-        logic [31:0] csr5;
+  logic [31:0] csr5;
 	logic [11:0] csr_addrReg5;
 	logic csr_weReg5;
 	logic [31:0] csr_rd5;
@@ -209,6 +211,7 @@ module exe_stage(
 	logic instruction_addr_misalignedReg5;
 	logic illegal_instrReg5;
 	logic mretReg5, sretReg5, uretReg5;
+	logic illegal_csr;
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
@@ -221,6 +224,8 @@ module exe_stage(
 		fnReg5	 	<= 0;
 
 		rdReg5	  	<= 0;
+		rs1Reg5 <= 0;
+		
 		weReg5		<= 0;
 
 		B_immReg5 	<= 0;
@@ -268,6 +273,8 @@ module exe_stage(
 		fnReg5	  	<= fn4;
 
 		rdReg5	  	<= rd4;
+		rs1Reg5   <= rs1_4;
+		
 		weReg5	  	<= we4;
 
 		B_immReg5 	<= B_imm4;
@@ -309,13 +316,16 @@ end
 
 	csr_unit csr_1(
 	.func3(funct3Reg5),
-	.rs1(opaReg5),
+	.rs1(rs1Reg5),
+	.rs1_val(opaReg5),
 	.imm(csr_immReg5),
+	.csr_addr(csr_addrReg5),
 	.csr_reg(csr_dataReg5),
 	.system(csr_weReg5),
 	.current_mode(current_mode),
 	.csr_new(csr5),
-	.csr_old(csr_rd5)
+	.csr_old(csr_rd5),
+	.illegal_csr(illegal_csr)
 	);
 
 
@@ -347,6 +357,7 @@ end
 	logic instruction_addr_misalignedReg6;
 	logic ecallReg6, ebreakReg6;
 	logic illegal_instrReg6;
+	logic illegal_csrReg6;
 	//logic exception;
 	logic mretReg6, sretReg6, uretReg6;
 
@@ -370,6 +381,7 @@ end
 		ecallReg6	  	<= 0;
 		ebreakReg6		<= 0;
 		illegal_instrReg6 	<= 0;
+		illegal_csrReg6 <= 0;
 		mretReg6		<= 0;
 		sretReg6		<= 0;
 		uretReg6		<= 0;
@@ -397,6 +409,8 @@ end
 		ecallReg6	  	<=  0;
 		ebreakReg6		<= 0;
 		illegal_instrReg6  <= 0;
+		illegal_csrReg6 <= 0;
+		
 		mretReg6	<= 0;
 		sretReg6	<= 0;
 		uretReg6	<= 0;
@@ -423,6 +437,8 @@ end
 			ecallReg6	<=  ecallReg5;
 			ebreakReg6	<= ebreakReg5;
 		    illegal_instrReg6  <= illegal_instrReg5;
+		    illegal_csrReg6 <= illegal_csr;
+		    
 		    mretReg6	<= mretReg5;
 		    sretReg6	<= sretReg5;
 		    uretReg6	<= uretReg5;
@@ -431,98 +447,6 @@ end
 	end
 
 
-	// =============================================== //
-	//		  Exception Logic		   //
-	// =============================================== //
-
-	logic [31:0] cause            ;
-	logic m_timer_conditioned     ;
-	logic s_timer_conditioned     ;
-  	logic u_timer_conditioned     ;
-	logic m_interrupt_conditioned ;
-	logic s_interrupt_conditioned ;
-  	logic u_interrupt_conditioned ;
-
-	assign m_timer_conditioned     =                                m_tie && m_timer;
-	assign s_timer_conditioned     = (current_mode != 2'b11)   &&   s_tie && s_timer;
-	assign m_interrupt_conditioned =                                m_eie && external_interrupt;
-	assign s_interrupt_conditioned = (current_mode != 2'b11)   &&   s_eie && external_interrupt;
-  	assign u_timer_conditioned     = (current_mode == 2'b00)   &&   u_tie && u_timer;
-  	assign u_interrupt_conditioned = (current_mode == 2'b00)   &&   u_eie && external_interrupt;
-
-/* EXCEPTIONS. ********************************************************************************************************/
-										      /* from data mem (L/S)*/
-	assign exception =  instruction_addr_misalignedReg6 || ecallReg6 || ebreakReg6 || addr_misaligned6 || m_timer_conditioned || s_interrupt_conditioned
-			|| illegal_instrReg6   || s_timer_conditioned || m_interrupt_conditioned||u_interrupt_conditioned||u_timer_conditioned  || mretReg6 || sretReg6 || uretReg6;
-
-	always_comb
-	  begin
-    		cause[`XLEN-1] = 0;
-    		cause[`XLEN-2:0] = 0;
-    		if (m_interrupt_conditioned)
-		  begin
-    			cause[`XLEN-1] = 1;
-        		cause[`XLEN-2:0] = `M_INT_EXT;
-		  end
-    		else if (s_interrupt_conditioned)
-		  begin
-        		cause[`XLEN-1] = 1;
-        		cause[`XLEN-2:0] = `S_INT_EXT;
-    		  end
-    		else if (m_timer_conditioned)
-		  begin
-    			cause[`XLEN-1] = 1;
-    			cause[`XLEN-2:0] = `M_INT_TIMER;
-    		  end
-    		else if (s_timer_conditioned)
-		  begin
-    			cause[`XLEN-1] = 1;
-    		 	cause[`XLEN-2:0] = `S_INT_TIMER;
-    		  end
-		else if (u_interrupt_conditioned)
-		  begin
-    			cause[`XLEN-1] = 1;
-        		cause[`XLEN-2:0] = `U_INT_EXT;
-		  end
-
-    		else if (u_timer_conditioned)
-		  begin
-    			cause[`XLEN-1] = 1;
-    			cause[`XLEN-2:0] = `U_INT_TIMER;
-    		  end
-
-		else if (instruction_addr_misalignedReg6)
-		  begin
-    			cause[`XLEN-2:0] = `I_ADDR_MISALIGNED;
-    		  end
-		else if (illegal_instrReg6)
-		  begin
-    		    	cause[`XLEN-2:0] = `I_ILLEGAL;
-    		  end
-		else if (ecallReg6)
-		  begin
-			cause[`XLEN-2:0] = `U_CALL + {3'b0, current_mode};
-    		  end
-    		else if (ebreakReg6)
-		  begin
-        		cause[`XLEN-2:0] = `BREAKPOINT;
-    		  end
-		// addr_misaligned6 will divided to load & store exceptions
-    		else if (addr_misaligned6)
-		  begin
-        		cause[`XLEN-2:0] = `L_ADDR_MISALIGNED;
-    		  end
-    		/*else if (store_address_misaligned)
-		  begin
-			exception = 1;
-        		cause[`XLEN-2:0] = `S_ADDR_MISALIGNED;
-    		  end*/
-		else
-		  begin
-			cause[`XLEN-1] = 0;
-    			cause[`XLEN-2:0] = 0;
-		  end
-	  end
 
 	  //ALU
 	alu exe_alu (
@@ -585,6 +509,99 @@ end
 	.mulDiv_op	(mulDiv_opReg5),
 	.res		(mul_div5)
 	);
+	
+	
+	// =============================================== //
+	//		  Exception Logic		   //
+	// =============================================== //
+
+	logic [31:0] cause            ;
+	logic m_timer_conditioned     ;
+	logic s_timer_conditioned     ;
+  	logic u_timer_conditioned     ;
+	logic m_interrupt_conditioned ;
+	logic s_interrupt_conditioned ;
+  	logic u_interrupt_conditioned ;
+
+	assign m_timer_conditioned     =                                m_tie && m_timer;
+	assign s_timer_conditioned     = (current_mode != 2'b11)   &&   s_tie && s_timer;
+	assign m_interrupt_conditioned =                                m_eie && external_interrupt;
+	assign s_interrupt_conditioned = (current_mode != 2'b11)   &&   s_eie && external_interrupt;
+  	assign u_timer_conditioned     = (current_mode == 2'b00)   &&   u_tie && u_timer;
+  	assign u_interrupt_conditioned = (current_mode == 2'b00)   &&   u_eie && external_interrupt;
+
+/* EXCEPTIONS. ********************************************************************************************************/
+										      /* from data mem (L/S)*/
+	assign exception =  instruction_addr_misalignedReg6 || ecallReg6 || ebreakReg6 || ld_addr_misaligned6 || samo_addr_misaligned6 || m_timer_conditioned || s_interrupt_conditioned
+			|| illegal_instrReg6 || illegal_csrReg6 || s_timer_conditioned || m_interrupt_conditioned||u_interrupt_conditioned||u_timer_conditioned  || mretReg6 || sretReg6 || uretReg6;
+
+	always_comb
+	  begin
+    		cause[`XLEN-1] = 0;
+    		cause[`XLEN-2:0] = 0;
+    		if (m_interrupt_conditioned)
+		  begin
+    			cause[`XLEN-1] = 1;
+        		cause[`XLEN-2:0] = `M_INT_EXT;
+		  end
+    		else if (s_interrupt_conditioned)
+		  begin
+        		cause[`XLEN-1] = 1;
+        		cause[`XLEN-2:0] = `S_INT_EXT;
+    		  end
+    		else if (m_timer_conditioned)
+		  begin
+    			cause[`XLEN-1] = 1;
+    			cause[`XLEN-2:0] = `M_INT_TIMER;
+    		  end
+    		else if (s_timer_conditioned)
+		  begin
+    			cause[`XLEN-1] = 1;
+    		 	cause[`XLEN-2:0] = `S_INT_TIMER;
+    		  end
+		else if (u_interrupt_conditioned)
+		  begin
+    			cause[`XLEN-1] = 1;
+        		cause[`XLEN-2:0] = `U_INT_EXT;
+		  end
+
+    		else if (u_timer_conditioned)
+		  begin
+    			cause[`XLEN-1] = 1;
+    			cause[`XLEN-2:0] = `U_INT_TIMER;
+    		  end
+
+		else if (instruction_addr_misalignedReg6)
+		  begin
+    			cause[`XLEN-2:0] = `I_ADDR_MISALIGNED;
+    		  end
+		else if (illegal_instrReg6 || illegal_csrReg6)
+		  begin
+    		    	cause[`XLEN-2:0] = `I_ILLEGAL;
+    		  end
+		else if (ecallReg6)
+		  begin
+			cause[`XLEN-2:0] = `U_CALL + {3'b0, current_mode};
+    		  end
+    		else if (ebreakReg6)
+		  begin
+        		cause[`XLEN-2:0] = `BREAKPOINT;
+    		  end
+		// addr_misaligned6 will divided to load & store exceptions
+    		else if (ld_addr_misaligned6)
+		  begin
+        		cause[`XLEN-2:0] = `L_ADDR_MISALIGNED;
+    		  end
+    		else if (samo_addr_misaligned6)
+		  begin
+        		cause[`XLEN-2:0] = `S_ADDR_MISALIGNED;
+    		  end
+		else
+		  begin
+			cause[`XLEN-1] = 0;
+    			cause[`XLEN-2:0] = 0;
+		  end
+	  end
 
 
 	// =============================================== //
