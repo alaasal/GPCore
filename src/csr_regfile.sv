@@ -243,8 +243,8 @@ module csr_regfile(
 	
 
 	//logic s_timer;
-	logic [`XLEN-1:0] mtvec_out ;
-	assign mtvec_out = {mtvec, 2'b0};
+	logic [`XLEN-1:0] tvec_out ;
+	
 
 
 	logic[63:0] stimecmp;
@@ -840,15 +840,33 @@ assign u_tie = utie && status_uie;
 assign u_eie = ueie && status_uie;
 assign u_sie = usie && status_uie;
 
+
+
+
+always_comb 
+begin 
+if (current_mode == `M)
+begin
+tvec_out = {mtvec, 2'b0};
+end
+else if (current_mode == `S)
+begin
+tvec_out = {stvec, 2'b0};
+end
+else if (current_mode == `U)
+begin
+tvec_out = {utvec, 2'b0};
+end
+end
 	// epc output to pc in frontend
 	always_comb
 	  begin
-		unique case({m_ret, s_ret, u_ret})
-			3'b000: epc = mtvec_out;
+ 		unique case({m_ret, s_ret, u_ret})
+			3'b000: epc = tvec_out;
 			3'b100:	epc = mepc;
 			3'b010:	epc = sepc;
 			3'b001:	epc = uepc;
-			default: epc = mtvec_out;
+			default: epc = tvec_out;
 		endcase
 	  end
 endmodule
