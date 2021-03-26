@@ -15,13 +15,16 @@ module csr_unit(
 	always_comb
 	  begin
 		if(system)
-		  begin
-		  if (csr_addr[9:8] > current_mode)
-		      illegal_csr = 1;
+		  /*begin
+
+		  if ((csr_addr[9:8] > current_mode) && (csr_addr != 12'h301) && (csr_addr != 12'hf11)
+		      && (csr_addr != 12'hf12) && (csr_addr != 12'hf13) && (csr_addr != 12'hf14))
+		     illegal_csr = 1;
 		  else if ((rs1 != 0) && (csr_addr[11:10] == 2'b11))
 		      illegal_csr = 1;
-		  else
+		  else*/
 		  begin
+		    illegal_csr = 0;
 			unique case(func3)
 				3'b001: csr_new = rs1_val;			// CSRRW		(CSR+Zero Extend) -> RD then rs1 -> CSR
 				3'b010: csr_new = csr_reg | rs1_val;	// CSRRS		rs1 mask add
@@ -32,12 +35,12 @@ module csr_unit(
 				default:csr_new = csr_reg;
 			endcase
 		  end
-		  end
+//		  end
 		else
 			csr_new = csr_reg;
 	  end
 	
 
-	assign csr_old = csr_reg;
+	assign csr_old = csr_reg; // to rd
 
 endmodule

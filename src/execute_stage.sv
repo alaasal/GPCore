@@ -653,7 +653,7 @@ end
             3: wb_data6  = U_imm6;
             4: wb_data6  = mem_out6;
             5: wb_data6  = AU_imm6;
-	    6: wb_data6  = csr_rdReg6;
+	          6: wb_data6  = csr_rdReg6;
             default: wb_data6 = 0;
         endcase
 	end

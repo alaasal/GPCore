@@ -364,6 +364,17 @@ logic mretReg4, sretReg4, uretReg4;
 		rs1Reg4 <= 0;
 		
 		pcReg4      <= 0;
+		
+		////////////////
+		csr_weReg4		<= 0;
+		instruction_addr_misalignedReg4 <= 0;
+		ecallReg4	<= 0;
+		ebreakReg4	<= 0;
+		illegal_instrReg4<= 0;
+		mretReg4	<= 0;
+		sretReg4	<= 0;
+		uretReg4	<= 0;
+		///////////////
 		end
 
 	else if(stall && (~stallnum[1] && stallnum[0]) && ~bigstallwire )
@@ -377,6 +388,17 @@ logic mretReg4, sretReg4, uretReg4;
 
 		rdReg4		<= rd3;
 		rs1Reg4 <= rs1;
+		/////////////////////////////
+		csr_immReg4	<= csr_imm3;
+		csr_addrReg4	<= csr_addr3;
+		instruction_addr_misalignedReg4 <= instruction_addr_misaligned3;
+		ecallReg4	<= ecall3;
+		ebreakReg4	<= ebreak3;
+		illegal_instrReg4<= illegal_instr3;
+		mretReg4	<= mret3;
+		sretReg4	<= sret3;
+		uretReg4	<= uret3;
+		//////////////////////////////
 		end
 		else if(stall  )
 		begin
@@ -434,6 +456,19 @@ logic mretReg4, sretReg4, uretReg4;
 
 		pcReg4		<= pcReg4;
 		pcselectReg4	<= pcselectReg4;
+		
+		///////////////////////////
+		csr_immReg4	<= csr_immReg4;
+		csr_addrReg4	<= csr_addrReg4;
+		csr_weReg4 <= csr_weReg4;
+		instruction_addr_misalignedReg4 <= instruction_addr_misalignedReg4;
+		ecallReg4	<= ecallReg4;
+		ebreakReg4	<= ebreakReg4;
+		illegal_instrReg4<= illegal_instrReg4;
+		mretReg4	<= mretReg4;
+		sretReg4	<= sretReg4;
+		uretReg4	<= uretReg4;
+		//////////////////////////////
 
 		end
 		else
@@ -447,6 +482,7 @@ logic mretReg4, sretReg4, uretReg4;
 
 		rdReg4		<= rd3;
 		rs1Reg4 <= rs1;
+		
 		csr_weReg4 	<= csr_we3;
 
 		// exceptions
