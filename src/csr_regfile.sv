@@ -143,6 +143,8 @@ module csr_regfile(
 	//output mode::mode_t     current_mode = mode::M,
 	//output mode::mode_t     current_mode,
 	output logic [1:0] current_mode,
+	
+	output logic illegal_ret,
 
 	// To front end
 	output logic [31:0] epc
@@ -735,28 +737,50 @@ end
 always_comb begin
     next_mode = current_mode;
     if (exception_pending) begin
+      // An xRET instruction can be executed in privilege mode x or higher, where executing a lower-privilege xRET
+	    // instruction will pop the relevant lower-privilege interrupt enable and privilege mode stack
         if (m_ret) begin
+          if (current_mode == `M) begin
             next_mode = status_mpp;
+            illegal_ret = 1'b0;
+          end
+          else begin
+            illegal_ret = 1'b1;
+          end
+          
         end
-	else if (s_ret) begin
+        
+	      else if (s_ret) begin
+	        if (current_mode != `U) begin
             next_mode = status_spp ? `S : `U;
+            illegal_ret = 1'b0;
+          end
+          else begin
+            illegal_ret = 1'b1;
+          end
         end
-        else if (u_ret)
-	  begin
+        
+        else if (u_ret) begin
         	next_mode = `U;	  
-        end        
-	else if (current_mode == `S)
+        end
+        
+  //In systems with S-mode, the medeleg and mideleg registers must exist, and setting a bit in medeleg or mideleg
+  //will delegate the corresponding trap, when occurring in S-mode or U-mode, to the S modetrap handler
+  
+  //When a trap is delegated to S-mode, the scause register is written with the trap cause;
+                
+	else if (current_mode == `M)
 	  begin
-		if (cause[`XLEN-1])
-            		next_mode = mideleg[cause[`XLEN-2:0]] ? `S : `M;
+		if (cause[`XLEN-1]) 
+    		next_mode = mideleg[cause[`XLEN-2:0]] ? `S : `M;   
 		else 
 			next_mode = medeleg[cause[`XLEN-2:0]] ? `S : `M;
-	  end
+	end
         
-        else if (current_mode == `U)
+  else if (current_mode == `S)
 	  begin
 		if (cause[`XLEN-1])
-            		next_mode = sideleg[cause[`XLEN-2:0]] ? `U : `S;
+    		next_mode = sideleg[cause[`XLEN-2:0]] ? `U : `S;
 		else
 			next_mode = sedeleg[cause[`XLEN-2:0]] ? `U : `S;
 	end

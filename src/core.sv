@@ -92,6 +92,7 @@ logic [1:0] current_mode;
 logic s_timer, m_timer, m_eie, m_tie, s_eie, s_tie, m_interrupt, s_interrupt, u_interrupt;
 logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
 logic external_interrupt_w;
+logic illegal_ret;
 
 //OpenPiton Request
 logic[4:0] instr_l15_rqtype;
@@ -566,7 +567,8 @@ end
 	.u_timer(u_timer),
   	.u_eie(u_eie),
 	.u_tie(u_tie),
-	.u_sie(u_sie)
+	.u_sie(u_sie),
+	.illegal_ret(illegal_ret)
 
     );
 
@@ -690,7 +692,8 @@ end
   	.u_timer(u_timer),
   	.u_eie(u_eie),
 	.u_tie(u_tie),
-	.u_sie(u_sie)
+	.u_sie(u_sie),
+	.illegal_ret(illegal_ret)
 	);
 
 	// =============================================== //
