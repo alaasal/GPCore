@@ -143,6 +143,13 @@ assign bigstallwire=bigstall;
             stall_wire = (scoreboard[rs1][3]);
             nostall = (scoreboard[rs1][3]);
         end	//loads
+         //////////////////////////
+        7'b1110011:begin //CSR instruction
+            function_unit =3'b100;
+            stall_wire = (scoreboard[rs1][3]); 
+            nostall = (scoreboard[rs1][3]);
+        end	//loads
+        /////////////////////////////
 		default: function_unit = 0;
 		endcase
 	end
