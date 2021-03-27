@@ -23,14 +23,14 @@ module csr_unit(
 	  begin
 		if(system)
 		  begin
-		  /************************************************************************************************  
+		  /***************************************************************************************************  
 		      Attempts to access a CSR without appropriate privilege level or to write a read-only register
 		      raise illegal instruction exceptions.
-		  ************************************************************************************************/
+		  ***************************************************************************************************/
 		  if (csr_addr[9:8] > current_mode)
 		     illegal_csr = 1;
 		  else if ((rs1 != 0) && (csr_addr[11:10] == 2'b11) && ((func3 == `csrw) || func3 == `csrwi))
-		      illegal_csr = 1;
+		     illegal_csr = 1;
 		  else
 		  begin
 		    illegal_csr = 0;

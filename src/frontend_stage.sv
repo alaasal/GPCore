@@ -207,13 +207,13 @@ assign discardwire =discardReg;
 
     always_comb
       begin
-      if (state_reg == s_resp && (resp_fire))
+      if ( exception_pending || (state_reg == (s_resp && (resp_fire))))
       begin
         unique casez({exception_pending, PCSEL})
-            0: npc = targetcame ? targetsave : pcReg +4;
-            1: npc =  32'h40000000;
-            2: npc = target;
-            3: npc = npc;
+            3'b000: npc = targetcame ? targetsave : pcReg +4;
+            3'b001: npc =  32'h40000000;
+            3'b010: npc = target;
+            3'b011: npc = npc;
 						//Exception
 						3'b1??: npc = epc;
             default: npc = pcReg + 4 ;
