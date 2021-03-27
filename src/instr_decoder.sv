@@ -99,7 +99,7 @@ module instr_decoder(
 	assign system = op[6] & op[5] & op[4] & ~op[3] & ~op[2] & op[1] & op[0];  //1110011 SYSTEM
 	assign ecall  = system & (~|funct3) & ~funct12[0];
 	assign ebreak = system & (~|funct3) &  funct12[0];
-	assign uret   = system & (~|funct3) &  (~funct7[4]) & (~funct7[3]);
+	assign uret   = system & (~|funct3) &  (~funct7[4]) & (~funct7[3]) & funct12[1];
 	assign sret   = system & (~|funct3) &  (~funct7[4]) & funct7[3];
 	assign mret   = system & (~|funct3) &  funct7[4] & funct7[3];
 	assign wfi    = system & (~|funct3) &  funct12[0] & funct12[2] & funct12[8];
