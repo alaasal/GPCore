@@ -538,7 +538,7 @@ end
       `CSR_MNECYCLE:
         mtimecmp <= csr_wb;
 			`CSR_MEPC:
-				mepc <= {csr_wb[`XLEN-1:2], 2'b00};
+				mepc <= {csr_wb[`XLEN-1:2], 2'b0};
 			`CSR_MCAUSE:
 			  begin
 				mcause_code      <= csr_wb[5:0];
@@ -562,7 +562,7 @@ end
       `CSR_STVEC:
 				stvec <= csr_wb[`XLEN-1:2];
 			`CSR_SEPC:
-                    		sepc <= {csr_wb[`XLEN-1:2], 2'b00};
+                    		sepc <= {csr_wb[`XLEN-1:2], 2'b0};
 			`CSR_SCAUSE:
               		  begin
                			scause_code <= csr_wb[5:0];
@@ -611,7 +611,7 @@ end
 			`CSR_USCRATCH:
 				uscratch <= csr_wb;
 			`CSR_UEPC:
-				uepc <= {csr_wb[31:2], 2'b00};
+				uepc <= {csr_wb[`XLEN-1:2], 2'b0};
 			`CSR_UCAUSE:
 			  begin
 				mcause_code      <= csr_wb[5:0];
@@ -632,7 +632,7 @@ end
 	 //Exception logic
 	else if (exception_pending && next_mode==`M && !m_ret)
 	  begin
-		mepc <= {pc_exc[`XLEN-1:2],2'b00};
+		mepc <= {pc_exc[`XLEN-1:2],2'b0};
         	status_mie  <= 0;
         	status_mpie <= status_mie;
         	status_mpp  <= current_mode;
@@ -763,12 +763,6 @@ always_comb begin
         else if (u_ret) begin
         	next_mode = `U;	  
         end
-        
-  //In systems with S-mode, the medeleg and mideleg registers must exist, and setting a bit in medeleg or mideleg
-  //will delegate the corresponding trap, when occurring in S-mode or U-mode, to the S mode
-//trap handler
-  
-  //When a trap is delegated to S-mode, the scause register is written with the trap cause;
                 
 	else if (current_mode == `M)
 	  begin
