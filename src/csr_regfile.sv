@@ -284,6 +284,7 @@ module csr_regfile(
    	`CSR_MIDELEG: 		csr_data = mideleg_w;
 		`CSR_TIMEH, `CSR_CYCLEH: csr_data = mtime[63:32];
 		`CSR_TIME, `CSR_CYCLE:
+		
 				csr_data = mtime[31:0];
 
 
@@ -785,8 +786,8 @@ end
 /* Counter for time and cycle CSRs. */
 
 always @(posedge clk,negedge nrst) begin
-if (!nrst)  begin
-     mtime <=0;
+if (!nrst || exception_pending)  begin
+     mtime <= 0;
   end
   else begin
     mtime <= mtime + 1;

@@ -333,6 +333,20 @@ logic mretReg4, sretReg4, uretReg4;
 		uretReg4	<= 0;
 		end
 		else if(kill) begin
+		  shamtReg4 	<= 0;
+		  I_immdReg4	<= 0;
+		  B_immdReg4	<= 0;
+		  J_immReg4	<= 0;
+		  S_immReg4       <= 0;
+		  U_immReg4       <= 0;
+		
+		  bneqReg4 <= 0;
+	    btypeReg4 <= 0;
+	    jReg4 <= 0;
+	    jrReg4 <= 0;
+	    LUIReg4 <= 0;
+	    auipcReg4 <= 0;
+		
 		killnum		<=killnum+1;
 		pcselectReg4	<= 2'b00;
 		weReg4		<= 1'b0;
@@ -355,6 +369,20 @@ logic mretReg4, sretReg4, uretReg4;
 		end
 		else if ( killnum[1] && !killnum[0])begin
 		killnum		<=killnum+1;
+		shamtReg4 	<= 0;
+		I_immdReg4	<= 0;
+		B_immdReg4	<= 0;
+		J_immReg4	<= 0;
+		S_immReg4       <= 0;
+		U_immReg4       <= 0;
+		
+		bneqReg4 <= 0;
+	  btypeReg4 <= 0;
+	  jReg4 <= 0;
+	  jrReg4 <= 0;
+	  LUIReg4 <= 0;
+	  auipcReg4 <= 0;
+		
 		pcselectReg4	<= 2'b00;
 		weReg4		<= 1'b0;
 		BSELReg4	<= 2'b01;
@@ -363,7 +391,6 @@ logic mretReg4, sretReg4, uretReg4;
 
 		rdReg4		<= 5'b0;
 		rs1Reg4 <= 0;
-		
 		pcReg4      <= 0;
 		
 		////////////////
