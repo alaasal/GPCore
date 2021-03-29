@@ -1,62 +1,62 @@
 `define XLEN 32
 
 // Machine-Mode
- 	`define CSR_MVENDORID   12'hf11	//Machine Vendor ID Register (mvendorid) [p18]
- 	`define CSR_MARCHID     12'hf12	//Machine Architecture ID Register (marchid)  [p18]
- 	`define CSR_MIMPID      12'hf13	//Machine Implementation ID Register (mimpid) p[19]
- 	`define CSR_MHARTID     12'hf14	//Hart ID Register (mhartid) p[19]
- 	`define CSR_MSTATUS     12'h300	//Machine Status Registers (mstatus and mstatush) p[20]
- 	`define CSR_MISA        12'h301	//Machine ISA Register (misa) [p15]
- 	`define CSR_MEDELEG     12'h302	//Machine Trap Delegation Registers (medeleg and mideleg p[29]
- 	`define CSR_MIDELEG     12'h303	//Machine Trap Delegation Registers (medeleg and mideleg p[29]
- 	`define CSR_MIE         12'h304	//Machine Interrupt Registers (mip and mie) p[31]
- 	`define CSR_MTVEC       12'h305	//Machine Trap-Vector Base-Address Register (mtvec) p[28]
- 	`define CSR_MCOUNTEREN  12'h306
- 	`define CSR_MSCRATCH    12'h340
- 	`define CSR_MEPC        12'h341
- 	`define CSR_MCAUSE      12'h342
- 	`define CSR_MTVAL       12'h343
- 	`define CSR_MIP         12'h344	//Machine Interrupt Registers (mip and mie) p[31]
- 	`define CSR_MCYCLE      12'hb00	//**Hardware Performance Monitor p[35]
- 	`define CSR_MINSTRET    12'hb02	//**Hardware Performance Monitor p[35]
- 	`define CSR_MCYCLEH     12'hb80
- 	`define CSR_MINSTRETH   12'hb82
- 	`define CSR_CYCLEH      12'hc80
- 	`define CSR_TIMEH       12'hc81	//**Machine Timer Registers (mtime and mtimecmp) p[33]
- 	`define CSR_INSTRETH    12'hc82
- 	`define CSR_MNECYCLE    12'hbbf
+`define CSR_MVENDORID   12'hf11	//Machine Vendor ID Register (mvendorid) [p18]
+`define CSR_MARCHID     12'hf12	//Machine Architecture ID Register (marchid)  [p18]
+`define CSR_MIMPID      12'hf13	//Machine Implementation ID Register (mimpid) p[19]
+`define CSR_MHARTID     12'hf14	//Hart ID Register (mhartid) p[19]
+`define CSR_MSTATUS     12'h300	//Machine Status Registers (mstatus and mstatush) p[20]
+`define CSR_MISA        12'h301	//Machine ISA Register (misa) [p15]
+`define CSR_MEDELEG     12'h302	//Machine Trap Delegation Registers (medeleg and mideleg p[29]
+`define CSR_MIDELEG     12'h303	//Machine Trap Delegation Registers (medeleg and mideleg p[29]
+`define CSR_MIE         12'h304	//Machine Interrupt Registers (mip and mie) p[31]
+`define CSR_MTVEC       12'h305	//Machine Trap-Vector Base-Address Register (mtvec) p[28]
+`define CSR_MCOUNTEREN  12'h306
+`define CSR_MSCRATCH    12'h340
+`define CSR_MEPC        12'h341
+`define CSR_MCAUSE      12'h342
+`define CSR_MTVAL       12'h343
+`define CSR_MIP         12'h344	//Machine Interrupt Registers (mip and mie) p[31]
+`define CSR_MCYCLE      12'hb00	//**Hardware Performance Monitor p[35]
+`define CSR_MINSTRET    12'hb02	//**Hardware Performance Monitor p[35]
+`define CSR_MCYCLEH     12'hb80
+`define CSR_MINSTRETH   12'hb82
+`define CSR_CYCLEH      12'hc80
+`define CSR_TIMEH       12'hc81	//**Machine Timer Registers (mtime and mtimecmp) p[33]
+`define CSR_INSTRETH    12'hc82
+`define CSR_MNECYCLE    12'hbbf
 
-	// User-Mode
-	`define CSR_USTATUS     12'h000
- 	`define CSR_FFLAGS      12'h001
- 	`define CSR_FRM         12'h002
- 	`define CSR_FCSR        12'h003
- 	`define CSR_UIE         12'h004
- 	`define CSR_UTVEC       12'h005
- 	`define CSR_USCRATCH    12'h040
- 	`define CSR_UEPC        12'h041
- 	`define CSR_UCAUSE      12'h042
-  `define CSR_UTVAL       12'h043
-  `define CSR_UIP         12'h044
-  `define CSR_CYCLE       12'hc00
-  `define CSR_TIME        12'hc01
-  `define CSR_INSTRET     12'hc02
-  `define CSR_UNECYCLE    12'h8ff
+// User-Mode
+`define CSR_USTATUS     12'h000
+`define CSR_FFLAGS      12'h001
+`define CSR_FRM         12'h002
+`define CSR_FCSR        12'h003
+`define CSR_UIE         12'h004
+`define CSR_UTVEC       12'h005
+`define CSR_USCRATCH    12'h040
+`define CSR_UEPC        12'h041
+`define CSR_UCAUSE      12'h042
+`define CSR_UTVAL       12'h043
+`define CSR_UIP         12'h044
+`define CSR_CYCLE       12'hc00
+`define CSR_TIME        12'hc01
+`define CSR_INSTRET     12'hc02
+`define CSR_UNECYCLE    12'h8ff
 
-	// Superviser-Mode
-  `define CSR_SSTATUS     12'h100
-  `define CSR_SEDELEG     12'h102
-  `define CSR_SIDELEG     12'h103
-  `define CSR_SIE         12'h104
- 	`define CSR_STVEC       12'h105
- 	`define CSR_SCOUNTEREN  12'h106
- 	`define CSR_SSCRATCH    12'h140
- 	`define CSR_SEPC        12'h141
- 	`define CSR_SCAUSE      12'h142
- 	`define CSR_STVAL       12'h143
- 	`define CSR_SIP         12'h144
- 	`define CSR_SATP        12'h180
- 	`define CSR_SNECYCLE    12'h5C0
+// Superviser-Mode
+`define CSR_SSTATUS     12'h100
+`define CSR_SEDELEG     12'h102
+`define CSR_SIDELEG     12'h103
+`define CSR_SIE         12'h104
+`define CSR_STVEC       12'h105
+`define CSR_SCOUNTEREN  12'h106
+`define CSR_SSCRATCH    12'h140
+`define CSR_SEPC        12'h141
+`define CSR_SCAUSE      12'h142
+`define CSR_STVAL       12'h143
+`define CSR_SIP         12'h144
+`define CSR_SATP        12'h180
+`define CSR_SNECYCLE    12'h5C0
 
 
 // synchronous (interrupt = 0) values are defined here.
@@ -130,7 +130,7 @@ module csr_regfile(
  	input logic m_ret, s_ret, u_ret,	//MRET or SRET instruction is used to return from a trap in M-mode or S-mode respectively
 	// input logic stall,
 	input logic m_interrupt,
-    	input logic s_interrupt,
+  input logic s_interrupt,
 	input logic u_interrupt,
 
 	output logic m_timer,
@@ -140,37 +140,31 @@ module csr_regfile(
 	output logic m_eie, m_tie,s_eie, s_tie,
 
 	output logic u_eie, u_tie, u_sie,
-	//output mode::mode_t     current_mode = mode::M,
-	//output mode::mode_t     current_mode,
 	output logic [1:0] current_mode,
-	
+
 	output logic illegal_ret,
 
 	// To front end
 	output logic [31:0] epc
 	);
-	//import csr::*;
-
-	//mode::mode_t  next_mode;
-	logic [1:0] next_mode;
 
 
 	// registers
+  logic [1:0] next_mode;
+
 	// mstatus
 	logic status_sie;
 	logic status_mie;
 	logic status_spie;
 	logic status_mpie;
 	logic status_spp;
-	//mode::mode_t status_mpp  = mode::U;
-	//mode::mode_t status_mpp;
 	logic [1:0] status_mpp;
-	
+
 	logic status_sum;
 
 	// ustatus
 	logic status_upie;
-    	logic status_uie;
+  logic status_uie;
 
 	// mie
 	logic meie;
@@ -199,16 +193,16 @@ module csr_regfile(
 
 
 	logic [`XLEN-1:2] mtvec;
-    	logic [`XLEN-1:2] stvec;
+  logic [`XLEN-1:2] stvec;
 	logic [`XLEN-1:2] utvec;
 	logic [`XLEN-1:0] mscratch;
-    	logic [`XLEN-1:0] sscratch;
+  logic [`XLEN-1:0] sscratch;
 	logic [`XLEN-1:0] uscratch;
 	logic [`XLEN-1:0] mcause;
-    	logic [`XLEN-1:0] scause;
+  logic [`XLEN-1:0] scause;
 	logic [`XLEN-1:0] ucause;
 	logic [`XLEN-1:0] mepc;
-    	logic [`XLEN-1:0] sepc;
+  logic [`XLEN-1:0] sepc;
 	logic [`XLEN-1:0] uepc;
 
 	logic [`XLEN-1:0] mtval;
@@ -216,7 +210,7 @@ module csr_regfile(
 
 	logic [15:0] medeleg;
 	logic [11:0] mideleg;
-	
+
 	logic [15:0] sedeleg;
 	logic [11:0] sideleg;
 
@@ -227,7 +221,7 @@ module csr_regfile(
 	logic [`XLEN-1:0] mstatus;
 	logic [`XLEN-1:0] mip;
 	logic [`XLEN-1:0] mie;
-    	logic [`XLEN-1:0] sstatus;
+  logic [`XLEN-1:0] sstatus;
 	logic [`XLEN-1:0] sip;
 	logic [`XLEN-1:0] sie;
 
@@ -237,25 +231,25 @@ module csr_regfile(
 
 	logic [`XLEN-1:0] medeleg_w;
 	logic [`XLEN-1:0] mideleg_w;
-	
+
 	logic [`XLEN-1:0] sedeleg_w;
 	logic [`XLEN-1:0] sideleg_w;
-	
+
 
 	//logic s_timer;
 	logic [`XLEN-1:0] tvec_out ;
-	
+
 
 
 	logic[63:0] stimecmp;
-        logic[63:0] utimecmp;
+  logic[63:0] utimecmp;
 	logic [63:0]mtimecmp;
 	logic [63:0] mtime;
 
 
 
 	always_comb
-	begin	
+	begin
 		case(csr_address_r)
 		// System ID Registers
 		`CSR_MISA: csr_data = {
@@ -263,7 +257,7 @@ module csr_regfile(
        			4'b0000,     // Reserved.
         		/* Extensions.
         		 *  ZYXWVUTSRQPONMLKJIHGFEDCBA */
-        		26'b00000101000011000100000001	
+        		26'b00000101000011000100000000
     			};
 		`CSR_MVENDORID:		csr_data = '0;
 		`CSR_MARCHID:		csr_data = '0;
@@ -284,12 +278,12 @@ module csr_regfile(
    	`CSR_MIDELEG: 		csr_data = mideleg_w;
 		`CSR_TIMEH, `CSR_CYCLEH: csr_data = mtime[63:32];
 		`CSR_TIME, `CSR_CYCLE:
-		
+
 				csr_data = mtime[31:0];
 
 
               // S Mode
-		`CSR_SEPC:	       csr_data = {sepc[`XLEN-1:2], 2'b0};
+		`CSR_SEPC:	            csr_data = {sepc[`XLEN-1:2], 2'b0};
     `CSR_SSTATUS:           csr_data = sstatus;
     `CSR_SIE:               csr_data = sie;
     `CSR_STVEC:             csr_data = {stvec, 2'b0};
@@ -371,7 +365,7 @@ module csr_regfile(
     		mcause_interrupt,
     		mcause_code
 	};
-	
+
 	assign medeleg_w = {
 		16'b0,
 		medeleg
@@ -412,8 +406,8 @@ module csr_regfile(
 		scause_code
 	};
 
-	
-	
+
+
 	assign sedeleg_w = {
 		16'b0,
 		sedeleg
@@ -450,8 +444,8 @@ assign uie = {
     usie
 };
 assign ucause = {
-    mcause_interrupt,
-    mcause_code
+    ucause_interrupt,
+    ucause_code
 };
 
 always_ff @(posedge clk, negedge nrst) begin
@@ -479,13 +473,13 @@ always_ff @(posedge clk, negedge nrst) begin
 
 		scause_interrupt 	<= 0;
     		scause_code      	<= 0;
-		
+
 		ucause_interrupt 	<= 0;
     		ucause_code      	<= 0;
 
 		medeleg			<= 0;
 		mideleg			<= 0;
-		
+
 		sedeleg			<= 0;
 		sideleg			<= 0;
 
@@ -555,7 +549,7 @@ end
 			// S Mode
 			`CSR_SSTATUS:
 			  begin
-  				status_sum <= csr_wb[18];
+  				  status_sum <= csr_wb[18];
     				status_spp <= csr_wb[8];
     				status_spie <= csr_wb[5];
     				status_sie <= csr_wb[1];
@@ -581,10 +575,10 @@ end
 			`CSR_SEDELEG:
 				sedeleg <= csr_wb[15:0];
 			`CSR_SIDELEG:
-				sideleg <= csr_wb[11:0];  
+				sideleg <= csr_wb[11:0];
       `CSR_SNECYCLE:
           stimecmp <= csr_wb;
- 
+
 
 			// USER MODE
 			`CSR_USTATUS:
@@ -624,7 +618,7 @@ end
 				utvec <= csr_wb[`XLEN-1:2];
       `CSR_UNECYCLE:
         utimecmp <= csr_wb;
- 
+
 
 		endcase
 		end
@@ -748,9 +742,9 @@ always_comb begin
           else begin
             illegal_ret = 1'b1;
           end
-          
+
         end
-        
+
 	      else if (s_ret) begin
 	        if (current_mode != `U) begin
             next_mode = status_spp ? `S : `U;
@@ -760,19 +754,19 @@ always_comb begin
             illegal_ret = 1'b1;
           end
         end
-        
+
         else if (u_ret) begin
-        	next_mode = `U;	  
+        	next_mode = `U;
         end
-                
+
 	else if (current_mode == `M)
 	  begin
-		if (cause[`XLEN-1]) 
-    		next_mode = mideleg[cause[`XLEN-2:0]] ? `S : `M;   
-		else 
+		if (cause[`XLEN-1])
+    		next_mode = mideleg[cause[`XLEN-2:0]] ? `S : `M;
+		else
 			next_mode = medeleg[cause[`XLEN-2:0]] ? `S : `M;
 	end
-        
+
   else if (current_mode == `S)
 	  begin
 		if (cause[`XLEN-1])
@@ -786,7 +780,7 @@ end
 /* Counter for time and cycle CSRs. */
 
 always @(posedge clk,negedge nrst) begin
-if (!nrst || exception_pending)  begin
+if (!nrst)  begin
      mtime <= 0;
   end
   else begin
@@ -839,8 +833,8 @@ assign u_sie = usie && status_uie;
 
 
 
-always_comb 
-begin 
+always_comb
+begin
 if (current_mode == `M)
 begin
 tvec_out = {mtvec, 2'b0};
