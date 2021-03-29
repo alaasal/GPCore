@@ -221,7 +221,14 @@ assign discardwire =discardReg;
       end
       else
       begin
+      	   ////////////////////////////////////////////////////////////////////////////
+          if(exception_pending)begin
+            npc = (state_reg == s_req) && (exception_pending) ? epc : pcReg;
+          end
+        else begin
       	   npc = (state_reg == s_req) && (PCSEL[1] && ~PCSEL[0]) ? target : pcReg;
+    	   end
+      	   ////////////////////////////////////////////////////////////////////////
 
       end
       end
@@ -362,7 +369,14 @@ begin
 case(state_reg)
 	s_req:
 	begin
+	 /////////////////////////////////////////////////////////////////////////
+	   if(exception_pending)begin
+	     transducer_l15_address <= epc;
+	     end
+	     else begin
 		transducer_l15_address <= (PCSEL[1] && ~PCSEL[0]) ? target : pc;
+		end
+		///////////////////////////////////////////////////////////////////////
 	    transducer_l15_rqtype	<= 0;
 		transducer_l15_size	<= 8;
 		transducer_l15_val	<= 1 && wake_up;

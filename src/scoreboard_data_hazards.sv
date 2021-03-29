@@ -155,7 +155,7 @@ assign bigstallwire=bigstall;
 	end
 
 assign stall=kill && ~(~stallnum[1] && stallnum[0]) ? 1'b0 :stall_wire;
-assign kill= (btaken || killReg) && ~stall && (~discard)? 1'b1  :1'b0 ;
+assign kill= (btaken || killReg || exception ) && ~stall && (~discard)? 1'b1  :1'b0 ;
 
  always_ff @(posedge clk)
       begin
@@ -186,7 +186,7 @@ if(scoreboard[j][0] && !scoreboard[j][1])
 
 
    always_ff@(posedge clk) begin
-if (btaken | exception)
+if (btaken || exception)
 begin
 
 	killReg<=1;
