@@ -143,6 +143,9 @@ module csr_regfile(
 	output logic [1:0] current_mode,
 
 	output logic illegal_ret,
+	
+	// output to decode stage to decide sret or illegal instruction
+	output logic TSR,
 
 	// To front end
 	output logic [31:0] epc
@@ -159,7 +162,7 @@ module csr_regfile(
 	logic status_mpie;
 	logic status_spp;
 	logic [1:0] status_mpp;
-
+	logic status_TSR;
 	logic status_sum;
 
 	// ustatus
@@ -318,7 +321,9 @@ module csr_regfile(
 
 
 	assign mstatus = {
-    13'b0,
+    9'b0,
+    status_TSR,
+    3'b0,
     status_sum,
     1'b0,
     4'b0,
@@ -511,14 +516,16 @@ end
 		case(csr_address_wb)
 			`CSR_MSTATUS:
 			  begin
-				status_sie  <= csr_wb[1];
-                        	status_mie  <= csr_wb[3];
-                        	status_spie <= csr_wb[5];
-                        	status_mpie <= csr_wb[7];
-                        	status_spp  <= csr_wb[8];
-                        	status_mpp  <= csr_wb[12:11];
-                        	status_sum  <= csr_wb[18];
+			   status_sie  <= csr_wb[1];
+			   status_mie  <= csr_wb[3];
+			   status_spie <= csr_wb[5];
+			   status_mpie <= csr_wb[7];
+			   status_spp  <= csr_wb[8];
+			   status_mpp  <= csr_wb[12:11];
+			   status_sum  <= csr_wb[18];
+			   status_TSR  <= csr_wb[22];           	
 			  end
+			  
 			`CSR_MTVEC:
 				mtvec <= csr_wb[`XLEN-1:2];
 			`CSR_MIE:
@@ -729,56 +736,70 @@ end
 end
 
 // Figure out what mode we are switching to
-always_comb begin
+always_comb
+  begin
     next_mode = current_mode;
-    if (exception_pending) begin
+    if (exception_pending)
+      begin
       // An xRET instruction can be executed in privilege mode x or higher, where executing a lower-privilege xRET
 	    // instruction will pop the relevant lower-privilege interrupt enable and privilege mode stack
-        if (m_ret) begin
-          if (current_mode == `M) begin
+	    
+        if (m_ret)
+          begin
+          if (current_mode == `M)
+            begin
             next_mode = status_mpp;
             illegal_ret = 1'b0;
-          end
-          else begin
+            end
+          else 
+            begin
             illegal_ret = 1'b1;
+            end
           end
 
-        end
-
-	      else if (s_ret) begin
-	        if (current_mode != `U) begin
-            next_mode = status_spp ? `S : `U;
-            illegal_ret = 1'b0;
+	      else if (s_ret)
+	        begin
+	        if (current_mode != `U)
+	          begin
+              next_mode = status_spp ? `S : `U;
+              illegal_ret = 1'b0;
+            end
+          else
+            begin
+              illegal_ret = 1'b1;
+            end
           end
-          else begin
-            illegal_ret = 1'b1;
-          end
-        end
 
         else if (u_ret) begin
         	next_mode = `U;
         end
 
-	else if (current_mode == `M)
-	  begin
-		if (cause[`XLEN-1])
-    		next_mode = mideleg[cause[`XLEN-2:0]] ? `S : `M;
-		else
-			next_mode = medeleg[cause[`XLEN-2:0]] ? `S : `M;
-	end
+	      else if (current_mode == `M)
+	      begin
+		      if (cause[`XLEN-1])
+    		      next_mode = mideleg[cause[`XLEN-2:0]] ? `S : `M;
+		      else
+			      next_mode = medeleg[cause[`XLEN-2:0]] ? `S : `M;
+	      end
 
-  else if (current_mode == `S)
-	  begin
-		if (cause[`XLEN-1])
-    		next_mode = sideleg[cause[`XLEN-2:0]] ? `U : `S;
-		else
-			next_mode = sedeleg[cause[`XLEN-2:0]] ? `U : `S;
-	end
+        else if (current_mode == `S)
+	      begin
+		      if (cause[`XLEN-1])
+    		      next_mode = sideleg[cause[`XLEN-2:0]] ? `U : `S;
+		      else
+			      next_mode = sedeleg[cause[`XLEN-2:0]] ? `U : `S;
+	      end
+	
+	     else
+	       begin
+	       illegal_ret = 1'b0;
+	       next_mode = current_mode;
+         end
     end
-end
+  end
+
 
 /* Counter for time and cycle CSRs. */
-
 always @(posedge clk,negedge nrst) begin
 if (!nrst)  begin
      mtime <= 0;
@@ -859,4 +880,9 @@ end
 			default: epc = tvec_out;
 		endcase
 	  end
+	  
+	  
+  // output
+  assign TSR = status_TSR;
+  
 endmodule

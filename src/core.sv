@@ -58,8 +58,8 @@ module core(
 
 
 
-    logic ld_addr_misaligned6;
-    logic samo_addr_misaligned6;
+  logic ld_addr_misaligned6;
+  logic samo_addr_misaligned6;
 
 	logic [3:0] mulDiv_op4, mulDiv_op3;
 	logic [31:0] mul_div6;
@@ -87,12 +87,12 @@ logic illegal_instr3, illegal_instr4;
 logic exception_pending, exception_pending6;
 logic [31:0] epc, cause;
 logic m_ret, s_ret, u_ret;
-//mode::mode_t     current_mode;
 logic [1:0] current_mode;
 logic s_timer, m_timer, m_eie, m_tie, s_eie, s_tie, m_interrupt, s_interrupt, u_interrupt;
 logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
 logic external_interrupt_w;
 logic illegal_ret;
+logic TSR;
 
 //OpenPiton Request
 logic[4:0] instr_l15_rqtype;
@@ -363,6 +363,8 @@ end
 	.pc2          (pc2),
 	.exception_pending(exception_pending),
 	.instruction_addr_misaligned2(instruction_addr_misaligned2),
+	
+	.TSR          (TSR), // input from issue stage
 
 	// Outputs to Issue Stage
 	.rs1          (rs1),
@@ -568,7 +570,8 @@ end
   	.u_eie(u_eie),
 	.u_tie(u_tie),
 	.u_sie(u_sie),
-	.illegal_ret(illegal_ret)
+	.illegal_ret(illegal_ret),
+	.TSR(TSR)
 
     );
 

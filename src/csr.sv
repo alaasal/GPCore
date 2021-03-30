@@ -6,10 +6,6 @@
 `define csrsi 3'b110
 `define csrci 3'b111
 
-// Timers //
-`define CSR_TIME        12'hc01
-`define CSR_CYCLE       12'hc00
-
 module csr_unit(
 	input logic [2:0] func3,
 	input logic [4:0] rs1,
@@ -36,7 +32,7 @@ module csr_unit(
 		  else if ((csr_addr[11:10] == 2'b11) && ((func3 == `csrw) || (func3 == `csrwi)))
 		     illegal_csr = 1;
 		  else if ((rs1 != 0) && (csr_addr[11:10] == 2'b11) && ((func3 == `csrc) || (func3 == `csrci) || (func3 == `csrs) || (func3 == `csrsi)))
-		    illegal_csr = 1;
+		     illegal_csr = 1;
 		  else
 		    begin
 		    illegal_csr = 0;
@@ -50,15 +46,14 @@ module csr_unit(
 				default:csr_new = csr_reg;
 			endcase
 		    end
-		end
-		else
-		  begin
-			csr_new = csr_reg;
-			illegal_csr = 0;
-			end
+		  end
+		  else
+		    begin
+			  csr_new = csr_reg;
+			  illegal_csr = 0;
+			  end
 	  end
 	
-
 	assign csr_old = csr_reg; // to rd
 
 endmodule

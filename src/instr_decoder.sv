@@ -6,6 +6,7 @@ module instr_decoder(
 	input logic instr_30,		// instr[30]
 	// from commit stage
 	input logic exception_pending,
+	input logic TSR,
 
 
 	//input logic nrst,
@@ -100,11 +101,13 @@ module instr_decoder(
 	assign ecall  = system & (~|funct3) &  (~|funct12);
 	assign ebreak = system & (~|funct3) &  funct12[0];
 	assign uret   = system & (~|funct3) &  (~funct7[4]) & (~funct7[3]) & funct12[1];
-	assign sret   = system & (~|funct3) &  (~funct7[4]) & funct7[3] & funct12[1];
+	assign sret   = system & (~|funct3) &  (~funct7[4]) & funct7[3] & funct12[1] & ~TSR;
 	assign mret   = system & (~|funct3) &  funct7[4] & funct7[3] & funct12[1];
 	assign wfi    = system & (~|funct3) &  funct12[0] & funct12[2] & funct12[8];
-	assign illegal_instr = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system || ~(|op) || (op ==7'h0F));
-
+	assign illegal_instruction = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system || ~(|op) || (op ==7'h0F));
+  assign illegal_sret = sret & TSR;
+  assign illegal_instr = illegal_instruction || illegal_sret;
+  
 	// rtype op								  // instr[30] funct3
 	assign i_add  = rtype & ~instr_30 & ~(|funct3);				  //   	0	000
 	assign i_sub  = rtype &  instr_30 & ~(|funct3);				  //   	1	000
