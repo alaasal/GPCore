@@ -368,6 +368,7 @@ end
 	.illegal_flag (illegal_flag),
 	
 	.TSR          (TSR), // input from issue stage
+	.current_mode (current_mode),
 
 	// Outputs to Issue Stage
 	.rs1          (rs1),

@@ -745,34 +745,13 @@ always_comb
 	    // instruction will pop the relevant lower-privilege interrupt enable and privilege mode stack
 	    
         if (m_ret)
-          begin
-          if (current_mode == `M)
-            begin
             next_mode = status_mpp;
-            illegal_ret = 1'b0;
-            end
-          else 
-            begin
-            illegal_ret = 1'b1;
-            end
-          end
 
 	      else if (s_ret)
-	        begin
-	        if (current_mode != `U)
-	          begin
               next_mode = status_spp ? `S : `U;
-              illegal_ret = 1'b0;
-            end
-          else
-            begin
-              illegal_ret = 1'b1;
-            end
-          end
 
-        else if (u_ret) begin
-        	next_mode = `U;
-        end
+        else if (u_ret)
+        	     next_mode = `U;
         
         else if (cause[`XLEN-1])
           begin
