@@ -93,6 +93,7 @@ logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
 logic external_interrupt_w;
 logic illegal_ret;
 logic TSR;
+logic illegal_flag;
 
 //OpenPiton Request
 logic[4:0] instr_l15_rqtype;
@@ -314,6 +315,7 @@ end
 	// Outputs to Decode Stage
 	.pc2            (pc2),		// pc at instruction mem pipe #2
 	.instr2         (instr2),	// instruction output from inst memory (to decode stage)
+	.illegal_flag   (illegal_flag),
 
 	//Scoreboared Signals
 	.stall          (stall),
@@ -363,6 +365,7 @@ end
 	.pc2          (pc2),
 	.exception_pending(exception_pending),
 	.instruction_addr_misaligned2(instruction_addr_misaligned2),
+	.illegal_flag (illegal_flag),
 	
 	.TSR          (TSR), // input from issue stage
 

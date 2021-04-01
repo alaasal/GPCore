@@ -7,7 +7,7 @@ module instdec_stage(
 	input logic exception_pending,	// from commit stage
 
 	input logic instruction_addr_misaligned2,  // exception from frontend
-	
+	input logic illegal_flag,
 	input logic TSR, // from issue stage to instr_decoder
 
 	// Operands and Destination
@@ -191,7 +191,9 @@ module instdec_stage(
 	.funct12     (funct12),
 	.instr_30    (instr_30),		// instr[30]
 	.exception_pending(exception_pending),
-	.TSR(TSR),
+	.nrst        (nrst),
+	.TSR         (TSR),
+	.illegal_flag(illegal_flag),
 
 	.pcselect    (pcselect3),		// Select pc source
 	.we          (we3),				// Regfile write enable

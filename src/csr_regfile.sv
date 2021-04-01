@@ -634,13 +634,13 @@ end
 	 //Exception logic
 	else if (exception_pending && next_mode==`M && !m_ret)
 	  begin
-		mepc <= {pc_exc[`XLEN-1:2],2'b0};
-        	status_mie  <= 0;
-        	status_mpie <= status_mie;
-        	status_mpp  <= current_mode;
-
-        	mcause_interrupt <= cause[`XLEN-1];
-        	mcause_code      <= cause[`XLEN-2:0];
+		  mepc <= {pc_exc[`XLEN-1:2],2'b0};
+     	status_mie  <= 0;
+     	status_mpie <= status_mie;
+      status_mpp  <= current_mode;
+      
+      mcause_interrupt <= cause[`XLEN-1];
+      mcause_code      <= cause[`XLEN-2:0];
 
 
 		if (!cause[`XLEN-1])
@@ -648,7 +648,7 @@ end
 			case (cause[`XLEN-2:0])
                 		`I_ADDR_MISALIGNED:   mtval <= {pc_exc[`XLEN-1:1], 1'b0};
                 		`I_ILLEGAL:           mtval <= 0;			//{instruction_word, 2'b11};
-                		default:                        mtval <= 0;
+                		default:              mtval <= 0;
 			endcase
 		  end
 
@@ -716,7 +716,7 @@ end
 			case (cause[`XLEN-2:0])
             `I_ADDR_MISALIGNED:   utval <= {pc_exc, 1'b0};
             `I_ILLEGAL:           utval <= 0;			//{instruction_word, 2'b11};
-            default:                        utval <= 0;
+            default:              utval <= 0;
 			endcase
 		  end
 
@@ -773,23 +773,26 @@ always_comb
         else if (u_ret) begin
         	next_mode = `U;
         end
-
-	      else if (current_mode == `M)
-	      begin
-		      if (cause[`XLEN-1])
-    		      next_mode = mideleg[cause[`XLEN-2:0]] ? `S : `M;
-		      else
-			      next_mode = medeleg[cause[`XLEN-2:0]] ? `S : `M;
-	      end
-
-        else if (current_mode == `S)
-	      begin
-		      if (cause[`XLEN-1])
-    		      next_mode = sideleg[cause[`XLEN-2:0]] ? `U : `S;
-		      else
-			      next_mode = sedeleg[cause[`XLEN-2:0]] ? `U : `S;
-	      end
-	
+        
+        else if (cause[`XLEN-1])
+          begin
+            if (mideleg[cause[`XLEN-2:0]] && sideleg[cause[`XLEN-2:0]])
+              next_mode = `U;
+            else if (mideleg[cause[`XLEN-2:0]])
+              next_mode = `S;
+            else
+              next_mode = `M; 
+          end
+        else if (!cause[`XLEN-1])
+          begin
+            if (medeleg[cause[`XLEN-2:0]] && sedeleg[cause[`XLEN-2:0]])
+              next_mode = `U;
+            else if (medeleg[cause[`XLEN-2:0]])
+              next_mode = `S;
+            else
+              next_mode = `M;
+          end
+        
 	     else
 	       begin
 	       illegal_ret = 1'b0;
@@ -856,15 +859,15 @@ assign u_sie = usie && status_uie;
 
 always_comb
 begin
-if (current_mode == `M)
+if (next_mode == `M)
 begin
 tvec_out = {mtvec, 2'b0};
 end
-else if (current_mode == `S)
+else if (next_mode == `S)
 begin
 tvec_out = {stvec, 2'b0};
 end
-else if (current_mode == `U)
+else if (next_mode == `U)
 begin
 tvec_out = {utvec, 2'b0};
 end

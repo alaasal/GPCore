@@ -1,6 +1,5 @@
 `define XLEN 32
 
-
 /* User. */
 `define U 2'b00
 /* Supervisor. */
