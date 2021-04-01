@@ -37,9 +37,9 @@
 `define CSR_UEPC        12'h041
 `define CSR_UCAUSE      12'h042
 `define CSR_UTVAL       12'h043
-`define CSR_UIP         12'h044
-`define CSR_CYCLE       12'hc00
-`define CSR_TIME        12'hc01
+`define CSR_UIP         12'h044 
+`define CSR_CYCLE       12'hc00 // cycle used
+`define CSR_TIME        12'hc01 // timer used
 `define CSR_INSTRET     12'hc02
 `define CSR_UNECYCLE    12'h8ff
 
@@ -300,7 +300,7 @@ module csr_regfile(
 		`CSR_SEDELEG: 		csr_data = sedeleg_w;
 		`CSR_SIDELEG: 		csr_data = sideleg_w;
 
-			//CSR_SCOUNTREN:
+   //CSR_SCOUNTREN:
 
 
 		// 	USER MODE
@@ -340,7 +340,7 @@ module csr_regfile(
     status_uie
 	};
 
-	// For user mode we need to add to mstatus (MPRV ,
+	// For user mode we need to add to mstatus (MPRV ),
 
 	assign mip = {
 		20'b0,
@@ -857,21 +857,21 @@ assign u_sie = usie && status_uie;
 
 
 
-always_comb
-begin
-if (next_mode == `M)
-begin
-tvec_out = {mtvec, 2'b0};
-end
-else if (next_mode == `S)
-begin
-tvec_out = {stvec, 2'b0};
-end
-else if (next_mode == `U)
-begin
-tvec_out = {utvec, 2'b0};
-end
-end
+   always_comb
+        begin
+          if (next_mode == `M)
+            begin
+                tvec_out = {mtvec, 2'b0};
+            end
+         else if (next_mode == `S)
+            begin
+                tvec_out = {stvec, 2'b0};
+            end
+          else if (next_mode == `U)
+            begin
+                tvec_out = {utvec, 2'b0};
+            end
+           end
 	// epc output to pc in frontend
 	always_comb
 	  begin
