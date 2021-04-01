@@ -101,8 +101,7 @@ module exe_stage(
 	input logic mret4, sret4, uret4,
 
 	input logic m_timer,s_timer, u_timer,
-	input logic illegal_ret,
- 	//input mode::mode_t current_mode,
+
  	input logic [1:0] current_mode,
 
 	input logic m_tie, s_tie, m_eie, s_eie,u_eie,u_tie,u_sie,
@@ -222,7 +221,6 @@ module exe_stage(
 	logic illegal_instrReg5;
 	logic mretReg5, sretReg5, uretReg5;
 	logic illegal_csr;
-	logic illegal_retReg5;
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
@@ -270,7 +268,6 @@ module exe_stage(
 		mretReg5	<= 0;
 		sretReg5	<= 0;
 		uretReg5	<= 0;
-		illegal_retReg5 <= 0;
 
           end
         else
@@ -321,7 +318,6 @@ module exe_stage(
 		mretReg5	<= mret4;
 		sretReg5	<= sret4;
 		uretReg5	<= uret4;
-		illegal_retReg5 <= illegal_ret;
 end
 end
 
@@ -373,8 +369,6 @@ end
 	logic illegal_csrReg6;
 	//logic exception;
 	logic mretReg6, sretReg6, uretReg6;
-	
-	logic illegal_retReg6;
 
 	always @(posedge clk, negedge nrst)
 	begin
@@ -400,7 +394,6 @@ end
 		mretReg6		<= 0;
 		sretReg6		<= 0;
 		uretReg6		<= 0;
-		illegal_retReg6 <=0;
 	  end
 	else
 	  begin
@@ -430,7 +423,6 @@ end
 		mretReg6	<= 0;
 		sretReg6	<= 0;
 		uretReg6	<= 0;
-		illegal_retReg6 <= 0;
 
 	   end
 		else begin
@@ -460,7 +452,6 @@ end
 		    sretReg6	<= sretReg5;
 		    uretReg6	<= uretReg5;
 		    
-		    illegal_retReg6 <= illegal_retReg5;
 		    end
 	  end
 	end
@@ -552,7 +543,7 @@ end
 /* EXCEPTIONS. ********************************************************************************************************/
 										      /* from data mem (L/S)*/
 	assign exception =  instruction_addr_misalignedReg6 || ecallReg6 || ebreakReg6 || ld_addr_misaligned6 || samo_addr_misaligned6 || m_timer_conditioned || s_interrupt_conditioned
-			|| illegal_instrReg6 || illegal_csrReg6 || illegal_retReg6 || s_timer_conditioned || m_interrupt_conditioned||u_interrupt_conditioned||u_timer_conditioned  || mretReg6 || sretReg6 || uretReg6;
+			|| illegal_instrReg6 || illegal_csrReg6 || s_timer_conditioned || m_interrupt_conditioned||u_interrupt_conditioned||u_timer_conditioned  || mretReg6 || sretReg6 || uretReg6;
 
 	always_comb
 	  begin
@@ -594,7 +585,7 @@ end
 		  begin
     			cause[`XLEN-2:0] = `I_ADDR_MISALIGNED;
     		  end
-		else if (illegal_instrReg6 || illegal_csrReg6 || illegal_retReg6)
+		else if (illegal_instrReg6 || illegal_csrReg6)
 		  begin
     		    	cause[`XLEN-2:0] = `I_ILLEGAL;
     		  end

@@ -112,12 +112,13 @@ module instr_decoder(
 	assign uret   = system & (~|funct3) &  (~funct7[4]) & (~funct7[3]) & funct12[1];
 	assign sret   = system & (~|funct3) &  (~funct7[4]) & funct7[3] & funct12[1] & ~TSR;
 	assign mret   = system & (~|funct3) &  funct7[4] & funct7[3] & funct12[1];
-	//assign wfi    = system & (~|funct3) &  funct12[0] & funct12[2] & funct12[8];
-	//assign sfence = system & (~|funct3) &  funct7[0] & funct7[3];
-	assign illegal_ret = ((current_mode == `M) && mret) || ((current_mode != `U) && sret)? 1'b0: 1'b1; 
+	
+	assign illegal_retM = (current_mode == `M) && mret;
+	assign illegal_retS = (current_mode != `U) && sret;
+	assign illegal_ret  = illegal_retM | illegal_retS;
 	
 	assign illegal_instruction = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system 
-	                           ||	(op[0] || op[1])) & illegal_flag; // ~(|op)
+	                           ||	(op[0] || op[1])) & illegal_flag;
 
   assign illegal_sret = system & (~|funct3) &  (~funct7[4]) & funct7[3] & funct12[1] & TSR;
   assign illegal_instr = illegal_instruction || illegal_sret || illegal_ret;

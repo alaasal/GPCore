@@ -141,8 +141,6 @@ module csr_regfile(
 
 	output logic u_eie, u_tie, u_sie,
 	output logic [1:0] current_mode,
-
-	output logic illegal_ret,
 	
 	// output to decode stage to decide sret or illegal instruction
 	output logic TSR,
@@ -774,7 +772,6 @@ always_comb
         
 	     else
 	       begin
-	       illegal_ret = 1'b0;
 	       next_mode = current_mode;
          end
     end
