@@ -186,7 +186,7 @@ assign discardwire =discardReg;
 		//instruction_addr_misalignedReg1 <= 0;
 		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
 	end
-	else if( stall || stall_mem ||  ( arb_eqmem && ~memOp_done )  )
+	else if( stall || stall_mem ||  ( arb_eqmem && ~memOp_done && ~exception_pending )  )
 	begin
 		pcReg		<= pcReg;
 		pcReg2		<= pcReg2;
