@@ -47,7 +47,7 @@ module instr_decoder(
 	// until Branch and Jumps target is calculated
 	output logic [1:0] pcselect,
 
-	output logic ecall, ebreak, uret, sret, mret, wfi, illegal_instr,
+	output logic ecall, ebreak, uret, sret, mret, illegal_instr,
 
 	// Write back csr_regfile Enable
 	output logic csr_we
@@ -112,16 +112,15 @@ module instr_decoder(
 	assign uret   = system & (~|funct3) &  (~funct7[4]) & (~funct7[3]) & funct12[1];
 	assign sret   = system & (~|funct3) &  (~funct7[4]) & funct7[3] & funct12[1] & ~TSR;
 	assign mret   = system & (~|funct3) &  funct7[4] & funct7[3] & funct12[1];
-	
+	assign wfi    = system & (~|funct3) &  funct12[0] & funct12[2] & funct12[8];
 	assign illegal_retM = (current_mode == `M) && mret;
 	assign illegal_retS = (current_mode != `U) && sret;
 	assign illegal_ret  = illegal_retM | illegal_retS;
 	
-	assign illegal_instruction = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system 
-	                           ||	(op[0] || op[1])) & illegal_flag;
+	assign illegal_instruction = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system) & illegal_flag;
 
-  assign illegal_sret = system & (~|funct3) &  (~funct7[4]) & funct7[3] & funct12[1] & TSR;
-  assign illegal_instr = illegal_instruction || illegal_sret || illegal_ret;
+    assign illegal_sret = system & (~|funct3) &  (~funct7[4]) & funct7[3] & funct12[1] & TSR;
+    assign illegal_instr = illegal_instruction || illegal_sret || illegal_ret;
   
 	// rtype op								  // instr[30] funct3
 	assign i_add  = rtype & ~instr_30 & ~(|funct3);				  //   	0	000
@@ -146,7 +145,9 @@ module instr_decoder(
 	assign i_remu   = rtype & instr_25 & (&funct3);                             //        0      111
 
 	// itype op
-	assign i_addi  = itype & ~(|funct3);					  //   	x	000
+	/* The purpose of the WFI instruction is to provide a hint to the implementation, and so a legal
+	   implementation is to simply implement WFI as a NOP */
+	assign i_addi  = (itype | wfi) & ~(|funct3);				               //   	x	000
 	assign i_slti  = itype & ~funct3[2] &  funct3[1] & ~funct3[0];		  //	x	010
 	assign i_sltiu = itype & ~funct3[2] &  funct3[1] &  funct3[0];		  //	x	011
 	assign i_xori  = itype &  funct3[2] & ~funct3[1] & ~funct3[0];		  //	x	100

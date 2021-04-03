@@ -214,7 +214,6 @@ module instdec_stage(
 	.uret        (uret3),
 	.sret        (sret3),
 	.mret        (mret3),
-	.wfi	     (),
 	.illegal_instr(illegal_instr3),
 	.csr_we(csr_we3)
     );
