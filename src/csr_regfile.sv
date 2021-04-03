@@ -37,9 +37,9 @@
 `define CSR_UEPC        12'h041
 `define CSR_UCAUSE      12'h042
 `define CSR_UTVAL       12'h043
-`define CSR_UIP         12'h044
-`define CSR_CYCLE       12'hc00
-`define CSR_TIME        12'hc01
+`define CSR_UIP         12'h044 
+`define CSR_CYCLE       12'hc00 // cycle used
+`define CSR_TIME        12'hc01 // timer used
 `define CSR_INSTRET     12'hc02
 `define CSR_UNECYCLE    12'h8ff
 
@@ -141,8 +141,6 @@ module csr_regfile(
 
 	output logic u_eie, u_tie, u_sie,
 	output logic [1:0] current_mode,
-
-	output logic illegal_ret,
 	
 	// output to decode stage to decide sret or illegal instruction
 	output logic TSR,
@@ -300,7 +298,7 @@ module csr_regfile(
 		`CSR_SEDELEG: 		csr_data = sedeleg_w;
 		`CSR_SIDELEG: 		csr_data = sideleg_w;
 
-			//CSR_SCOUNTREN:
+   //CSR_SCOUNTREN:
 
 
 		// 	USER MODE
@@ -340,7 +338,7 @@ module csr_regfile(
     status_uie
 	};
 
-	// For user mode we need to add to mstatus (MPRV ,
+	// For user mode we need to add to mstatus (MPRV ),
 
 	assign mip = {
 		20'b0,
@@ -745,34 +743,13 @@ always_comb
 	    // instruction will pop the relevant lower-privilege interrupt enable and privilege mode stack
 	    
         if (m_ret)
-          begin
-          if (current_mode == `M)
-            begin
             next_mode = status_mpp;
-            illegal_ret = 1'b0;
-            end
-          else 
-            begin
-            illegal_ret = 1'b1;
-            end
-          end
 
 	      else if (s_ret)
-	        begin
-	        if (current_mode != `U)
-	          begin
               next_mode = status_spp ? `S : `U;
-              illegal_ret = 1'b0;
-            end
-          else
-            begin
-              illegal_ret = 1'b1;
-            end
-          end
 
-        else if (u_ret) begin
-        	next_mode = `U;
-        end
+        else if (u_ret)
+        	     next_mode = `U;
         
         else if (cause[`XLEN-1])
           begin
@@ -795,7 +772,6 @@ always_comb
         
 	     else
 	       begin
-	       illegal_ret = 1'b0;
 	       next_mode = current_mode;
          end
     end
@@ -857,21 +833,21 @@ assign u_sie = usie && status_uie;
 
 
 
-always_comb
-begin
-if (next_mode == `M)
-begin
-tvec_out = {mtvec, 2'b0};
-end
-else if (next_mode == `S)
-begin
-tvec_out = {stvec, 2'b0};
-end
-else if (next_mode == `U)
-begin
-tvec_out = {utvec, 2'b0};
-end
-end
+   always_comb
+        begin
+          if (next_mode == `M)
+            begin
+                tvec_out = {mtvec, 2'b0};
+            end
+         else if (next_mode == `S)
+            begin
+                tvec_out = {stvec, 2'b0};
+            end
+          else if (next_mode == `U)
+            begin
+                tvec_out = {utvec, 2'b0};
+            end
+           end
 	// epc output to pc in frontend
 	always_comb
 	  begin

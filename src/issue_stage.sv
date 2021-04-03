@@ -124,7 +124,6 @@ module issue_stage (
 	output logic mret4, sret4, uret4,
 
 	output logic m_timer,s_timer,u_timer,
-	output logic illegal_ret,
 
 	output logic [1:0] current_mode,
 	output logic m_tie, s_tie, m_eie, s_eie,u_eie,u_tie,u_sie
@@ -589,7 +588,6 @@ logic mretReg4, sretReg4, uretReg4;
  	.m_interrupt(m_interrupt),
   	.s_interrupt(s_interrupt),
 	.u_interrupt(u_interrupt),
-	.illegal_ret(illegal_ret),
   	.u_timer(u_timer),
   	.u_eie(u_eie),
 	.u_tie(u_tie),

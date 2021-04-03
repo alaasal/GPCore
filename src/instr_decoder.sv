@@ -1,3 +1,12 @@
+/* User. */
+`define U 2'b00
+/* Supervisor. */
+`define S 2'b01
+/* Reserved. */
+`define R 2'b10
+/* Machine. */
+`define M 2'b11
+
 module instr_decoder(
 	input logic [6:0] op,
 	input logic [2:0] funct3,
@@ -9,7 +18,7 @@ module instr_decoder(
 	input logic TSR,
 	input logic illegal_flag,
 
-	input logic nrst,
+	input logic [1:0]current_mode,
 	// Operands Select Sginals
 	output logic [1:0] B_SEL,	// select op b
 
@@ -92,8 +101,8 @@ module instr_decoder(
 	assign ltype  = ~op[6] & ~op[5] & ~op[4] & ~op[3] & ~op[2] & op[1] & op[0];     //0000011
 	//store
 	assign stype  = ~op[6] & op[5] & ~op[4] & ~op[3] & ~op[2] & op[1] & op[0];      //0100011
-	assign autype = ~op[6] & ~op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];     //0010111 LUI
-	assign utype = ~op[6] & op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];    //0110111 auipc
+	assign autype = ~op[6] & ~op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];     //0110111 auipc
+	assign utype = ~op[6] & op[5] & op[4] & (~op[3]) & op[2] & op[1] & op[0];    //0010111 LUI
 
 	// zicsr and system instructions
 	// interrupts and exceptions instructions
@@ -103,13 +112,16 @@ module instr_decoder(
 	assign uret   = system & (~|funct3) &  (~funct7[4]) & (~funct7[3]) & funct12[1];
 	assign sret   = system & (~|funct3) &  (~funct7[4]) & funct7[3] & funct12[1] & ~TSR;
 	assign mret   = system & (~|funct3) &  funct7[4] & funct7[3] & funct12[1];
-	assign wfi    = system & (~|funct3) &  funct12[0] & funct12[2] & funct12[8];
-	assign sfence = system & (~|funct3) &  funct7[0] & funct7[3];
+	
+	assign illegal_retM = (current_mode == `M) && mret;
+	assign illegal_retS = (current_mode != `U) && sret;
+	assign illegal_ret  = illegal_retM | illegal_retS;
+	
 	assign illegal_instruction = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system 
-	                           ||	(op[0] || op[1]) || (op == 7'h0F) || wfi || sfence) & illegal_flag; // ~(|op)
+	                           ||	(op[0] || op[1])) & illegal_flag;
 
   assign illegal_sret = system & (~|funct3) &  (~funct7[4]) & funct7[3] & funct12[1] & TSR;
-  assign illegal_instr = illegal_instruction || illegal_sret;
+  assign illegal_instr = illegal_instruction || illegal_sret || illegal_ret;
   
 	// rtype op								  // instr[30] funct3
 	assign i_add  = rtype & ~instr_30 & ~(|funct3);				  //   	0	000

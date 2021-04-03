@@ -101,8 +101,7 @@ module exe_stage(
 	input logic mret4, sret4, uret4,
 
 	input logic m_timer,s_timer, u_timer,
-	input logic illegal_ret,
- 	//input mode::mode_t current_mode,
+
  	input logic [1:0] current_mode,
 
 	input logic m_tie, s_tie, m_eie, s_eie,u_eie,u_tie,u_sie,
@@ -222,55 +221,52 @@ module exe_stage(
 	logic illegal_instrReg5;
 	logic mretReg5, sretReg5, uretReg5;
 	logic illegal_csr;
-	logic illegal_retReg5;
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
         if (!nrst || exception)
           begin
-		opaReg5   	<= 0;
-		opbReg5   	<= 0;
+		        opaReg5   	<= 0;
+		        opbReg5   	<= 0;
+		        alufnReg5 	<= 0;
+		        fnReg5	 	  <= 0;
 
-		alufnReg5 	<= 0;
-		fnReg5	 	<= 0;
-
-		rdReg5	  	<= 0;
-		rs1Reg5 <= 0;
+		        rdReg5	  	 <= 0;
+		        rs1Reg5    <= 0;
 		
-		weReg5		<= 0;
+		        weReg5		   <= 0;
 
-		B_immReg5 	<= 0;
-		J_immReg5 	<= 0;
-		U_immReg5 	<= 0;
+		        B_immReg5 	<= 0;
+		        J_immReg5 	<= 0;
+		        U_immReg5 	<= 0;
 
-		bneqReg5	<= 0;
-		btypeReg5 	<= 0;
+		        bneqReg5	  <= 0;
+		        btypeReg5 	<= 0;
 
-		jReg5 		<= 0;
-		jrReg5 		<= 0;
-		LUIReg5   	<=0;
-		auipcReg5   	<=0;
+		        jReg5 		   <= 0;
+		        jrReg5 		  <= 0;
+		        LUIReg5   	<= 0;
+		        auipcReg5  <= 0;
 
-		mulDiv_opReg5	<= 0;
+		        mulDiv_opReg5	<= 0;
 
-		pcReg5	  	<= 0;
-		pcselectReg5	<=2'b0;
+		        pcReg5	  	    <= 0;
+		        pcselectReg5	 <=2'b0;
 
-		bjtakenReg5		<= 0;
-		funct3Reg5	<= '0;
-		csr_immReg5	<= '0;
-		csr_dataReg5	<= '0;
-		csr_addrReg5	<= '0;
-		csr_weReg5	<= 0;
+		        bjtakenReg5		 <= 0;
+		        funct3Reg5	   <= '0;
+		        csr_immReg5	  <= '0;
+		        csr_dataReg5 	<= '0;
+		        csr_addrReg5	 <= '0;
+		        csr_weReg5	   <= 0;
 
-		ecallReg5	<= 0;
-		ebreakReg5	<= 0;
-		instruction_addr_misalignedReg5 <= 0;
-		illegal_instrReg5<= 0;
-		mretReg5	<= 0;
-		sretReg5	<= 0;
-		uretReg5	<= 0;
-		illegal_retReg5 <= 0;
+		        ecallReg5	    <= 0;
+		        ebreakReg5	   <= 0;
+		        instruction_addr_misalignedReg5 <= 0;
+		        illegal_instrReg5 <= 0;
+		        mretReg5	<= 0;
+		        sretReg5	<= 0;
+		        uretReg5	<= 0;
 
           end
         else
@@ -321,7 +317,6 @@ module exe_stage(
 		mretReg5	<= mret4;
 		sretReg5	<= sret4;
 		uretReg5	<= uret4;
-		illegal_retReg5 <= illegal_ret;
 end
 end
 
@@ -373,8 +368,6 @@ end
 	logic illegal_csrReg6;
 	//logic exception;
 	logic mretReg6, sretReg6, uretReg6;
-	
-	logic illegal_retReg6;
 
 	always @(posedge clk, negedge nrst)
 	begin
@@ -400,12 +393,11 @@ end
 		mretReg6		<= 0;
 		sretReg6		<= 0;
 		uretReg6		<= 0;
-		illegal_retReg6 <=0;
 	  end
 	else
 	  begin
 	  if(exception)begin
-	   pcReg6 		    <=  pcReg5;
+	   pcReg6 		    <=  pcReg6;
 
 	  	fnReg6 	  	  <= 3'b0;
 		rdReg6 		    <= 5'b0;
@@ -430,7 +422,6 @@ end
 		mretReg6	<= 0;
 		sretReg6	<= 0;
 		uretReg6	<= 0;
-		illegal_retReg6 <= 0;
 
 	   end
 		else begin
@@ -460,7 +451,6 @@ end
 		    sretReg6	<= sretReg5;
 		    uretReg6	<= uretReg5;
 		    
-		    illegal_retReg6 <= illegal_retReg5;
 		    end
 	  end
 	end
@@ -552,7 +542,7 @@ end
 /* EXCEPTIONS. ********************************************************************************************************/
 										      /* from data mem (L/S)*/
 	assign exception =  instruction_addr_misalignedReg6 || ecallReg6 || ebreakReg6 || ld_addr_misaligned6 || samo_addr_misaligned6 || m_timer_conditioned || s_interrupt_conditioned
-			|| illegal_instrReg6 || illegal_csrReg6 || illegal_retReg6 || s_timer_conditioned || m_interrupt_conditioned||u_interrupt_conditioned||u_timer_conditioned  || mretReg6 || sretReg6 || uretReg6;
+			|| illegal_instrReg6 || illegal_csrReg6 || s_timer_conditioned || m_interrupt_conditioned||u_interrupt_conditioned||u_timer_conditioned  || mretReg6 || sretReg6 || uretReg6;
 
 	always_comb
 	  begin
@@ -594,7 +584,7 @@ end
 		  begin
     			cause[`XLEN-2:0] = `I_ADDR_MISALIGNED;
     		  end
-		else if (illegal_instrReg6 || illegal_csrReg6 || illegal_retReg6)
+		else if (illegal_instrReg6 || illegal_csrReg6)
 		  begin
     		    	cause[`XLEN-2:0] = `I_ILLEGAL;
     		  end

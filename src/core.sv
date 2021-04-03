@@ -91,7 +91,6 @@ logic [1:0] current_mode;
 logic s_timer, m_timer, m_eie, m_tie, s_eie, s_tie, m_interrupt, s_interrupt, u_interrupt;
 logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
 logic external_interrupt_w;
-logic illegal_ret;
 logic TSR;
 logic illegal_flag;
 
@@ -368,6 +367,7 @@ end
 	.illegal_flag (illegal_flag),
 	
 	.TSR          (TSR), // input from issue stage
+	.current_mode (current_mode),
 
 	// Outputs to Issue Stage
 	.rs1          (rs1),
@@ -573,7 +573,6 @@ end
   	.u_eie(u_eie),
 	.u_tie(u_tie),
 	.u_sie(u_sie),
-	.illegal_ret(illegal_ret),
 	.TSR(TSR)
 
     );
@@ -698,8 +697,7 @@ end
   	.u_timer(u_timer),
   	.u_eie(u_eie),
 	.u_tie(u_tie),
-	.u_sie(u_sie),
-	.illegal_ret(illegal_ret)
+	.u_sie(u_sie)
 	);
 
 	// =============================================== //
