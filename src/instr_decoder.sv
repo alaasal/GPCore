@@ -6,9 +6,10 @@ module instr_decoder(
 	input logic instr_30,		// instr[30]
 	// from commit stage
 	input logic exception_pending,
+	input logic TSR,
+	input logic illegal_flag,
 
-
-	//input logic nrst,
+	input logic nrst,
 	// Operands Select Sginals
 	output logic [1:0] B_SEL,	// select op b
 
@@ -98,13 +99,18 @@ module instr_decoder(
 	// interrupts and exceptions instructions
 	assign system = op[6] & op[5] & op[4] & ~op[3] & ~op[2] & op[1] & op[0];  //1110011 SYSTEM
 	assign ecall  = system & (~|funct3) &  (~|funct12);
-	assign ebreak = system & (~|funct3) &  funct12[0];
+	assign ebreak = system & (~|funct3) &  funct12[0] & (~|funct7);
 	assign uret   = system & (~|funct3) &  (~funct7[4]) & (~funct7[3]) & funct12[1];
-	assign sret   = system & (~|funct3) &  (~funct7[4]) & funct7[3] & funct12[1];
+	assign sret   = system & (~|funct3) &  (~funct7[4]) & funct7[3] & funct12[1] & ~TSR;
 	assign mret   = system & (~|funct3) &  funct7[4] & funct7[3] & funct12[1];
 	assign wfi    = system & (~|funct3) &  funct12[0] & funct12[2] & funct12[8];
-	assign illegal_instr = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system || ~(|op) || (op ==7'h0F));
+	assign sfence = system & (~|funct3) &  funct7[0] & funct7[3];
+	assign illegal_instruction = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system 
+	                           ||	(op[0] || op[1]) || (op == 7'h0F) || wfi || sfence) & illegal_flag; // ~(|op)
 
+  assign illegal_sret = system & (~|funct3) &  (~funct7[4]) & funct7[3] & funct12[1] & TSR;
+  assign illegal_instr = illegal_instruction || illegal_sret;
+  
 	// rtype op								  // instr[30] funct3
 	assign i_add  = rtype & ~instr_30 & ~(|funct3);				  //   	0	000
 	assign i_sub  = rtype &  instr_30 & ~(|funct3);				  //   	1	000

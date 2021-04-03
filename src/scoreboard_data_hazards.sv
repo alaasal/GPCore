@@ -142,20 +142,19 @@ assign bigstallwire=bigstall;
             function_unit =3'b100;
             stall_wire = (scoreboard[rs1][3]);
             nostall = (scoreboard[rs1][3]);
-        end	//loads
-         //////////////////////////
+        end
         7'b1110011:begin //CSR instruction
             function_unit =3'b100;
             stall_wire = (scoreboard[rs1][3]); 
             nostall = (scoreboard[rs1][3]);
         end	//loads
-        /////////////////////////////
+
 		default: function_unit = 0;
 		endcase
 	end
 
 assign stall=kill && ~(~stallnum[1] && stallnum[0]) ? 1'b0 :stall_wire;
-assign kill= (btaken || killReg) && ~stall && (~discard)? 1'b1  :1'b0 ;
+assign kill= (btaken || killReg || exception ) && ~stall && (~discard)? 1'b1  :1'b0 ;
 
  always_ff @(posedge clk)
       begin
@@ -186,7 +185,7 @@ if(scoreboard[j][0] && !scoreboard[j][1])
 
 
    always_ff@(posedge clk) begin
-if (btaken | exception)
+if (btaken || exception)
 begin
 
 	killReg<=1;

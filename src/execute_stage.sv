@@ -1,5 +1,14 @@
 `define XLEN 32
 
+/* User. */
+`define U 2'b00
+/* Supervisor. */
+`define S 2'b01
+/* Reserved. */
+`define R 2'b10
+/* Machine. */
+`define M 2'b11
+
 // synchronous (interrupt = 0) values are defined here.
 
 /* Instruction address misaligned. */
@@ -591,7 +600,12 @@ end
     		  end
 		else if (ecallReg6)
 		  begin
-			cause[`XLEN-2:0] = `U_CALL + {3'b0, current_mode};
+		    if (current_mode == `U)
+			   cause[`XLEN-2:0] = `U_CALL;
+			  else if (current_mode == `S)
+			    cause[`XLEN-2:0] = `S_CALL;
+			  else
+			    cause[`XLEN-2:0] = `M_CALL;  
     		  end
     		else if (ebreakReg6)
 		  begin

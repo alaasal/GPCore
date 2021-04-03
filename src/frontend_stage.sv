@@ -34,6 +34,7 @@ module frontend_stage(
 
     	output logic [31:0] pc2,	// pc at instruction mem pipe #2
     	output logic [31:0] instr2,  	// instruction output from inst memory (to decode stage)
+    	output logic illegal_flag,
 
 	output logic discardwire,
 
@@ -68,6 +69,7 @@ logic [31:0] targetsave;
 logic targetcame;
 logic killafterreq;
 logic discardReg;
+logic illegal_flagReg;
 
 // Exceptions at forntend
 //logic instruction_addr_misalignedReg1;
@@ -199,6 +201,7 @@ assign discardwire =discardReg;
 
 		//instruction_addr_misalignedReg1 <= pc_addr_ex;
 		instruction_addr_misalignedReg2 <= pc_addr_ex;
+		illegal_flagReg <= nrst;
 
 	end
 	end
@@ -221,7 +224,12 @@ assign discardwire =discardReg;
       end
       else
       begin
+          if(exception_pending)begin
+            npc = (state_reg == s_req) && (exception_pending) ? epc : pcReg;
+          end
+        else begin
       	   npc = (state_reg == s_req) && (PCSEL[1] && ~PCSEL[0]) ? target : pcReg;
+    	   end
 
       end
       end
@@ -362,7 +370,12 @@ begin
 case(state_reg)
 	s_req:
 	begin
+	   if(exception_pending)begin
+	     transducer_l15_address <= epc;
+	     end
+	     else begin
 		transducer_l15_address <= (PCSEL[1] && ~PCSEL[0]) ? target : pc;
+		end
 	    transducer_l15_rqtype	<= 0;
 		transducer_l15_size	<= 8;
 		transducer_l15_val	<= 1 && wake_up;
@@ -394,6 +407,6 @@ end
 
 // output
 assign instruction_addr_misaligned2 = instruction_addr_misalignedReg2;
-
+assign illegal_flag = illegal_flagReg;
 
 endmodule

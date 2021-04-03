@@ -5,6 +5,7 @@ module issue_stage (
 	input logic we6,			// Write Enable
 	input logic [4:0] rdaddr6,		// Destenation Address
 	input logic [31:0] wb6,			// Data
+	
 	// signals to csr_regfile
 	input logic [31:0] csr_wb,
 	input logic csr_we6,			// Write Enable to csr_regfile
@@ -111,7 +112,10 @@ module issue_stage (
 	output logic [31:0] csr_imm4,
 	// write back csr_regfile enable
 	output logic csr_we4,
-
+	
+  // from csr_regfile to decode stage
+  output logic TSR,
+  
 	// exceptions
 	output logic instruction_addr_misaligned4,
 	output logic ecall4, ebreak4,
@@ -121,7 +125,7 @@ module issue_stage (
 
 	output logic m_timer,s_timer,u_timer,
 	output logic illegal_ret,
-	//output mode::mode_t current_mode,
+
 	output logic [1:0] current_mode,
 	output logic m_tie, s_tie, m_eie, s_eie,u_eie,u_tie,u_sie
     );
@@ -575,7 +579,7 @@ logic mretReg4, sretReg4, uretReg4;
 	.csr_data(csr_data),
 	.current_mode(current_mode),
 	.epc(epc),
-
+	
 	.s_timer(s_timer),
 	.m_timer(m_timer),
 	.s_eie(s_eie),
@@ -589,7 +593,8 @@ logic mretReg4, sretReg4, uretReg4;
   	.u_timer(u_timer),
   	.u_eie(u_eie),
 	.u_tie(u_tie),
-	.u_sie(u_sie)
+	.u_sie(u_sie),
+	.TSR(TSR)
 	);
 
 
