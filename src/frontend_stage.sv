@@ -22,11 +22,11 @@
 module frontend_stage(
 	input logic clk,
 	input logic nrst,
-	input logic stall,bigstallwire,nostall,
+	input logic stall,nostall,
 	input logic [1:0]killnum,
     input logic [1:0] PCSEL,		// pc select control signal
     input logic [31:0] target,
-	input logic [1:0] stallnumin,
+
 	// exceptions
 	input logic exception_pending,
 	input logic [31:0] epc,
@@ -105,16 +105,9 @@ if (wake_up == 0)
 	wake_up <= l15_transducer_val;
 end
 end
-// if bigstall happens rise signal delay execution it will do
-/*
-1 pcreg -> pcreg
-  pcreg -> pcreg2
-  instrugreg3 will out noOp
 
 
-*/
-
-assign discard = (~bigstallwire && !stallnumin[1] && stallnumin[0] && stall) ? 1'b1 : 1'b0;
+assign discard = (  stall) ? 1'b1 : 1'b0;
 assign discardwire =discardReg;
 /************************************************/
 /*			First Pipe 							*/
@@ -161,32 +154,15 @@ assign discardwire =discardReg;
 		pcReg2		<= 0;
 
 	end
-	else if ( stall&&!stallnumin[1] && !stallnumin[0]) begin
+	else if ( stall) begin
 		pcReg		<= pcReg;
 		pcReg2		<= pcReg2;
 
 		//instruction_addr_misalignedReg1 <= 0;
 			instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
 	end
-	else if(stall && !(!stallnumin[1] && stallnumin[0]) )
-	begin
-		pcReg		<= pcReg;
-		pcReg2		<= pcReg2;
 
-		//instruction_addr_misalignedReg1 <= 0;
-		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
-
-
-	end
-	else if(stall &&!stallnumin[1] && stallnumin[0] )
-	begin
-		pcReg		<= npc;
-		pcReg2		<= pcReg;
-
-		//instruction_addr_misalignedReg1 <= 0;
-		instruction_addr_misalignedReg2 <= instruction_addr_misalignedReg2;
-	end
-	else if( stall || stall_mem ||  ( arb_eqmem && ~memOp_done && ~exception_pending )  )
+	else if( stall_mem ||  ( arb_eqmem && ~memOp_done && ~exception_pending )  )
 	begin
 		pcReg		<= pcReg;
 		pcReg2		<= pcReg2;

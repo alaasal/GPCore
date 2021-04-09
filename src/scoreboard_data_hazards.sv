@@ -9,8 +9,8 @@ input logic jr4,
 
 input logic [6:0] op_code,
 
-output logic stall,kill,bigstallwire,nostall,
-output logic [1:0] stallnum
+output logic stall,kill,nostall
+
 );
 
 logic [4:0] scoreboard[0:31];
@@ -18,11 +18,11 @@ logic [2:0] function_unit;
 
 logic killReg;
 logic [1:0] killnum;
-logic bigstall;
+
 
 logic stall_wire;
 
-assign bigstallwire=bigstall;
+
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
@@ -35,8 +35,8 @@ assign bigstallwire=bigstall;
 		end
 	killnum<=2'b0;
 	killReg <=0;
-	stallnum<=0;
-	bigstall<=1;
+
+
           end
           else
 	  begin
@@ -49,7 +49,7 @@ assign bigstallwire=bigstall;
 				if( (|rd)&&  !stall  && !kill)
 					begin
 					scoreboard[rd][4]<=1; scoreboard[rd][3]<=1;
-					scoreboard[rd][2]<=1;  stallnum<= 2'b00;
+					scoreboard[rd][2]<=1; 
    					end
 				else begin end
 
@@ -66,7 +66,7 @@ assign bigstallwire=bigstall;
 				else if( (|rd)&&  !stall  && !kill)
 					begin
 					scoreboard[rd][4]<=1; scoreboard[rd][3]<=1;
-					scoreboard[rd][2]<=1;  stallnum<= 2'b00;
+					scoreboard[rd][2]<=1; 
    					end
 				else begin end
 
@@ -96,7 +96,7 @@ assign bigstallwire=bigstall;
 				else if( (|rd)&&  !stall  && !kill)
 					begin
 					scoreboard[rd][4]<=1; scoreboard[rd][3]<=1;
-					scoreboard[rd][2]<=1; stallnum<= 2'b00;
+					scoreboard[rd][2]<=1;
    					end
 				else begin end
 
@@ -153,7 +153,7 @@ assign bigstallwire=bigstall;
 		endcase
 	end
 
-assign stall=kill && ~(~stallnum[1] && stallnum[0]) ? 1'b0 :stall_wire;
+assign stall=kill ? 1'b0 :stall_wire;
 assign kill= (btaken || killReg || exception ) && ~stall && (~discard)? 1'b1  :1'b0 ;
 
  always_ff @(posedge clk)
@@ -170,16 +170,7 @@ if(scoreboard[j][0] && !scoreboard[j][1])
       	scoreboard[j][2:0]={1'b0,scoreboard[j][2:1]};
 
 	end
-	if (stall_wire) begin
 
-
-				 if(scoreboard[rs1][2] || scoreboard[rs2][2]) begin stallnum<= 2'b11; bigstall<=0; end
-				else if(scoreboard[rs1][1] || scoreboard[rs2][1]) begin stallnum<= 2'b10; bigstall<=0; end
-				else if(scoreboard[rs1][0] || scoreboard[rs2][0]) begin stallnum <= 2'b01;  end
-
-				else  begin stallnum<= 2'b00; bigstall<=1; end
-		end
-	else begin end
 
       end
 

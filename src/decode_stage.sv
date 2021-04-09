@@ -55,7 +55,7 @@ module instdec_stage(
 	input logic stall,nostall,discardwire,
 	output logic [6:0]opcode3,
 
-	input logic [1:0]stallnumin,
+
 	input logic stall_mem,
 	input logic arb_eqmem,
 	input logic memOp_done,
@@ -109,38 +109,8 @@ module instdec_stage(
 		instruction_addr_misalignedReg3	<= instruction_addr_misalignedReg3;
 
 	end
-	else if ( stall&& !stallnumin[1] && !stallnumin[0])
-	begin
-		instrReg3	<=instrReg3;
-		pcReg3		<=pcReg3;
-		instruction_addr_misalignedReg3	<= instruction_addr_misalignedReg3;
-	end
-/*	else if(stall && stallnumin[1] && !stallnumin[0] && !bigstallwire )
-	begin
-		instrReg3	<=instrReg3;
-		pcReg3		<=pcReg3;
-		instruction_addr_misalignedReg3	<= instruction_addr_misalignedReg3;
-	end
- 	else if(stall&& !stallnumin[1] && stallnumin[0] && ~bigstallwire )
-	begin
-		instrReg3	<= instr2;
-		pcReg3		<=pc2;
-		instruction_addr_misalignedReg3	<= instruction_addr_misaligned2;
-	end
-*/
-	else if(stall&& stallnumin[1] && !stallnumin[0] ) //01
-	begin
-		instrReg3	<= instr2;
-		pcReg3		<=pc2;
-		instruction_addr_misalignedReg3	<= instruction_addr_misaligned2;
-	end
-	else if(!stall &&!stallnumin[1] && stallnumin[0] )
-	begin
-		instrReg3	<= instr2;
-		pcReg3		<=pc2;
-		instruction_addr_misalignedReg3	<= instruction_addr_misaligned2;
-	end
-	else if(stall  || stall_mem ||  ( arb_eqmem && ~memOp_done ) )
+
+	else if(stall_mem ||  ( arb_eqmem && ~memOp_done ) )
 	begin
 		instrReg3	<=instrReg3;
 		pcReg3		<=pcReg3;

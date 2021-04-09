@@ -97,9 +97,8 @@ module issue_stage (
 
 	// Socreboard Signals
 	input logic bjtaken,discard,
-	output logic stall,bigstallwire,nostall,
+	output logic stall,nostall,
 	output logic [1:0]killnum,
-	output logic [1:0]stallnum,
 	input logic stall_mem,
 	input logic arb_eqmem,
 	input logic exception,
@@ -408,51 +407,6 @@ logic mretReg4, sretReg4, uretReg4;
 		///////////////
 		end
 
-	else if(stall && (~stallnum[1] && stallnum[0]) && ~bigstallwire )
-		begin
-
-		pcselectReg4	<= pcselect3;
-		weReg4		<= we3;
-		BSELReg4	<= B_SEL3;
-		alufnReg4	<= alu_fn3;
-		fnReg4		<= fn3;
-
-		rdReg4		<= rd3;
-		rs1Reg4 <= rs1;
-		/////////////////////////////
-		csr_immReg4	<= csr_imm3;
-		csr_addrReg4	<= csr_addr3;
-		instruction_addr_misalignedReg4 <= instruction_addr_misaligned3;
-		ecallReg4	<= ecall3;
-		ebreakReg4	<= ebreak3;
-		illegal_instrReg4<= illegal_instr3;
-		mretReg4	<= mret3;
-		sretReg4	<= sret3;
-		uretReg4	<= uret3;
-		//////////////////////////////
-		end
-		else if(stall  )
-		begin
-		pcselectReg4	<= 2'b00;
-		weReg4		<= 1'b0;
-		BSELReg4	<= 2'b01;
-		alufnReg4	<= 3'b000;
-		fnReg4		<= 3'b000;
-		I_immdReg4	<= 32'b0;
-		
-		rdReg4		<= 5'b0;
-    rs1Reg4 <= 0;
-    
-		csr_weReg4		<= 0;
-		instruction_addr_misalignedReg4 <= 0;
-		ecallReg4	<= 0;
-		ebreakReg4	<= 0;
-		illegal_instrReg4<= 0;
-		mretReg4	<= 0;
-		sretReg4	<= 0;
-		uretReg4	<= 0;
-		end
-
 		else if (stall_mem ||  ( arb_eqmem && ~memOp_done ) )
 		begin
 		killnum		<= 2'b0;
@@ -555,8 +509,7 @@ logic mretReg4, sretReg4, uretReg4;
 	.op_code(opcode3),
 	.stall(stall),
 	.kill(kill),
-	.stallnum(stallnum),
-	.bigstallwire(bigstallwire),
+
 	.nostall(nostall),
 	.discard(discard)
 	);
