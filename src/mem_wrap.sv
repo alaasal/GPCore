@@ -330,16 +330,6 @@ always_ff @(posedge clk , negedge nrst) begin
     end
 end
 
-logic got_header;
-always @(posedge clk, negedge nrst) begin
-    if (!nrst) begin
-        got_header <= 0;
-    end else begin
-        if(l15_core_header_ack) got_header <= 1;
-        else got_header <= 0;
-    end
-end
-
 always_comb begin
     case(state_reg)
     s_req: begin
