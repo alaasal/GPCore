@@ -51,7 +51,7 @@ module core(
 	logic bneq3,bneq4;
 	logic LUI3,LUI4;
 	logic auipc3,auipc4;
-	logic [1:0]stallnum;
+
 
 	logic [3:0] mem_op3, mem_op4;
 
@@ -71,7 +71,7 @@ module core(
 
 	//Scoreboared Logic
 	logic stall,discard,nostall;
-	logic bigstallwire;
+
 	logic [1:0]killnum;
 	logic bjtaken;
 	logic exception;
@@ -318,9 +318,8 @@ end
 
 	//Scoreboared Signals
 	.stall          (stall),
-	.stallnumin      (stallnum),
+
 	.killnum			(killnum),
-	.bigstallwire(bigstallwire),
 	.discardwire(discard),
 	.nostall(nostall),
 
@@ -404,7 +403,7 @@ end
 	// Scoreboared Signals
 	.stall          (stall),
 	.opcode3 	(opcode3),
-	.stallnumin	(stallnum),
+
 	.stall_mem 	(stall_mem),
 	.arb_eqmem	(arb_eqmem),
 	.memOp_done 	(memOp_done),
@@ -536,11 +535,10 @@ end
 	.bjtaken	(bjtaken),
 	.exception (exception),
 	.opcode3	(opcode3),
-	.stallnum	(stallnum),
+
 	.stall_mem 	(stall_mem),
 	.arb_eqmem	(arb_eqmem),
 	.memOp_done 	(memOp_done),
-	.bigstallwire	(bigstallwire),
 	.discard(discard),
 	.nostall(nostall),
 	// csr
