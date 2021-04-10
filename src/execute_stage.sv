@@ -134,7 +134,7 @@ module exe_stage(
 	output logic [1:0] pcselect5,
 
     //OpenPiton Request
-	output logic [3:0] mem_l15_rqtype,
+	output logic [4:0] mem_l15_rqtype,
 	output logic [2:0] mem_l15_size,
 	output logic [31:0] mem_l15_address,
 	output logic [63:0] mem_l15_data,

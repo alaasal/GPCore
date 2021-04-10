@@ -126,6 +126,12 @@ assign discardwire =discardReg;
 
 		instruction_addr_misalignedReg2 <= 0;
 		
+		discardReg <=0;
+		state_reg <= 3'b0;
+		killafterreq<=0;
+		
+		targetsave  <=0;
+		targetcame  <=0;
 		
 		end
 		    else if (!wake_up)
@@ -232,7 +238,24 @@ assign discardwire =discardReg;
 
 			end
 	end
-endcase
+  endcase
+
+
+    if (discard || (stall && nostall ))
+		begin
+		discardReg<=1;
+		end
+		
+		if(~(!killnum[0] && !killnum[1]) && targetcame && state_reg == s_resp)
+				killafterreq<=1;
+				
+		if ( PCSEL[1] && ~PCSEL[0] && ~(state_reg == s_req) )
+		begin
+		targetsave<=target;
+		targetcame<=1;
+		 end
+		else
+		targetsave<=targetsave;
 
 	end
 	end
@@ -278,15 +301,15 @@ endcase
 
 // added above 
 //------------------------------------------------//
-always_ff @(posedge clk , negedge nrst)
+/*always_ff @(posedge clk , negedge nrst)
 begin
 
 	if (!nrst) begin
 		targetsave  <=0;
 		targetcame  <=0;
-		killafterreq<=0;
-		discardReg <=0;
-		state_reg <= 3'b0;
+		
+		
+		
 				end
 
 	else
@@ -297,21 +320,23 @@ begin
 		targetcame<=1;
 		 end
 		else
-		targetsave<=targetsave;
+		targetsave<=targetsave;*/
 
 
-		if(~(!killnum[0] && !killnum[1]) && targetcame && state_reg == s_resp)
+		/*if(~(!killnum[0] && !killnum[1]) && targetcame && state_reg == s_resp)
 				killafterreq<=1;
 
 
+		
 		if (discard || (stall && nostall ))
 		begin
 		discardReg<=1;
 		end
 		
-		end
-		end
 		
+		end
+		end
+		*/
 		
 	/*	
 		// npc logic
