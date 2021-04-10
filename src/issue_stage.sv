@@ -1,3 +1,6 @@
+`include "regfile.sv"
+`include "scoreboard_data_hazards.sv"
+`include "csr_regfile.sv"
 module issue_stage (
 
 	input logic clk, nrst,

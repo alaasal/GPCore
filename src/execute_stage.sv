@@ -55,6 +55,12 @@
 /* Machine external interrupt. */
 `define M_INT_EXT           32'hb
 
+`include"csr.sv"
+`include"ALU.sv"
+`include"branch_unit.sv"
+`include"mem_wrap.sv"
+`include"mul_div.sv"
+
 module exe_stage(
 
 	input logic clk, nrst,

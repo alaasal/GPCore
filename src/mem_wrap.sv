@@ -1,3 +1,5 @@
+//`include "mem_wrap.sv"
+//`include "mem_wrap.sv"
 //description: This is a memory wrapper,
 //it generates the addresses and control signals for the data memory,
 //it also performs the proper extension of outputs. 
