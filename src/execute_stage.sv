@@ -224,7 +224,7 @@ module exe_stage(
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
-        if (!nrst || exception)
+        if (!nrst)
           begin
 		        opaReg5   	<= 0;
 		        opbReg5   	<= 0;
@@ -269,6 +269,52 @@ module exe_stage(
 		        uretReg5	<= 0;
 
           end
+          
+        else if (exception)
+          begin
+            opaReg5   	<= 0;
+		        opbReg5   	<= 0;
+		        alufnReg5 	<= 0;
+		        fnReg5	 	  <= 0;
+
+		        rdReg5	  	 <= 0;
+		        rs1Reg5    <= 0;
+		
+		        weReg5		   <= 0;
+
+		        B_immReg5 	<= 0;
+		        J_immReg5 	<= 0;
+		        U_immReg5 	<= 0;
+
+		        bneqReg5	  <= 0;
+		        btypeReg5 	<= 0;
+
+		        jReg5 		   <= 0;
+		        jrReg5 		  <= 0;
+		        LUIReg5   	<= 0;
+		        auipcReg5  <= 0;
+
+		        mulDiv_opReg5	<= 0;
+
+		        pcReg5	  	    <= 0;
+		        pcselectReg5	 <=2'b0;
+
+		        bjtakenReg5		 <= 0;
+		        funct3Reg5	   <= '0;
+		        csr_immReg5	  <= '0;
+		        csr_dataReg5 	<= '0;
+		        csr_addrReg5	 <= '0;
+		        csr_weReg5	   <= 0;
+
+		        ecallReg5	    <= 0;
+		        ebreakReg5	   <= 0;
+		        instruction_addr_misalignedReg5 <= 0;
+		        illegal_instrReg5 <= 0;
+		        mretReg5	<= 0;
+		        sretReg5	<= 0;
+		        uretReg5	<= 0;
+          end
+          
         else
           begin
 

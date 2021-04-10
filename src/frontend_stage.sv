@@ -115,13 +115,21 @@ assign discardwire =discardReg;
 /************************************************/
     always_ff @(posedge clk , negedge nrst)
 	begin
-        if (!nrst || !wake_up)
+        if (!nrst)
         begin
 		pcReg		<= 32'h40000000;
 		pcReg2 		<= 32'h40000000;
 
 		instruction_addr_misalignedReg2 <= 0;
 		end
+		
+		    else if (!wake_up)
+		      begin
+		        pcReg		<= 32'h40000000;
+		        pcReg2 		<= 32'h40000000;
+		        instruction_addr_misalignedReg2 <= 0;
+		      end
+		      
         else begin
 
 
