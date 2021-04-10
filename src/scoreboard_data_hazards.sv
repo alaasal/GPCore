@@ -33,8 +33,7 @@ logic stall_wire;
 			scoreboard[i]<=7'b0;
 
 		end
-	killnum<=2'b0;
-	killReg <=0;
+
 
 
           end
@@ -175,6 +174,13 @@ assign kill= (btaken || killReg || exception ) && ~stall && (~discard)? 1'b1  :1
 
 
    always_ff@(posedge clk) begin
+	   if (!nrst)
+		   begin 
+	killnum<=2'b0;
+	killReg <=0;	   
+			   
+		   end
+	   else begin 
 if (btaken || exception)
 begin
 
@@ -196,7 +202,7 @@ begin
 	killReg<=0;
 
 end
-
+	   end
 end
 
 endmodule
