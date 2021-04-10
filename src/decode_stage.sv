@@ -1,4 +1,4 @@
-`include "instr_decoder.sv"
+//`include "instr_decoder.sv"
 module instdec_stage(
 	input logic clk, nrst,
 

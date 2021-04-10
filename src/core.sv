@@ -5,6 +5,17 @@
 `include "issue_stage.sv"
 `include "execute_stage.sv"
 `include "commit_stage.sv"
+
+`include "instr_decoder.sv"
+`include "regfile.sv"
+`include "scoreboard_data_hazards.sv"
+`include "csr_regfile.sv"
+`include "csr.sv"
+`include "ALU.sv"
+`include "branch_unit.sv"
+`include "mem_wrap.sv"
+`include "mul_div.sv"
+
 module core(
 	input logic clk, nrst,
 
@@ -98,6 +109,17 @@ logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
 logic external_interrupt_w;
 logic TSR;
 logic illegal_flag;
+
+// additional wires
+logic jr3;
+logic j3;
+logic j4;
+logic jr4;
+logic u_timer;
+logic u_eie;
+logic u_tie;
+logic u_sie;
+
 
 //OpenPiton Request
 logic[4:0] instr_l15_rqtype;

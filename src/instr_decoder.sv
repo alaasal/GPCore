@@ -62,6 +62,24 @@ module instr_decoder(
 	logic jrtype;		// Jump and add $Reg Instructions
 	logic utype;		// LUI Instruction
 	logic autype;		// AUIPC Instruction
+	
+	//added wires decleration 
+	logic ltype;
+	logic system;
+	logic wfi;
+	logic illegal_retM;
+	logic illegal_retS;
+	logic illegal_ret;
+	logic illegal_instruction;
+	logic illegal_sret;
+	logic i_lb;
+	logic i_lh;
+	logic i_lw;
+	logic i_lbu;
+	logic i_lhu;
+	logic i_sb;
+	logic i_sh;
+	logic i_sw;
 
 	// Arithemtic Register Register Instructions
 	logic  i_add, i_sub, i_sll, i_slt, i_sltu, i_xor, i_srl, i_sra, i_or, i_and;

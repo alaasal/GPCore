@@ -71,6 +71,10 @@ logic killafterreq;
 logic discardReg;
 logic illegal_flagReg;
 
+// wires
+logic pc_addr_ex;
+logic discard;
+
 // Exceptions at forntend
 //logic instruction_addr_misalignedReg1;
 logic instruction_addr_misalignedReg2;

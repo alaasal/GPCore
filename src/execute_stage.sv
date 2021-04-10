@@ -55,11 +55,11 @@
 /* Machine external interrupt. */
 `define M_INT_EXT           32'hb
 
-`include"csr.sv"
-`include"ALU.sv"
-`include"branch_unit.sv"
-`include"mem_wrap.sv"
-`include"mul_div.sv"
+//`include"csr.sv"
+//`include"ALU.sv"
+//`include"branch_unit.sv"
+//`include"mem_wrap.sv"
+//`include"mul_div.sv"
 
 module exe_stage(
 
@@ -177,6 +177,8 @@ module exe_stage(
 	logic j5;
 	logic jr5;
 	logic [31:0] mul_div5;
+	
+	logic m_op6;
 
 
 	// =============================================== //
