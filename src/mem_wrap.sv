@@ -68,6 +68,7 @@ module mem_decode(
     logic ld_addr_misalignedReg6;
     logic samo_addr_misalignedReg6;
     logic bw0Reg6, bw1Reg6, bw2Reg6, bw3Reg6;
+	//logic m_rd6;
 
     //pipe5 memory controls
     logic [3:0][7:0] data_out6;

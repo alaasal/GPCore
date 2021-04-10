@@ -125,6 +125,8 @@ assign discardwire =discardReg;
 		pcReg2 		<= 32'h40000000;
 
 		instruction_addr_misalignedReg2 <= 0;
+		
+		
 		end
 		
 		    else if (!wake_up)
@@ -193,6 +195,45 @@ assign discardwire =discardReg;
 
 	end
 	end
+	
+	
+		
+		// npc logic
+	case(state_reg)
+	s_req:
+	begin
+		if (req_fire)
+		begin
+			if(killafterreq)
+			 begin 
+				pcReg	<= targetsave;
+				killafterreq<=0;
+			 end
+			else begin end
+
+
+
+			if(l15_transducer_ack)
+				state_reg <= s_resp;
+			else
+				state_reg <= s_wait_ack;
+		end
+	end
+	s_wait_ack:
+		if (l15_transducer_ack)
+			state_reg <= s_resp;
+	s_resp:
+	begin
+		if (resp_fire )
+			begin
+				state_reg 	<= s_req;
+
+			if(discardReg) discardReg <=0;
+			else begin end
+
+			end
+	end
+endcase
 
 	end
 
@@ -235,6 +276,8 @@ assign discardwire =discardReg;
 
 // logic for pcselect if not in req time
 
+// added above 
+//------------------------------------------------//
 always_ff @(posedge clk , negedge nrst)
 begin
 
@@ -243,6 +286,7 @@ begin
 		targetcame  <=0;
 		killafterreq<=0;
 		discardReg <=0;
+		state_reg <= 3'b0;
 				end
 
 	else
@@ -263,11 +307,53 @@ begin
 		if (discard || (stall && nostall ))
 		begin
 		discardReg<=1;
+		end
+		
+		end
+		end
+		
+		
+	/*	
+		// npc logic
+	case(state_reg)
+	s_req:
+	begin
+		if (req_fire)
+		begin
+			if(killafterreq)
+			 begin 
+				pcReg	<= targetsave;
+				killafterreq<=0;
+			 end
+			else begin end
 
+
+
+			if(l15_transducer_ack)
+				state_reg <= s_resp;
+			else
+				state_reg <= s_wait_ack;
 		end
 	end
-end
+	s_wait_ack:
+		if (l15_transducer_ack)
+			state_reg <= s_resp;
+	s_resp:
+	begin
+		if (resp_fire )
+			begin
+				state_reg 	<= s_req;
 
+			if(discardReg) discardReg <=0;
+			else begin end
+
+			end
+	end
+endcase
+	end
+end
+*/
+//----------------------------------------------------------------
 
 
 
@@ -277,8 +363,9 @@ assign resp_fire = l15_transducer_val && (state_reg == s_resp) && (!resp_init);
 assign resp_init = ( (l15_transducer_returntype != `LOAD_RET) && (l15_transducer_returntype != `IFILL_RET) && (l15_transducer_returntype != `ST_ACK) ) && l15_transducer_val;
 
 
-
-always_ff @(posedge clk , negedge nrst)
+//added above
+////-----------------------------------------------------////
+/*always_ff @(posedge clk , negedge nrst)
 begin
 
 if (!nrst)
@@ -325,8 +412,8 @@ case(state_reg)
 	end
 endcase
 end
-end
-
+end*/
+////-------------------------------------------------------////
 logic[31:0] l15_data;
 //code for flipping and choosing the right bits
 always_comb
