@@ -33,19 +33,32 @@ logic stall_wire;
 			scoreboard[i]<=7'b0;
 
 		end
-	killnum<=2'b0;
-	killReg <=0;
+
 
 
           end
           else
 	  begin
+
+		
+		for(int j=0;j<32;j=j+1)
+			begin
+		if(scoreboard[j][0] && !scoreboard[j][1])
+			 begin
+			scoreboard[j][4]<=0;
+			scoreboard[j][3]<=0;
+			 end
+
+		scoreboard[j][2:0]<={1'b0,scoreboard[j][2:1]};
+      	
+
+	end 
 	 case(function_unit)
 		3'b001:
 
 			begin 	   // pending & write
 
-//something to be done
+
 				if( (|rd)&&  !stall  && !kill)
 					begin
 					scoreboard[rd][4]<=1; scoreboard[rd][3]<=1;
@@ -105,6 +118,8 @@ logic stall_wire;
             	begin end
         endcase
 
+
+
 	  end
 	end
 
@@ -156,31 +171,21 @@ logic stall_wire;
 assign stall=kill ? 1'b0 :stall_wire;
 assign kill= (btaken || killReg || exception ) && ~stall && (~discard)? 1'b1  :1'b0 ;
 
- always_ff @(posedge clk)
-      begin
-        for(int j=0;j<32;j=j+1)
-	begin
-if(scoreboard[j][0] && !scoreboard[j][1])
-	 begin
-	scoreboard[j][4]<=0;
-	scoreboard[j][3]<=0;
-	 end
-
-
-      	scoreboard[j][2:0]={1'b0,scoreboard[j][2:1]};
-
-	end
-
-
-      end
 
 
    always_ff@(posedge clk) begin
+	   if (!nrst)
+		   begin 
+	killnum<=2'b0;
+	killReg <=0;	   
+			   
+		   end
+	   else begin 
 if (btaken || exception)
 begin
 
 	killReg<=1;
-	killnum=killnum+1;
+	killnum<=killnum+1;
 
 
 end
@@ -197,7 +202,7 @@ begin
 	killReg<=0;
 
 end
-
+	   end
 end
 
 endmodule

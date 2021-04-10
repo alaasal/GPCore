@@ -299,7 +299,7 @@ case(state_reg)
 	end
 	s_wait_ack:
 		if (l15_transducer_ack)
-			state_reg = s_resp;
+			state_reg <= s_resp;
 	s_resp:
 	begin
 		if (resp_fire )
