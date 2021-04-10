@@ -128,7 +128,6 @@ assign discardwire =discardReg;
 		
 		
 		end
-		
 		    else if (!wake_up)
 		      begin
 		        pcReg		<= 32'h40000000;
@@ -194,7 +193,7 @@ assign discardwire =discardReg;
 		illegal_flagReg <= nrst;
 
 	end
-	end
+	
 	
 	
 		
@@ -235,6 +234,7 @@ assign discardwire =discardReg;
 	end
 endcase
 
+	end
 	end
 
     always_comb
