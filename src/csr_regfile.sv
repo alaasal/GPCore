@@ -130,7 +130,7 @@ module csr_regfile(
  	input logic m_ret, s_ret, u_ret,	//MRET or SRET instruction is used to return from a trap in M-mode or S-mode respectively
 	// input logic stall,
 	input logic m_interrupt,
-  input logic s_interrupt,
+        input logic s_interrupt,
 	input logic u_interrupt,
 
 	output logic m_timer,
@@ -151,7 +151,7 @@ module csr_regfile(
 
 
 	// registers
-  logic [1:0] next_mode;
+        logic [1:0] next_mode;
 
 	// mstatus
 	logic status_sie;
@@ -273,7 +273,7 @@ module csr_regfile(
 		`CSR_MCAUSE:		csr_data = mcause;
 		`CSR_MTVAL:		csr_data = mtval;
 		`CSR_MSCRATCH:		csr_data = mscratch;
-                `CSR_MNECYCLE:           csr_data = mtimecmp;
+                `CSR_MNECYCLE:          csr_data = mtimecmp;
 
 		`CSR_MEDELEG: 		csr_data = medeleg_w;
    	        `CSR_MIDELEG: 		csr_data = mideleg_w;
@@ -775,12 +775,14 @@ always_comb
   end
 
 
-  /* Counter for time and cycle CSRs. */
+  /* Counter for time and cycle CSRs. */ 
 always @(posedge clk,negedge nrst) begin
-	if (!nrst)  begin
+	if (!nrst) 
+             begin          
      	timer <= 0;
  	 end
-	  else begin
+	  else
+              begin
    	 timer <= timer + 1;
 	end
 	end
