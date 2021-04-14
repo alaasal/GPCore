@@ -194,16 +194,16 @@ module csr_regfile(
 
 
 	logic [`XLEN-1:2] mtvec;
-  logic [`XLEN-1:2] stvec;
+        logic [`XLEN-1:2] stvec;
 	logic [`XLEN-1:2] utvec;
 	logic [`XLEN-1:0] mscratch;
-  logic [`XLEN-1:0] sscratch;
+        logic [`XLEN-1:0] sscratch;
 	logic [`XLEN-1:0] uscratch;
 	logic [`XLEN-1:0] mcause;
-  logic [`XLEN-1:0] scause;
+        logic [`XLEN-1:0] scause;
 	logic [`XLEN-1:0] ucause;
 	logic [`XLEN-1:0] mepc;
-  logic [`XLEN-1:0] sepc;
+        logic [`XLEN-1:0] sepc;
 	logic [`XLEN-1:0] uepc;
 
 	logic [`XLEN-1:0] mtval;
@@ -222,7 +222,7 @@ module csr_regfile(
 	logic [`XLEN-1:0] mstatus;
 	logic [`XLEN-1:0] mip;
 	logic [`XLEN-1:0] mie;
-  logic [`XLEN-1:0] sstatus;
+        logic [`XLEN-1:0] sstatus;
 	logic [`XLEN-1:0] sip;
 	logic [`XLEN-1:0] sie;
 
@@ -243,9 +243,9 @@ module csr_regfile(
 
 
 	logic[63:0] stimecmp;
-  logic[63:0] utimecmp;
+        logic[63:0] utimecmp;
 	logic [63:0]mtimecmp;
-	logic [63:0] mtime;
+	logic [63:0] timer; 
 
 
 
@@ -273,32 +273,30 @@ module csr_regfile(
 		`CSR_MCAUSE:		csr_data = mcause;
 		`CSR_MTVAL:		csr_data = mtval;
 		`CSR_MSCRATCH:		csr_data = mscratch;
-    `CSR_MNECYCLE:           csr_data = mtimecmp;
+                `CSR_MNECYCLE:           csr_data = mtimecmp;
 
 		`CSR_MEDELEG: 		csr_data = medeleg_w;
-   	`CSR_MIDELEG: 		csr_data = mideleg_w;
-		`CSR_TIMEH, `CSR_CYCLEH: csr_data = mtime[63:32];
-		`CSR_TIME, `CSR_CYCLE:
-
-				csr_data = mtime[31:0];
+   	        `CSR_MIDELEG: 		csr_data = mideleg_w;
+		`CSR_TIMEH,`CSR_CYCLEH: csr_data = timer[63:32];
+		`CSR_TIME,  `CSR_CYCLE: csr_data = timer[31:0];
 
 
-              // S Mode
-		`CSR_SEPC:	            csr_data = {sepc[`XLEN-1:2], 2'b0};
-    `CSR_SSTATUS:           csr_data = sstatus;
-    `CSR_SIE:               csr_data = sie;
-    `CSR_STVEC:             csr_data = {stvec, 2'b0};
+               // S Mode
+                `CSR_SEPC:	        csr_data = {sepc[`XLEN-1:2], 2'b0};
+ 		`CSR_SSTATUS:           csr_data = sstatus;
+   		`CSR_SIE:               csr_data = sie;
+   		`CSR_STVEC:             csr_data = {stvec, 2'b0};
 
-    `CSR_SSCRATCH:          csr_data = sscratch;
-    `CSR_SIP:               csr_data = sip;
-    `CSR_SCAUSE:            csr_data = scause;
-    `CSR_STVAL:             csr_data = stval;
-    `CSR_SNECYCLE:          csr_data = stimecmp;
+   		`CSR_SSCRATCH:          csr_data = sscratch;
+   		`CSR_SIP:               csr_data = sip;
+   		`CSR_SCAUSE:            csr_data = scause;
+ 	 	`CSR_STVAL:             csr_data = stval;
+  		`CSR_SNECYCLE:          csr_data = stimecmp;
 
-		`CSR_SEDELEG: 		csr_data = sedeleg_w;
-		`CSR_SIDELEG: 		csr_data = sideleg_w;
+  		 `CSR_SEDELEG: 	        csr_data = sedeleg_w;
+  		 `CSR_SIDELEG: 	        csr_data = sideleg_w;
 
-   //CSR_SCOUNTREN:
+                //CSR_SCOUNTREN:
 
 
 		// 	USER MODE
@@ -310,8 +308,7 @@ module csr_regfile(
 		`CSR_UCAUSE:		csr_data = ucause;
 		`CSR_UTVAL:		csr_data = utval;
 		`CSR_USCRATCH:		csr_data = uscratch;
-    `CSR_UNECYCLE:           csr_data = utimecmp;
-
+                `CSR_UNECYCLE:          csr_data = utimecmp;
 
 
 		endcase
@@ -422,45 +419,45 @@ module csr_regfile(
 	};
 
 
-// USER MODE
+           // USER MODE
 
-assign ustatus = {
-    27'b0,
-    status_upie,
-    3'b0,
+	assign ustatus = {
+    		27'b0,
+   		status_upie,
+    		3'b0,
     status_uie
-};
-assign uip = {
-    24'b0,
-    u_interrupt,
-    3'b0,
-    u_timer,
-    3'b0,
-    usip
-};
-assign uie = {
-    24'b0,
-    ueie,
-    3'b0,
-    utie,
-    3'b0,
-    usie
-};
-assign ucause = {
-    ucause_interrupt,
-    ucause_code
-};
+	};
+	assign uip = {
+  	  24'b0,
+    	u_interrupt,
+    	3'b0,
+    	u_timer,
+   	 3'b0,
+   	 usip
+	};
+	assign uie = {
+   	 24'b0,
+   	 ueie,
+   	 3'b0,
+  	  utie,
+  	  3'b0,
+  	  usie
+	};
+	assign ucause = {
+ 	  ucause_interrupt,
+   	 ucause_code
+		};
 
 always_ff @(posedge clk, negedge nrst) begin
 	if (!nrst)
 	  begin
-		current_mode 		<= `M; // M-mode is the first mode entered at reset.
+		current_mode 		<=`M; // M-mode is the first mode entered at reset.
 		status_sie  		<= 0;
     		status_mie  		<= 0;
     		status_spie 		<= 0;
  	 	status_mpie 		<= 0;
    		status_spp  		<= 0;
-    		status_mpp  		<= `M;
+    		status_mpp  	        <=`M;
     		status_sum  		<= 0;
 		mtvec	    		<= 0;
 		mscratch		<= 0;
@@ -502,9 +499,9 @@ always_ff @(posedge clk, negedge nrst) begin
 		uscratch		<= 0;
 		uepc			<= 0;
 		utval			<= 0;
-        	mtimecmp <=0;
-        	stimecmp <=0;
-       		utimecmp  <=0;
+        	mtimecmp                <= 0;
+        	stimecmp                <= 0;
+       		utimecmp                <= 0;
 end
 	else
 	  begin
@@ -535,8 +532,8 @@ end
 			  end
 			`CSR_MSCRATCH:
 				mscratch <= csr_wb;
-      `CSR_MNECYCLE:
-        mtimecmp <= csr_wb;
+                        `CSR_MNECYCLE:
+                                mtimecmp <= csr_wb;
 			`CSR_MEPC:
 				mepc <= {csr_wb[`XLEN-1:2], 2'b0};
 			`CSR_MCAUSE:
@@ -559,7 +556,7 @@ end
     				status_spie <= csr_wb[5];
     				status_sie <= csr_wb[1];
 			  end
-      `CSR_STVEC:
+                        `CSR_STVEC:
 				stvec <= csr_wb[`XLEN-1:2];
 			`CSR_SEPC:
                     		sepc <= {csr_wb[`XLEN-1:2], 2'b0};
@@ -568,22 +565,22 @@ end
                			scause_code <= csr_wb[5:0];
                 		scause_interrupt <= csr_wb[31];
                           end
-      `CSR_STVAL:
+                        `CSR_STVAL:
 				stval <= csr_wb;
-      `CSR_SIE:
+                        `CSR_SIE:
 			  begin
 				stie <= csr_wb[5];
-        seie <= csr_wb[9];
+                                seie <= csr_wb[9];
                            end
-      `CSR_SSCRATCH:
+                        `CSR_SSCRATCH:
 				sscratch <= csr_wb;
 			`CSR_SEDELEG:
 				sedeleg <= csr_wb[15:0];
 			`CSR_SIDELEG:
 				sideleg <= csr_wb[11:0];
-      `CSR_SNECYCLE:
-          stimecmp <= csr_wb;
-
+                        `CSR_SNECYCLE:
+                                stimecmp <= csr_wb;
+ 
 
 			// USER MODE
 			`CSR_USTATUS:
@@ -621,8 +618,8 @@ end
 				utval <= csr_wb;
 			`CSR_UTVEC:
 				utvec <= csr_wb[`XLEN-1:2];
-      `CSR_UNECYCLE:
-        utimecmp <= csr_wb;
+                        `CSR_UNECYCLE:
+                                utimecmp <= csr_wb;
 
 
 		endcase
@@ -730,8 +727,8 @@ end
             status_uie  <= status_upie;
             status_upie <= 1;
 	  end
-end
-end
+    end
+ end
 
 // Figure out what mode we are switching to
 always_comb
@@ -778,15 +775,15 @@ always_comb
   end
 
 
-/* Counter for time and cycle CSRs. */
+  /* Counter for time and cycle CSRs. */
 always @(posedge clk,negedge nrst) begin
-if (!nrst)  begin
-     mtime <= 0;
-  end
-  else begin
-    mtime <= mtime + 1;
-end
-end
+	if (!nrst)  begin
+     	timer <= 0;
+ 	 end
+	  else begin
+   	 timer <= timer + 1;
+	end
+	end
 
 
 /* machine's timer. */
@@ -796,7 +793,7 @@ always @(posedge clk ,negedge nrst) begin
 	m_timer	<= 0;
 	end
 	else begin
-    	m_timer <= (mtime >= mtimecmp);
+    	m_timer <= (timer >= mtimecmp);
 	end
 end
 
@@ -807,7 +804,7 @@ always @(posedge clk,negedge nrst) begin
 	s_timer <= 0;
 	end
 	else begin
-        s_timer <= (mtime >= stimecmp);
+        s_timer <= (timer >= stimecmp);
 	end
 end
 /* User's timer. */
@@ -817,7 +814,7 @@ always @(posedge clk,negedge nrst) begin
 	u_timer <= 0;
 	end
 	else begin
-        u_timer <= (mtime >= utimecmp);
+        u_timer <= (timer >= utimecmp);
 	end
 end
 
@@ -843,7 +840,7 @@ assign u_sie = usie && status_uie;
             begin
                 tvec_out = {stvec, 2'b0};
             end
-          else if (next_mode == `U)
+          else 
             begin
                 tvec_out = {utvec, 2'b0};
             end
