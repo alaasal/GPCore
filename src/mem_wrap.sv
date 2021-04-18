@@ -262,7 +262,7 @@ module piton_fsm(
     input logic [3:0] mem_op6,
 
     //OpenPiton Request
-	output logic [3:0] core_l15_rqtype, 
+	output logic [4:0] core_l15_rqtype, 
 	output logic [2:0] core_l15_size,
 	output logic [31:0] core_l15_address,
 	output logic [63:0] core_l15_data,
@@ -397,7 +397,7 @@ module mem_wrap(
 	input logic stall_mem,dmem_finished,
 
     //OpenPiton Request
-	output logic [3:0] mem_l15_rqtype, 
+	output logic [4:0] mem_l15_rqtype, 
 	output logic [2:0] mem_l15_size,
 	output logic [31:0] mem_l15_address,
 	output logic [63:0] mem_l15_data,
