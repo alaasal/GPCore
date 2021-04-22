@@ -8,6 +8,9 @@ class memory extends uvm_object;
     `uvm_object_utils(memory)
     `uvm_object_new
 
+    request_tran  req_tran;
+    response_tran resp_tran;
+    
     function void initialize(string path);
         $readmemh(path , mem);
     endfunction
