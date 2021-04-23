@@ -73,9 +73,9 @@ module core(
 
 
 
-
-  logic ld_addr_misaligned6;
-  logic samo_addr_misaligned6;
+  
+        logic ld_addr_misaligned6;
+        logic samo_addr_misaligned6;
 
 	logic [3:0] mulDiv_op4, mulDiv_op3;
 	logic [31:0] mul_div6;
@@ -254,68 +254,68 @@ if( arb_state == arb_instr )
 	begin
 
 	//OpenPiton Request
-	transducer_l15_rqtype 	<= instr_l15_rqtype;
-	transducer_l15_size 	<= instr_l15_size;
-	transducer_l15_address 	<= instr_l15_address;
-	transducer_l15_data		<= instr_l15_data;
-	transducer_l15_val 		<= instr_l15_val;
-	l15_instr_ack 			<= l15_transducer_ack;
-	l15_instr_header_ack   	<= l15_transducer_header_ack;
+	transducer_l15_rqtype	        = instr_l15_rqtype;
+	transducer_l15_size 	        = instr_l15_size;
+	transducer_l15_address  	= instr_l15_address;
+	transducer_l15_data		= instr_l15_data;
+	transducer_l15_val 		= instr_l15_val;
+	l15_instr_ack 			= l15_transducer_ack;
+	l15_instr_header_ack   	        = l15_transducer_header_ack;
 
 	//
-	l15_mem_header_ack <= 0;
+	l15_mem_header_ack              = 0;
 
 	//OpenPiton Response
-	l15_instr_val			<= l15_transducer_val;
-	l15_instr_data_0		<= l15_transducer_data_0;
-	l15_instr_data_1		<= l15_transducer_data_1;
-	l15_instr_returntype	<= l15_transducer_returntype;
-	transducer_l15_req_ack 	<= instr_l15_req_ack;
+	l15_instr_val			= l15_transducer_val;
+	l15_instr_data_0		= l15_transducer_data_0;
+	l15_instr_data_1		= l15_transducer_data_1;
+	l15_instr_returntype		= l15_transducer_returntype;
+	transducer_l15_req_ack	 	= instr_l15_req_ack;
 
 	//
-	l15_mem_val <= 0;
+	l15_mem_val 			= 0;
 	end
 
 else if (arb_state == arb_wait)
 begin
 	// Appear unready for both instr and data mem
-	l15_instr_header_ack <= 0;
-	l15_mem_header_ack <= 0;
-	transducer_l15_val <= 0;
+	l15_instr_header_ack 		= 0;
+	l15_mem_header_ack 		= 0;
+	transducer_l15_val 		= 0;
 
 	// Send the coming response to the instr fetch
-	l15_instr_val			<= l15_transducer_val;
-	l15_instr_data_0		<= l15_transducer_data_0;
-	l15_instr_data_1		<= l15_transducer_data_1;
-	l15_instr_returntype	<= l15_transducer_returntype;
-	transducer_l15_req_ack 	<= instr_l15_req_ack;
-	l15_instr_ack 			<= l15_instr_ack;
+	l15_instr_val			= l15_transducer_val;
+	l15_instr_data_0		= l15_transducer_data_0;
+	l15_instr_data_1		= l15_transducer_data_1;
+	l15_instr_returntype		= l15_transducer_returntype;
+	transducer_l15_req_ack 		= instr_l15_req_ack;
+	l15_instr_ack 			= l15_instr_ack;
 end
 
 else
     begin
 
     //OpenPiton Request
-	transducer_l15_rqtype 	<= mem_l15_rqtype;
-	transducer_l15_size 	<= mem_l15_size;
-	transducer_l15_address 	<= mem_l15_address;
-	transducer_l15_data		<= mem_l15_data;
-	transducer_l15_val 		<= mem_l15_val;
-	l15_mem_ack 			<= l15_transducer_ack;
-	l15_mem_header_ack  	<= l15_transducer_header_ack;
+	transducer_l15_rqtype 		= mem_l15_rqtype;
+	transducer_l15_size 		= mem_l15_size;
+	transducer_l15_address 		= mem_l15_address;
+	transducer_l15_data		= mem_l15_data;
+	transducer_l15_val 		= mem_l15_val;
+	l15_mem_ack 			= l15_transducer_ack;
+	l15_mem_header_ack  	        = l15_transducer_header_ack;
 
 	//
-	l15_instr_header_ack <= 0;
+	l15_instr_header_ack 		= 0;
 
 	//OpenPiton Response
-	l15_mem_val 			<= l15_transducer_val;
-	l15_mem_data_0 			<= l15_transducer_data_0;
-	l15_mem_data_1			<= l15_transducer_data_1;
-	l15_mem_returntype		<= l15_transducer_returntype;
-	transducer_l15_req_ack	<= mem_l15_req_ack;
+	l15_mem_val 			= l15_transducer_val;
+	l15_mem_data_0 			= l15_transducer_data_0;
+	l15_mem_data_1			= l15_transducer_data_1;
+	l15_mem_returntype		= l15_transducer_returntype;
+	transducer_l15_req_ack		= mem_l15_req_ack;
 
 	//
-	l15_instr_val <= 0;
+	l15_instr_val 			= 0;
     end
 end
 
@@ -350,7 +350,7 @@ end
 	.discardwire(discard),
 	.nostall(nostall),
 
-	.l15_transducer_ack                 (l15_instr_ack),
+    .l15_transducer_ack                 (l15_instr_ack),
     .l15_transducer_header_ack          (l15_instr_header_ack),
 
     .transducer_l15_rqtype              (instr_l15_rqtype),
@@ -368,7 +368,7 @@ end
 
     .transducer_l15_req_ack             (instr_l15_req_ack),
 
-	.state_reg (state_reg),
+	.state_reg      (state_reg),
 	.stall_mem 	(stall_mem),
 	.arb_eqmem	(arb_eqmem),
 	.memOp_done 	(memOp_done),
@@ -774,15 +774,15 @@ begin
 	pc6Commit<= 0;
 end
 else
-begin
-if (pc6 == pc6Tmp)
+   begin
+	if (pc6 == pc6Tmp)
 	pc6Commit <= 0;
-else
-begin
+	else
+   		begin
 	pc6Commit <= 1;
 	pc6Tmp <= pc6;
-end
-end
+		end
+   end
 end
 
 endmodule
