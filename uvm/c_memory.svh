@@ -1,5 +1,5 @@
 class memory extends uvm_object;
-
+    //TODO: REVIEW MEMORY OPS ARE PERFORMED CORRECTLY
     bit [pkg_memory::t_mem_data] mem [pkg_memory::t_mem_addr];
     
     pkg_memory::t_byte_addr b_addr;
