@@ -28,11 +28,20 @@ module csr_unit(
 		      raise illegal instruction exceptions.
 		  ***************************************************************************************************/
 		  if (csr_addr[9:8] > current_mode)
+			  begin
 		     illegal_csr = 1;
+			   csr_new = csr_reg;
+			   end
 		  else if ((csr_addr[11:10] == 2'b11) && ((func3 == `csrw) || (func3 == `csrwi)))
+		    begin
 		     illegal_csr = 1;
+		     csr_new = csr_reg;
+		     end
 		  else if ((rs1 != 0) && (csr_addr[11:10] == 2'b11) && ((func3 == `csrc) || (func3 == `csrci) || (func3 == `csrs) || (func3 == `csrsi)))
+		    begin
 		     illegal_csr = 1;
+		     csr_new = csr_reg;
+		     end
 		  else
 		    begin
 		    illegal_csr = 0;

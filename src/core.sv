@@ -1,6 +1,6 @@
 `timescale 1ns/1ns
 
-`include "frontend_stage.sv"
+/*`include "frontend_stage.sv"
 `include "decode_stage.sv"
 `include "issue_stage.sv"
 `include "execute_stage.sv"
@@ -14,7 +14,7 @@
 `include "ALU.sv"
 `include "branch_unit.sv"
 `include "mem_wrap.sv"
-`include "mul_div.sv"
+`include "mul_div.sv"*/
 
 module core(
 	input logic clk, nrst,
@@ -34,7 +34,7 @@ module core(
 	input logic l15_transducer_val,
 	input logic[63:0] l15_transducer_data_0,
 	input logic[63:0] l15_transducer_data_1,
-	input logic[31:0] l15_transducer_returntype,
+	input logic[4:0] l15_transducer_returntype,
 	output logic transducer_l15_req_ack,
 
 	// Asynchronus interrupt

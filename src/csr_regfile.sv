@@ -308,7 +308,8 @@ module csr_regfile(
 		`CSR_UCAUSE:		csr_data = ucause;
 		`CSR_UTVAL:		csr_data = utval;
 		`CSR_USCRATCH:		csr_data = uscratch;
-                `CSR_UNECYCLE:          csr_data = utimecmp;
+    `CSR_UNECYCLE:          csr_data = utimecmp;
+    default: csr_data = 0;
 
 
 		endcase
