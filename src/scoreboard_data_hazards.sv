@@ -124,10 +124,19 @@ logic stall_wire;
 	end
 
  	always_comb begin
-		unique case(op_code)
-		7'b0110111: function_unit =3'b001; //lui
-		7'b0010111: function_unit =3'b001; //auipc
-		7'b1101111: function_unit =3'b001; //jal
+				unique case(op_code)
+		7'b0110111:begin 
+		function_unit =3'b001;		
+		nostall =0 ;
+		stall_wire =0; end //lui
+		7'b0010111:begin 
+		function_unit =3'b001;		
+		nostall =0 ;
+		stall_wire =0; end //auipc
+		7'b1101111:begin 
+		function_unit =3'b001;		
+		nostall =0 ;
+		stall_wire =0; end //jal
 		7'b0110011:begin
             function_unit =3'b010;
             stall_wire = (scoreboard[rs1][3] || scoreboard[rs2][3]); /*in commit stage */
@@ -164,7 +173,11 @@ logic stall_wire;
             nostall = (scoreboard[rs1][3]);
         end	//loads
 
-		default: function_unit = 0;
+		default: begin 
+		function_unit = 0;
+		nostall =0 ;
+		stall_wire =0;
+		end
 		endcase
 	end
 
