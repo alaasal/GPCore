@@ -283,7 +283,7 @@ module piton_fsm(
     output logic memOp_done
 );
 
-enum logic[1:0] {s_req, s_resp} state_reg;
+enum logic{s_req, s_resp} state_reg;
 
 logic req_fire;
 logic resp_int;
@@ -344,7 +344,6 @@ always_comb begin
         //store operation
         if (bw) begin
             core_l15_rqtype  = `STORE_RQ;
-            core_l15_data    = {wdata, wdata};
             case (bw)
                 4'b1111: core_l15_size	= `MSG_DATA_SIZE_4B;
                 4'b1100, 4'b0011: core_l15_size	 = `MSG_DATA_SIZE_2B;
@@ -356,14 +355,37 @@ always_comb begin
         end else if (m_rd6) begin
             core_l15_rqtype  = `LOAD_RQ;
             core_l15_size    = `MSG_DATA_SIZE_4B;
-        end                 
+        end  else begin 
+            core_l15_rqtype = `LOAD_RQ;
+            core_l15_size   = `MSG_DATA_SIZE_4B;
+        end               
 
     end s_resp: begin
         core_l15_val = 0;
-        if(l15_core_val)
-            memOp_done = 1;
+        memOp_done = l15_core_val;
+        baddr            = addr6[1:0];
+        core_l15_data    = {wdata, wdata};
+        core_l15_address = addr6;
+        core_l15_val     = m_op6;
+        if (bw) begin
+            core_l15_rqtype  = `STORE_RQ;
+            case (bw)
+                4'b1111: core_l15_size    = `MSG_DATA_SIZE_4B;
+                4'b1100, 4'b0011: core_l15_size     = `MSG_DATA_SIZE_2B;
+                4'b0001, 4'b0010, 4'b0100, 4'b1000: core_l15_size     = `MSG_DATA_SIZE_1B;
+                default: core_l15_size     = `MSG_DATA_SIZE_0B;
+            endcase
+
+        //load opertion
+        end else if (m_rd6) begin
+            core_l15_rqtype  = `LOAD_RQ;
+            core_l15_size    = `MSG_DATA_SIZE_4B;
+        end  else begin 
+            core_l15_rqtype = `LOAD_RQ;
+            core_l15_size   = `MSG_DATA_SIZE_4B;
+        end
     end
-endcase 
+    endcase 
 end
 
 always_comb begin
@@ -376,7 +398,7 @@ always_comb begin
         endcase
 
         piton_out = {rdata[7:0], rdata[15:8], rdata[23:16], rdata[31:24]};
-        unique case(mem_opReg[2:0])
+        case(mem_opReg[2:0])
             3'b101: mem_out6 = 32'(signed'(piton_out[baddr]));                            //i_lb
             3'b011: mem_out6 = 32'(signed'({piton_out[baddr + 1], piton_out[baddr]}));  //i_lh
             3'b111: mem_out6 = piton_out;	                                                //i_lw
@@ -384,7 +406,7 @@ always_comb begin
             3'b010: mem_out6 = {16'b0, piton_out[baddr + 1], piton_out[baddr]};	        //i_lhu
             default: mem_out6 = 0;
         endcase
-    end
+    end else mem_out6 = 0;
 end
 endmodule
 
