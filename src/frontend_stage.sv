@@ -262,6 +262,7 @@ assign discardwire =discardReg;
 
     always_comb
       begin
+      npc = pcReg + 4;
       if (exception_pending || (state_reg == s_resp && (resp_fire)))
       begin
         unique casez({exception_pending, PCSEL})
@@ -269,9 +270,9 @@ assign discardwire =discardReg;
             3'b001: npc =  32'h40000000;
             3'b010: npc = target;
             3'b011: npc = npc;
-						//Exception
-						3'b1??: npc = epc;
-            default: npc = pcReg + 4 ;
+            //Exception
+            3'b1??: npc = epc;
+            default: npc = pcReg + 4;
         endcase
       end
       else
