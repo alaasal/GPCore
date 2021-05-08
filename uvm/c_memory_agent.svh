@@ -48,10 +48,10 @@ class memory_agent extends uvm_agent;
         memory_read_h.memory_read_response_port.connect(memory_read_response_port.put_export); // retirns data to core 
         
         memory_write_h.memory_write_port.connect(memory_write_port.get_export);
-        
+        /*
         memory_write_monitor_h.memory_write_mon_port.connect(memory_write_mon_port.analysis_export);
         memory_read_monitor_h.memory_read_mon_port.connect(memory_read_mon_port.analysis_export);
-        
+        */
     endfunction : connect_phase
 
 endclass : memory_agent
