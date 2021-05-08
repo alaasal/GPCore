@@ -1,5 +1,5 @@
 class memory_read_monitor extends uvm_monitor;
-    `uvm_component_utils(memory_monitor)
+    `uvm_component_utils(memory_read_monitor)
 
     uvm_analysis_port #(memory_read_transaction) memory_read_mon_port;
 
@@ -10,7 +10,7 @@ class memory_read_monitor extends uvm_monitor;
     endfunction : new
 
     function void build_phase(uvm_phase phase);
-        tinyalu_agent_config memory_agent_config_h;
+        memory_agent_config memory_agent_config_h;
         memory_read_mon_port = new("addr_ph_port_monitor", this);
         if(!uvm_config_db #(memory_agent_config)::get(this, "", "config", memory_agent_config_h))
             `uvm_fatal("MEMORY_MONITOR", "Failed to get configuration object");
@@ -38,8 +38,8 @@ class memory_read_monitor extends uvm_monitor;
             address  = memory_read_transaction_h.address;
             data     = memory_read_transaction_h.data;
             
-            `uvm_info("MEMORY_WRITE_MONITOR",$sformatf("MONITOR: OP-NAME: %s  ADDRESS: %2h  DATA: %s", op_name, address, data, UVM_HIGH);
+            `uvm_info("MEMORY_READ_MONITOR",$sformatf("MONITOR: OP-NAME: %s  ADDRESS: %2h  DATA: %s", op_name, address, data), UVM_HIGH);
         end
   endtask : run_phase
 
-endclass : memory_monitor
+endclass : memory_read_monitor

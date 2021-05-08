@@ -1,10 +1,10 @@
-class memory_transaction extends uvm_transactions;
-    `uvm_object_utils(memory_read_transaction)
+class memory_transaction extends uvm_transaction;
+    `uvm_object_utils(memory_transaction)
 
     t_mem_addr address;
     t_mem_data data;
 
-    function new(string name);
-        super.new(name, parent);
-    endfunction : new
+    function new(string name = "memory_transaction");
+        super.new(name);
+    endfunction 
 endclass : memory_transaction

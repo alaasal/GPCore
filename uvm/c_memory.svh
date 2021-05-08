@@ -1,15 +1,14 @@
 class memory extends uvm_object;
     //TODO: REVIEW MEMORY OPS ARE PERFORMED CORRECTLY
-    bit [pkg_memory::t_mem_data] mem [pkg_memory::t_mem_addr];
+    `uvm_object_utils(memory)
+    t_mem_data mem [t_mem_addr];
     
     pkg_memory::t_byte_addr b_addr;
     pkg_memory::t_word word;
-
-    `uvm_object_utils(memory)
-    `uvm_object_new
-
-    request_tran  req_tran;
-    response_tran resp_tran;
+ 
+    function new(string name ="memory");
+      super.new(name);
+    endfunction 
     
     function void initialize(string path);
         $readmemh(path , mem);
@@ -27,7 +26,7 @@ class memory extends uvm_object;
         for (int i = 0; i < size; i++) begin
             $fdisplay(file, $sformatf("%h, %h", index, mem[index]));
             if(mem.next(index)) begin
-                `uvm_error("Next entry in memory cannot be found")
+                `uvm_error("memory","Next entry in memory cannot be found")
                 break;
             end
         end
@@ -42,9 +41,9 @@ class memory extends uvm_object;
             b_addr = addr[pkg_memory::BYTE_ADDR-1 : 0];
             data   = word[b_addr];
 
-            `uvm_info($sformatf("Read Byte  : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
+            `uvm_info("memory",$sformatf("Read Byte  : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
         end else begin
-            `uvm_error($sformatf("read to uninitialzed addr 0x%0h", addr))
+            `uvm_error("memory",$sformatf("read to uninitialzed addr 0x%0h", addr))
         end 
         return data;
     endfunction
@@ -55,20 +54,20 @@ class memory extends uvm_object;
         word[b_addr] = data[b_addr];
         mem[addr]    = word;
         
-        `uvm_info($sformatf("Write Byte : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
+        `uvm_info("memory",$sformatf("Write Byte : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
     endfunction
 
-    function void write(input mem_addr_t addr, mem_data_t data);
+    function void write(t_mem_addr addr, t_mem_data data);
         mem[addr] = data;
 
-        `uvm_info($sformatf("Write word : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
+        `uvm_info("memory",$sformatf("Write word : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
     endfunction
 
     function pkg_memory::t_mem_data read(pkg_memory::t_mem_addr addr);
         pkg_memory::t_mem_data data;
         data = mem[data];
 
-        `uvm_info($sformatf("Read word  : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
+        `uvm_info("memroy",$sformatf("Read word  : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
         return data;
     endfunction
 endclass : memory

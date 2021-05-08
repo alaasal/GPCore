@@ -12,7 +12,7 @@ class memory_write extends uvm_driver #(memory_write_transaction);
         memory_agent_config memory_agent_config_h;
         if(!uvm_config_db #(memory_agent_config)::get(this, "", "config", memory_agent_config_h))
             `uvm_fatal("MEMORY_WRITE", "Failed to get configuration object");
-        memory_h = memory_agent_config_h.memory_h;
+        memory_h = memory_agent_config_h.get_mem_handle();
         memory_write_port = new("memory_write_port", this);
     endfunction : build_phase
 
@@ -33,7 +33,7 @@ class memory_write extends uvm_driver #(memory_write_transaction);
                 WRITE_HALF: begin
                     memory_h.write_byte(address, data);
                     memory_h.write_byte(address + 1, data);
-                end WRTITE_FULL: memory_h.write(address, data);
+                end WRITE_FULL: memory_h.write(address, data);
             endcase
         end
     endtask : run_phase
