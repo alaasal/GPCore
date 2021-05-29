@@ -24,14 +24,14 @@ class memory_test extends uvm_test;
     
     // agent
     memory_agent_config_h = new(UVM_ACTIVE);
-    uvm_config_db #(memory_agent_config)::set(this, "memory_agent_h*", "config", memory_agent_config_h);
+    uvm_config_db #(memory_agent_config)::set(this, "memory_agent_h*", "memory_config", memory_agent_config_h);
     memory_agent_h = new("memory_agent_h", this);      
   endfunction : build_phase
   
   function void connect_phase (uvm_phase phase);
-     memory_agent_h.memory_read_request_port.connect(memory_tst_read_response_port.put_export); // recieves request from core
-     memory_agent_h.memory_read_response_port.connect(memory_tst_read_request_port.get_export); // retirns data to core 
-     memory_agent_h.memory_write_port.connect(memory_tst_write_port.put_export);
+     memory_agent_h.memory_read_request_port.connect(memory_tst_read_response_port); // recieves request from core
+     memory_agent_h.memory_read_response_port.connect(memory_tst_read_request_port); // retirns data to core 
+     memory_agent_h.memory_write_port.connect(memory_tst_write_port);
   endfunction : connect_phase
     
   task run_phase(uvm_phase phase);
