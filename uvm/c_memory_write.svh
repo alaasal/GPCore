@@ -1,8 +1,9 @@
-class memory_write extends uvm_driver #(memory_write_transaction);
+class memory_write extends uvm_driver #(memory_transaction);
     `uvm_component_utils(memory_write)
 
+    protected t_memory_op_type memory_write_op = WRITE;
     memory memory_h;
-    uvm_get_port #(memory_write_transaction) memory_write_port;
+    uvm_get_port #(memory_transaction) memory_write_port;
 
     function new(string name, uvm_component parent);
         super.new(name, parent);
@@ -17,23 +18,19 @@ class memory_write extends uvm_driver #(memory_write_transaction);
     endfunction : build_phase
 
     task run_phase(uvm_phase phase);
-        memory_write_transaction memory_write_transaction_h;
-        t_mem_addr address;
-        t_mem_data data;
-        t_write_op write_op;
+        memory_transaction memory_write_transaction_h;
+        t_tansaction memory_write_struct;
 
         forever begin
             memory_write_port.get(memory_write_transaction_h);
-            write_op = memory_write_transaction_h.write_op;
-            address  = memory_write_transaction_h.address;
-            data     = memory_write_transaction_h.data;
+            memory_write_struct = memory_write_transaction_h.get_transaction(memory_write_op);
 
-            case(write_op)
-                WRITE_BYTE: memory_h.write_byte(address, data);
-                WRITE_HALF: begin
-                    memory_h.write_byte(address, data);
-                    memory_h.write_byte(address + 1, data);
-                end WRITE_FULL: memory_h.write(address, data);
+            case(memory_write_struct.op_size)
+                BYTE: memory_h.write_byte(memory_write_struct.address, memory_write_struct.data);
+                HALF: begin
+                    memory_h.write_byte(memory_write_struct.address, memory_write_struct.data);
+                    memory_h.write_byte(memory_write_struct.address + 1, memory_write_struct.data);
+                end FULL: memory_h.write(memory_write_struct.address, memory_write_struct.data);
             endcase
         end
     endtask : run_phase

@@ -12,8 +12,15 @@ package pkg_memory;
     typedef bit [BYTE_COUNT-1 :0][7:0] t_word; //byte addressable word
     typedef bit [pkg_memory::BYTE_ADDR-1 :0] t_byte_addr;
 
-    typedef enum bit[1:0] {WRITE_BYTE, WRITE_HALF, WRITE_FULL} t_write_op;
-    typedef enum bit[1:0] {READ_BYTE,  READ_HALF,  READ_FULL} t_read_op;
+    typedef enum bit[1:0] {BYTE, HALF, FULL} t_op_size;
+    typedef enum bit {READ, WRITE} t_memory_op_type;
+    
+    typedef struct packed{
+        t_mem_addr address;
+        t_mem_data data;
+        t_op_size op_size;
+        t_memory_op_type op_type;
+    } t_tansaction;
     
     `include"c_memory.svh"
     `include"c_memory_transaction.svh"

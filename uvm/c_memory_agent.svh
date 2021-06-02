@@ -10,9 +10,9 @@ class memory_agent extends uvm_agent;
     
     memory memory_h;
 
-    uvm_get_port #(memory_read_transaction) memory_read_request_port;
-    uvm_put_port #(memory_read_transaction) memory_read_response_port;
-    uvm_get_port #(memory_write_transaction) memory_write_port;
+    uvm_get_port #(memory_transaction) memory_read_request_port;
+    uvm_put_port #(memory_transaction) memory_read_response_port;
+    uvm_get_port #(memory_transaction) memory_write_port;
 
     //uvm_analysis_port #(memory_read_transaction) memory_read_mon_port;
     //uvm_analysis_port #(memory_write_transaction) memory_write_mon_port;
