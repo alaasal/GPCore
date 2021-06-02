@@ -11,7 +11,7 @@ class memory_read extends uvm_driver #(memory_read_transaction);
 
     function void build_phase(uvm_phase phase);
         memory_agent_config memory_agent_config_h;
-        if(!uvm_config_db #(memory_agent_config)::get(this, "", "config", memory_agent_config_h));
+        if(!uvm_config_db #(memory_agent_config)::get(this, "", "memory_config", memory_agent_config_h))
             `uvm_fatal("MEMORY_READ", "Failed to get configuration object");
         memory_h = memory_agent_config_h.get_mem_handle();
         memory_read_request_port  = new("memory_read_request_port", this);

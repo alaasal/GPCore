@@ -12,7 +12,7 @@ class memory_write_monitor extends uvm_monitor;
     function void build_phase(uvm_phase phase);
         memory_agent_config memory_agent_config_h;
         memory_write_mon_port = new("addr_ph_port_monitor", this);
-        if(!uvm_config_db #(memory_agent_config)::get(this, "", "config", memory_agent_config_h))
+        if(!uvm_config_db #(memory_agent_config)::get(this, "", "memory_config", memory_agent_config_h))
             `uvm_fatal("MEMORY_MONITOR", "Failed to get configuration object");
     endfunction : build_phase
 

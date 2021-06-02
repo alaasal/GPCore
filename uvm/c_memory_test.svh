@@ -23,7 +23,7 @@ class memory_test extends uvm_test;
     memory_write_transaction_h = memory_write_transaction::type_id::create("memory_write_transaction_h", this);  
     
     // agent
-    memory_agent_config_h = new(UVM_ACTIVE);
+    memory_agent_config_h = new();
     uvm_config_db #(memory_agent_config)::set(this, "memory_agent_h*", "memory_config", memory_agent_config_h);
     memory_agent_h = new("memory_agent_h", this);      
   endfunction : build_phase
@@ -35,7 +35,7 @@ class memory_test extends uvm_test;
   endfunction : connect_phase
     
   task run_phase(uvm_phase phase);
-    
+    phase.raise_objection();
     memory_write_transaction_h.address = 32'h00;
     memory_write_transaction_h.data = 32'h0badbeef;
     memory_write_transaction_h.write_op = WRITE_FULL;
@@ -48,7 +48,7 @@ class memory_test extends uvm_test;
     memory_tst_read_response_port.get(memory_read_transaction_h);
     
     assert(memory_write_transaction_h.data== memory_read_transaction_h.data)else $display("??? ?????");
-    
+    phase.drop_objection();
  endtask : run_phase   
   
 endclass

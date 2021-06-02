@@ -25,7 +25,7 @@ class memory_agent extends uvm_agent;
     endfunction : new
 
     function void build_phase(uvm_phase phase);
-        if(!uvm_config_db #(memory_agent_config)::get(this, "", "memory_config", memory_agent_config_h));
+        if(!uvm_config_db #(memory_agent_config)::get(this, "", "memory_config", memory_agent_config_h))
             `uvm_fatal("MEMORY_AGENT", "Failed to get configuration object");
         
         //is_active = memory_agent_config_h.get_is_active();
