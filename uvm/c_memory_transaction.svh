@@ -21,7 +21,7 @@ class memory_transaction extends uvm_transaction;
     endfunction
 
     function transaction_to_monitor();
-        return transaction
+        return transaction;
     endfunction
 
     function get_op_type();
@@ -37,12 +37,12 @@ class memory_transaction extends uvm_transaction;
                     (transaction.op_size == HALF)? "HALF" : "BYTE";
 
         s = $sformatf("OP TYPE:\t %s,\n OP SIZE:\t %s,\n ADDRESS:\t %h,\n DATA:\t %h,\n",
-                        op_type, op_size, transaction.address, transaction.data);
+                        op_type_s, op_size_s, transaction.address, transaction.data);
         return s;
     endfunction: convert2string
 
     function void do_copy(uvm_object rhs);
-        this_type_t rhs_;
+        memory_transaction rhs_;
 
         if(rhs == null)
             `uvm_fatal("MEMORY_TRANSACTION.do_copy()", "Tried to copy a null pointer");
@@ -55,7 +55,7 @@ class memory_transaction extends uvm_transaction;
     endfunction: do_copy
 
     function bit do_compare(uvm_object rhs, uvm_comparer comparer);
-        this_type_t rhs_;
+        memory_transaction rhs_;
         if (rhs == null)
             `uvm_fatal("MEMORY_TRANSACTION.do_compare()", "Tried to copy a null pointer");
         

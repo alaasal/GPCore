@@ -25,7 +25,7 @@ class memory_read extends uvm_driver #(memory_transaction);
 
     task run_phase(uvm_phase phase);
         memory_transaction memory_read_transaction_h;
-        t_tansaction memory_read_struct;
+        t_transaction memory_read_struct;
 
         forever begin
             memory_read_request_port.get(memory_read_transaction_h);

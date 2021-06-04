@@ -19,7 +19,7 @@ class memory_write extends uvm_driver #(memory_transaction);
 
     task run_phase(uvm_phase phase);
         memory_transaction memory_write_transaction_h;
-        t_tansaction memory_write_struct;
+        t_transaction memory_write_struct;
 
         forever begin
             memory_write_port.get(memory_write_transaction_h);

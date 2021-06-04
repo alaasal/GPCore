@@ -20,17 +20,18 @@ package pkg_memory;
         t_mem_data data;
         t_op_size op_size;
         t_memory_op_type op_type;
-    } t_tansaction;
+    } t_transaction;
     
     `include"c_memory.svh"
     `include"c_memory_transaction.svh"
-    `include"c_memory_read_transaction.svh"
-    `include"c_memory_write_transaction.svh"
+    //`include"c_memory_read_transaction.svh"
+    //`include"c_memory_write_transaction.svh"
     `include"c_memory_agent_config.svh"
     `include"c_memory_read.svh"
     `include"c_memory_write.svh"
-    `include"c_memory_write_monitor.svh"
-    `include"c_memory_read_monitor.svh"
+    `include"c_memory_monitor.svh"
+    //`include"c_memory_write_monitor.svh"
+    //`include"c_memory_read_monitor.svh"
     `include"c_memory_agent.svh"
     `include"c_memory_test.svh"
     
