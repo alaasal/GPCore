@@ -1,4 +1,4 @@
-`timescale 1ns/1ns
+//`timescale 1ns/1ns
 
 /*`include "frontend_stage.sv"
 `include "decode_stage.sv"
@@ -18,28 +18,9 @@
 
 module core(
 	input logic clk, nrst,
-
-
-	//OpenPiton Request
-	output logic[4:0] transducer_l15_rqtype,
-	output logic[2:0] transducer_l15_size,
-	output logic[31:0] transducer_l15_address,
-	output logic[63:0] transducer_l15_data,
-	output logic transducer_l15_val,
-	input logic l15_transducer_ack,
-	input logic l15_transducer_header_ack,
-
-
-	//OpenPiton Response
-	input logic l15_transducer_val,
-	input logic[63:0] l15_transducer_data_0,
-	input logic[63:0] l15_transducer_data_1,
-	input logic[4:0] l15_transducer_returntype,
-	output logic transducer_l15_req_ack,
-
 	// Asynchronus interrupt
 	input logic external_interrupt
-    );
+  );
 
 	// Wires
 	logic [31:0] pc, pc2, pc3, pc4, pc6;         // Program Counter Signals in each pipe
@@ -72,10 +53,8 @@ module core(
 	logic [3:0] mem_op3, mem_op4;
 
 
-
-  
-        logic ld_addr_misaligned6;
-        logic samo_addr_misaligned6;
+  logic ld_addr_misaligned6;
+  logic samo_addr_misaligned6;
 
 	logic [3:0] mulDiv_op4, mulDiv_op3;
 	logic [31:0] mul_div6;
@@ -93,231 +72,33 @@ module core(
 	logic exception;
 	logic [6:0] opcode3;
 
-// Exceptions and CSRs
-logic [11:0] csr_addr3, csr_addr4, csr_wb_addr, csr_wb_addr6;
-logic [2:0] funct3_3, funct3_4;
-logic [31:0] csr_imm3, csr_imm4, csr_data, csr_wb6, m_cause6, csr_wb, pc_exc, cause6;
-logic instruction_addr_misaligned2, instruction_addr_misaligned3, instruction_addr_misaligned4;
-logic ecall3, ecall4, ebreak3, ebreak4, mret3, mret4, mret6, sret3, sret4, sret6, uret3, uret4, uret6;
-logic illegal_instr3, illegal_instr4;
-logic exception_pending, exception_pending6;
-logic [31:0] epc, cause;
-logic m_ret, s_ret, u_ret;
-logic [1:0] current_mode;
-logic s_timer, m_timer, m_eie, m_tie, s_eie, s_tie, m_interrupt, s_interrupt, u_interrupt;
-logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
-logic external_interrupt_w;
-logic TSR;
-logic illegal_flag;
+  // Exceptions and CSRs
+  logic [11:0] csr_addr3, csr_addr4, csr_wb_addr, csr_wb_addr6;
+  logic [2:0] funct3_3, funct3_4;
+  logic [31:0] csr_imm3, csr_imm4, csr_data, csr_wb6, m_cause6, csr_wb, pc_exc, cause6;
+  logic instruction_addr_misaligned2, instruction_addr_misaligned3, instruction_addr_misaligned4;
+  logic ecall3, ecall4, ebreak3, ebreak4, mret3, mret4, mret6, sret3, sret4, sret6, uret3, uret4, uret6;
+  logic illegal_instr3, illegal_instr4;
+  logic exception_pending, exception_pending6;
+  logic [31:0] epc, cause;
+  logic m_ret, s_ret, u_ret;
+  logic [1:0] current_mode;
+  logic s_timer, m_timer, m_eie, m_tie, s_eie, s_tie, m_interrupt, s_interrupt, u_interrupt;
+  logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
+  logic external_interrupt_w;
+  logic TSR;
+  logic illegal_flag;
 
-// additional wires
-logic jr3;
-logic j3;
-logic j4;
-logic jr4;
-logic u_timer;
-logic u_eie;
-logic u_tie;
-logic u_sie;
+  // additional wires
+  logic jr3;
+  logic j3;
+  logic j4;
+  logic jr4;
+  logic u_timer;
+  logic u_eie;
+  logic u_tie;
+  logic u_sie;
 
-
-//OpenPiton Request
-logic[4:0] instr_l15_rqtype;
-logic[2:0] instr_l15_size;
-logic[31:0] instr_l15_address;
-logic[63:0] instr_l15_data;
-logic instr_l15_val;
-logic l15_instr_ack;
-logic l15_instr_header_ack;
-
-
-//OpenPiton Response
-logic l15_instr_val;
-logic[63:0] l15_instr_data_0;
-logic[63:0] l15_instr_data_1;
-logic[3:0] l15_instr_returntype;
-logic instr_l15_req_ack;
-
-//OpenPiton Request
-logic[4:0] mem_l15_rqtype;
-logic[2:0] mem_l15_size;
-logic[31:0] mem_l15_address;
-logic[63:0] mem_l15_data;
-logic mem_l15_val;
-logic l15_mem_ack;
-logic l15_mem_header_ack;
-
-
-//OpenPiton Response
-logic l15_mem_val;
-logic[63:0] l15_mem_data_0;
-logic[63:0] l15_mem_data_1;
-logic[3:0] l15_mem_returntype;
-logic mem_l15_req_ack;
-
-//Mem to Piton
-logic[1:0] state_reg;
-
-/***********************************************************
-# Arbiter to pretend like cache has two ports
-States:
-0: No memOps and Instruction fetch is connected to cache
-1: There is a memOps waiting to get access to cache
-2: data mem is connected to cache
-************************************************************/
-logic[1:0] arb_state;
-localparam[1:0]   // 3 states are required for Moore
-arb_instr = 0,
-arb_wait = 1,
-arb_mem = 2;
-logic dmem_waiting;
-logic dmem_finished;
-logic instr_left_cache;
-logic noMore_memOps;
-logic stall_mem;
-logic arb_eqmem;
-logic memOp_done;
-//assign stall_mem = (arb_state == arb_wait) ;
-//assign arb_eqmem = (arb_state == arb_mem);
-assign dmem_waiting = |mem_op3;
-assign dmem_finished = (arb_state == arb_mem) && (l15_transducer_val || l15_transducer_ack ) ;
-assign noMore_memOps = !(|mem_op3 );
-assign instr_left_cache = (arb_state == arb_wait)&& l15_transducer_val;
-
-/***********************
-1- Stall issue stage when there is
-mem op in the exc stage // stall the instru2 from frontend
-until the memop finish
-Exce_stage_output (memOp_done)
-store (l15_mem_ack)
-load (resp_fire)
-
-2- Stall issue stage when there is
-memOp in the issue but the datamem is
-not connected to the cache
-datamem is not connected when (arb_state !=
-arb_mem)
-
-3- When (arb_state == arb_wait) discard cache_to_
-intruction_fetch and don't update pc then stall until
-(arb_state == arb_instr)
-********************************************/
-
-always_ff @(posedge clk or negedge nrst) begin
-if (!nrst) begin
-	arb_state <= arb_instr;
-	stall_mem <=0;
-	arb_eqmem <=0;
-	end
-else
-begin
-    case(arb_state)
-	arb_instr:
-	begin
-		if(dmem_waiting && ~(stall && nostall))
-		begin
-			arb_state <= arb_wait;
-			stall_mem <=1;
-		end
-	end
-	arb_wait:
-	begin
-		if(state_reg == 2'b10) //response
-		begin
-			if(instr_left_cache)
-				begin
-					arb_state <= arb_mem;
-
-				end
-		end
-	end
-	arb_mem:
-	begin
-		arb_eqmem<=1;
-		stall_mem <=0;
-		if(memOp_done && noMore_memOps)
-			begin
-			arb_state <= arb_instr;
-			arb_eqmem <=0;
-			end
-	end
-endcase
-end
-end
-
-
-
-always_comb
-begin
-
-if( arb_state == arb_instr )
-	begin
-
-	//OpenPiton Request
-	transducer_l15_rqtype	        = instr_l15_rqtype;
-	transducer_l15_size 	        = instr_l15_size;
-	transducer_l15_address  	= instr_l15_address;
-	transducer_l15_data		= instr_l15_data;
-	transducer_l15_val 		= instr_l15_val;
-	l15_instr_ack 			= l15_transducer_ack;
-	l15_instr_header_ack   	        = l15_transducer_header_ack;
-
-	//
-	l15_mem_header_ack              = 0;
-
-	//OpenPiton Response
-	l15_instr_val			= l15_transducer_val;
-	l15_instr_data_0		= l15_transducer_data_0;
-	l15_instr_data_1		= l15_transducer_data_1;
-	l15_instr_returntype		= l15_transducer_returntype;
-	transducer_l15_req_ack	 	= instr_l15_req_ack;
-
-	//
-	l15_mem_val 			= 0;
-	end
-
-else if (arb_state == arb_wait)
-begin
-	// Appear unready for both instr and data mem
-	l15_instr_header_ack 		= 0;
-	l15_mem_header_ack 		= 0;
-	transducer_l15_val 		= 0;
-
-	// Send the coming response to the instr fetch
-	l15_instr_val			= l15_transducer_val;
-	l15_instr_data_0		= l15_transducer_data_0;
-	l15_instr_data_1		= l15_transducer_data_1;
-	l15_instr_returntype		= l15_transducer_returntype;
-	transducer_l15_req_ack 		= instr_l15_req_ack;
-	l15_instr_ack 			= l15_instr_ack;
-end
-
-else
-    begin
-
-    //OpenPiton Request
-	transducer_l15_rqtype 		= mem_l15_rqtype;
-	transducer_l15_size 		= mem_l15_size;
-	transducer_l15_address 		= mem_l15_address;
-	transducer_l15_data		= mem_l15_data;
-	transducer_l15_val 		= mem_l15_val;
-	l15_mem_ack 			= l15_transducer_ack;
-	l15_mem_header_ack  	        = l15_transducer_header_ack;
-
-	//
-	l15_instr_header_ack 		= 0;
-
-	//OpenPiton Response
-	l15_mem_val 			= l15_transducer_val;
-	l15_mem_data_0 			= l15_transducer_data_0;
-	l15_mem_data_1			= l15_transducer_data_1;
-	l15_mem_returntype		= l15_transducer_returntype;
-	transducer_l15_req_ack		= mem_l15_req_ack;
-
-	//
-	l15_instr_val 			= 0;
-    end
-end
 
 /***********************************************************/
 
@@ -349,29 +130,6 @@ end
 	.killnum			(killnum),
 	.discardwire(discard),
 	.nostall(nostall),
-
-    .l15_transducer_ack                 (l15_instr_ack),
-    .l15_transducer_header_ack          (l15_instr_header_ack),
-
-    .transducer_l15_rqtype              (instr_l15_rqtype),
-    .transducer_l15_size                (instr_l15_size),
-    .transducer_l15_val                 (instr_l15_val),
-    .transducer_l15_address             (instr_l15_address),
-    .transducer_l15_data                (instr_l15_data),
-
-
-    .l15_transducer_val                 (l15_instr_val),
-    .l15_transducer_returntype          (l15_instr_returntype),
-
-    .l15_transducer_data_0              (l15_instr_data_0),
-    .l15_transducer_data_1              (l15_instr_data_1),
-
-    .transducer_l15_req_ack             (instr_l15_req_ack),
-
-	.state_reg      (state_reg),
-	.stall_mem 	(stall_mem),
-	.arb_eqmem	(arb_eqmem),
-	.memOp_done 	(memOp_done),
 
 	// Exceptions
 	.instruction_addr_misaligned2	(instruction_addr_misaligned2)
@@ -477,7 +235,7 @@ end
 	.s_ret		(s_ret),
 	.u_ret		(u_ret),
 	.m_interrupt(m_interrupt),
-    	.s_interrupt(s_interrupt),
+ 	.s_interrupt(s_interrupt),
 	.u_interrupt(u_interrupt),
 
 	// Inputs from decode stage
@@ -595,7 +353,7 @@ end
 	.s_tie(s_tie),
 
 	.u_timer(u_timer),
-  	.u_eie(u_eie),
+ 	.u_eie(u_eie),
 	.u_tie(u_tie),
 	.u_sie(u_sie),
 	.TSR(TSR)
@@ -663,35 +421,14 @@ end
 	.we6          		(we6),
 
 	.U_imm6       		(U_imm6),
-	.AU_imm6       		(AU_imm6),
+	.AU_imm6       	(AU_imm6),
 
-	.mul_divReg6         	(mul_div6),
+	.mul_divReg6    (mul_div6),
 
-	.wb_data6		(wb_data6),
-	.pc6              	(pc6),
+	.wb_data6		     (wb_data6),
+	.pc6            (pc6),
 	.pcselect5    		(pcselect5),
 	.target       		(target),
-
-    //OpenPiton Request
-	.mem_l15_rqtype        (mem_l15_rqtype),
-	.mem_l15_size          (mem_l15_size),
-	.mem_l15_address       (mem_l15_address),
-	.mem_l15_data          (mem_l15_data),
-    .mem_l15_val           (mem_l15_val),
-
-	//OpenPiton Response
-	.l15_mem_data_0        (l15_mem_data_0),
-    .l15_mem_data_1        (l15_mem_data_1),
-	.l15_mem_returntype    (l15_mem_returntype),
-
-    .l15_mem_val           (l15_mem_val),
-    .l15_mem_ack           (l15_mem_ack),
-	.l15_mem_header_ack    (l15_mem_header_ack),
-    .mem_l15_req_ack       (mem_l15_req_ack),
-    .memOp_done            (memOp_done),
-    .ld_addr_misaligned6   (ld_addr_misaligned6),
-    .samo_addr_misaligned6 (samo_addr_misaligned6),
-
 
 	//signal to scoreboard
 	.bjtaken6		(bjtaken),
@@ -715,12 +452,12 @@ end
 	.m_eie(m_eie),
 	.m_tie(m_tie),
 	.s_tie(s_tie),
-  	.m_interrupt(m_interrupt),
-  	.s_interrupt(s_interrupt),
+ 	.m_interrupt(m_interrupt),
+ 	.s_interrupt(s_interrupt),
 	.u_interrupt(u_interrupt),
 
-  	.u_timer(u_timer),
-  	.u_eie(u_eie),
+ 	.u_timer(u_timer),
+ 	.u_eie(u_eie),
 	.u_tie(u_tie),
 	.u_sie(u_sie)
 	);
@@ -747,9 +484,9 @@ end
 	.sret6		(sret6),
 	.uret6		(uret6),
 
-	.pc6         	(pc6),
+	.pc6         (pc6),
 
-	.we6Issue       (we6Issue),
+	.we6Issue    (we6Issue),
 	.rd6Issue   	(rd6Issue),
 	.result6	(wb_data6),
 
@@ -764,25 +501,5 @@ end
 	.uret		(u_ret)
 	);
 
-logic[31:0] pc6Tmp;
-logic pc6Commit;
-always_ff @(posedge clk , negedge nrst)
-begin
-if (!nrst)
-begin
-	pc6Tmp<= 32'b0;
-	pc6Commit<= 0;
-end
-else
-   begin
-	if (pc6 == pc6Tmp)
-	pc6Commit <= 0;
-	else
-   		begin
-	pc6Commit <= 1;
-	pc6Tmp <= pc6;
-		end
-   end
-end
 
 endmodule
