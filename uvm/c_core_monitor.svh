@@ -1,5 +1,5 @@
 class core_monitor extends uvm_monitor;
-    `uvm_components_utils("core_monitor")
+    `uvm_components_utils(core_monitor)
 
     uvm_analysis_port #(memory_transaction) monitor_analysis_port;
 
