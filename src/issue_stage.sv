@@ -128,7 +128,8 @@ module issue_stage (
 	output logic m_timer,s_timer,u_timer,
 
 	output logic [1:0] current_mode,
-	output logic m_tie, s_tie, m_eie, s_eie,u_eie,u_tie,u_sie
+	output logic m_tie, s_tie, m_eie, s_eie,u_eie,u_tie,u_sie,
+	output logic [31:0] AES_D0_O, AES_D1_O, AES_D2_O, AES_D3_O, AES_key_addr_O
     );
 
 
@@ -548,7 +549,12 @@ logic mretReg4, sretReg4, uretReg4;
   	.u_eie(u_eie),
 	.u_tie(u_tie),
 	.u_sie(u_sie),
-	.TSR(TSR)
+	.TSR(TSR),
+	.AES_D0_O(AES_D0_O),
+	.AES_D1_O(AES_D1_O),
+	.AES_D2_O(AES_D2_O),
+	.AES_D3_O(AES_D3_O),
+	.AES_key_addr_O(AES_key_addr_O)
 	);
 
 

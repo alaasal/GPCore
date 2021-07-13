@@ -109,6 +109,7 @@ logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
 logic external_interrupt_w;
 logic TSR;
 logic illegal_flag;
+logic [31:0] AES_D0, AES_D1, AES_D2, AES_D3, AES_key_addr;
 
 // additional wires
 logic jr3;
@@ -598,7 +599,12 @@ end
   	.u_eie(u_eie),
 	.u_tie(u_tie),
 	.u_sie(u_sie),
-	.TSR(TSR)
+	.TSR(TSR),
+	.AES_D0_O(AES_D0),
+	.AES_D1_O(AES_D0),
+	.AES_D2_O(AES_D0),
+	.AES_D3_O(AES_D0),
+	.AES_key_addr_O(AES_key_addr)
 
     );
 
@@ -762,6 +768,19 @@ end
 	.mret		(m_ret),
 	.sret		(s_ret),
 	.uret		(u_ret)
+	);
+	
+	// =============================================== //
+	//			                  AES                        //
+	// =============================================== //
+	top_aes aes(
+	 .clk         (clk),
+	 .nrst        (nrst),
+	 .start       (),
+	 .key_addr    (AES_key_addr),
+	 .plaintext   ({AES_D3,AES_D2,AES_D1,AES_D0}),
+	 .result      (),
+	 .done        ()
 	);
 
 logic[31:0] pc6Tmp;

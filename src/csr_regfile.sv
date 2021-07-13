@@ -26,11 +26,18 @@
 `define CSR_INSTRETH    12'hc82
 `define CSR_MNECYCLE    12'hbbf
 
+// Custom CSRs for the Crypto-IP
+`define CSR_AES_D0      12'h7c0
+`define CSR_AES_D1      12'h7c1
+`define CSR_AES_D2      12'h7c2
+`define CSR_AES_D3      12'h7c3
+`define CSR_AES_key     12'h7c4
+
 // User-Mode
 `define CSR_USTATUS     12'h000
-`define CSR_FFLAGS      12'h001
-`define CSR_FRM         12'h002
-`define CSR_FCSR        12'h003
+//`define CSR_FFLAGS      12'h001
+//`define CSR_FRM         12'h002
+//`define CSR_FCSR        12'h003
 `define CSR_UIE         12'h004
 `define CSR_UTVEC       12'h005
 `define CSR_USCRATCH    12'h040
@@ -55,7 +62,7 @@
 `define CSR_SCAUSE      12'h142
 `define CSR_STVAL       12'h143
 `define CSR_SIP         12'h144
-`define CSR_SATP        12'h180
+//`define CSR_SATP        12'h180
 `define CSR_SNECYCLE    12'h5C0
 
 
@@ -146,12 +153,15 @@ module csr_regfile(
 	output logic TSR,
 
 	// To front end
-	output logic [31:0] epc
+	output logic [31:0] epc,
+	
+	// Custom CSRs for the Crypto-IP connected to the IP
+	output logic [31:0] AES_D0_O, AES_D1_O, AES_D2_O, AES_D3_O, AES_key_addr_O
 	);
 
 
 	// registers
-        logic [1:0] next_mode;
+  logic [1:0] next_mode;
 
 	// mstatus
 	logic status_sie;
@@ -162,6 +172,13 @@ module csr_regfile(
 	logic [1:0] status_mpp;
 	logic status_TSR;
 	logic status_sum;
+	
+	// Custom CSRs for the Crypto-IP
+  logic [`XLEN-1:0] AES_D0;
+  logic [`XLEN-1:0] AES_D1;
+  logic [`XLEN-1:0] AES_D2;
+  logic [`XLEN-1:0] AES_D3;
+  logic [`XLEN-1:0] AES_key_addr;
 
 	// ustatus
 	logic status_upie;
@@ -279,10 +296,17 @@ module csr_regfile(
    	        `CSR_MIDELEG: 		csr_data = mideleg_w;
 		`CSR_TIMEH,`CSR_CYCLEH: csr_data = timer[63:32];
 		`CSR_TIME,  `CSR_CYCLE: csr_data = timer[31:0];
+		
+		// Custom CSRs for the Crypto-IP (read)
+    `CSR_AES_D0:    csr_data = AES_D0;
+    `CSR_AES_D1:    csr_data = AES_D1;
+    `CSR_AES_D2:    csr_data = AES_D2;
+    `CSR_AES_D3:    csr_data = AES_D3;
+    `CSR_AES_key:   csr_data = AES_key_addr;
 
 
-               // S Mode
-                `CSR_SEPC:	        csr_data = {sepc[`XLEN-1:2], 2'b0};
+    // S Mode
+    `CSR_SEPC:	        csr_data = {sepc[`XLEN-1:2], 2'b0};
  		`CSR_SSTATUS:           csr_data = sstatus;
    		`CSR_SIE:               csr_data = sie;
    		`CSR_STVEC:             csr_data = {stvec, 2'b0};
@@ -503,6 +527,13 @@ always_ff @(posedge clk, negedge nrst) begin
         	mtimecmp                <= 0;
         	stimecmp                <= 0;
        		utimecmp                <= 0;
+
+  // Custom CSRs for the Crypto-IP (reset)
+  AES_D0       <= '0;
+  AES_D1       <= '0;
+  AES_D2       <= '0;
+  AES_D2       <= '0;
+  AES_key_addr <= '0;
 end
 	else
 	  begin
@@ -548,6 +579,13 @@ end
 				medeleg <= csr_wb[15:0];
 			`CSR_MIDELEG:
 				mideleg <= csr_wb[11:0];
+				
+    // Custom CSRs for the Crypto-IP (write)
+    `CSR_AES_D0:    AES_D0 <= csr_wb;
+    `CSR_AES_D1:    AES_D1 <= csr_wb;
+    `CSR_AES_D2:    AES_D2 <= csr_wb;
+    `CSR_AES_D3:    AES_D3 <= csr_wb;
+    `CSR_AES_key:   AES_key_addr <= csr_wb;
 
 			// S Mode
 			`CSR_SSTATUS:
@@ -863,5 +901,12 @@ assign u_sie = usie && status_uie;
 	  
   // output
   assign TSR = status_TSR;
+  
+  // AES CSRs
+  assign AES_D0_O = AES_D0;
+  assign AES_D1_O = AES_D1;
+  assign AES_D2_O = AES_D2;
+  assign AES_D3_O = AES_D3;
+  assign AES_key_addr_O = AES_key_addr;
   
 endmodule
