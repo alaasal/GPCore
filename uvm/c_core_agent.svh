@@ -11,7 +11,7 @@ class core_agent extends uvm_agent;
     uvm_put_port #(memory_transaction) core_to_memory_read_port;
     uvm_put_port #(memory_transaction) core_to_memory_write_port;
 
-    //TODO: YA ABDALLLAH: وصل الانالسيس بورت بتاعت المونيتور من جوا لبرا 
+    //TODO:
 
     function new(string name, uvm_component parent);
         super.new(name, parent);
