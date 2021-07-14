@@ -113,7 +113,7 @@ module instr_decoder(
 	assign itype = ~op[6] & ~op[5] & op[4] & ~op[3] & ~op[2] & op[1] & op[0];       // 0010011
 	assign btype = op[6] & op[5] & (~op[4]) & (~op[3]) & (~op[2]) & op[1] & op[0];  // 1100011
 	//jump opcode decoding
-	assign jtype  = op[6] & op[5] & (~op[4]) & op[3] & op[2] & op[1] & op[0];		//1101111 JAL
+	assign jtype  = op[6] & op[5] & (~op[4]) &   op[3] &  op[2] & op[1] & op[0];		//1101111 JAL
 	assign jrtype = op[6] & op[5] & (~op[4]) & (~op[3]) & op[2] & op[1] & op[0];	//1100111 JALR
 	//load
 	assign ltype  = ~op[6] & ~op[5] & ~op[4] & ~op[3] & ~op[2] & op[1] & op[0];     //0000011

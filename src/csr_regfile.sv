@@ -33,6 +33,11 @@
 `define CSR_AES_D3      12'h7c3
 `define CSR_AES_key     12'h7c4
 
+`define CSR_AES_Res0    12'h7c5
+`define CSR_AES_Res1    12'h7c6
+`define CSR_AES_Res2    12'h7c7
+`define CSR_AES_Res3    12'h7c8
+
 // User-Mode
 `define CSR_USTATUS     12'h000
 //`define CSR_FFLAGS      12'h001
@@ -139,7 +144,11 @@ module csr_regfile(
 	input logic m_interrupt,
         input logic s_interrupt,
 	input logic u_interrupt,
-
+  
+  // AES Signals
+  input logic [31:0] AES_Res0_i, AES_Res1_i, AES_Res2_i, AES_Res3_i,
+  input logic aes_done,
+  
 	output logic m_timer,
 	output logic s_timer,
 	output logic u_timer,
@@ -179,6 +188,11 @@ module csr_regfile(
   logic [`XLEN-1:0] AES_D2;
   logic [`XLEN-1:0] AES_D3;
   logic [`XLEN-1:0] AES_key_addr;
+  
+  logic [`XLEN-1:0] AES_Res0;
+  logic [`XLEN-1:0] AES_Res1;
+  logic [`XLEN-1:0] AES_Res2;
+  logic [`XLEN-1:0] AES_Res3;
 
 	// ustatus
 	logic status_upie;
@@ -298,11 +312,16 @@ module csr_regfile(
 		`CSR_TIME,  `CSR_CYCLE: csr_data = timer[31:0];
 		
 		// Custom CSRs for the Crypto-IP (read)
-    `CSR_AES_D0:    csr_data = AES_D0;
-    `CSR_AES_D1:    csr_data = AES_D1;
-    `CSR_AES_D2:    csr_data = AES_D2;
-    `CSR_AES_D3:    csr_data = AES_D3;
-    `CSR_AES_key:   csr_data = AES_key_addr;
+    `CSR_AES_D0:      csr_data = AES_D0;
+    `CSR_AES_D1:      csr_data = AES_D1;
+    `CSR_AES_D2:      csr_data = AES_D2;
+    `CSR_AES_D3:      csr_data = AES_D3;
+    `CSR_AES_key:     csr_data = AES_key_addr;
+    
+    `CSR_AES_Res0:    csr_data = AES_Res0;
+    `CSR_AES_Res1:    csr_data = AES_Res1;
+    `CSR_AES_Res2:    csr_data = AES_Res2;
+    `CSR_AES_Res3:    csr_data = AES_Res3;
 
 
     // S Mode
@@ -532,8 +551,14 @@ always_ff @(posedge clk, negedge nrst) begin
   AES_D0       <= '0;
   AES_D1       <= '0;
   AES_D2       <= '0;
-  AES_D2       <= '0;
+  AES_D3       <= '0;
   AES_key_addr <= '0;
+  
+  AES_Res0     <= '0;
+  AES_Res1     <= '0;
+  AES_Res2     <= '0;
+  AES_Res3     <= '0;
+  
 end
 	else
 	  begin
@@ -581,11 +606,16 @@ end
 				mideleg <= csr_wb[11:0];
 				
     // Custom CSRs for the Crypto-IP (write)
-    `CSR_AES_D0:    AES_D0 <= csr_wb;
-    `CSR_AES_D1:    AES_D1 <= csr_wb;
-    `CSR_AES_D2:    AES_D2 <= csr_wb;
-    `CSR_AES_D3:    AES_D3 <= csr_wb;
-    `CSR_AES_key:   AES_key_addr <= csr_wb;
+    `CSR_AES_D0:      AES_D0 <= csr_wb;
+    `CSR_AES_D1:      AES_D1 <= csr_wb;
+    `CSR_AES_D2:      AES_D2 <= csr_wb;
+    `CSR_AES_D3:      AES_D3 <= csr_wb;
+    `CSR_AES_key:     AES_key_addr <= csr_wb;
+    
+    `CSR_AES_Res0:    AES_Res0 <= csr_wb;
+    `CSR_AES_Res1:    AES_Res1 <= csr_wb;
+    `CSR_AES_Res2:    AES_Res2 <= csr_wb;
+    `CSR_AES_Res3:    AES_Res3 <= csr_wb;
 
 			// S Mode
 			`CSR_SSTATUS:
@@ -664,6 +694,15 @@ end
 		endcase
 		end
 	  end
+	  
+	  // for AES IP (Test)
+	  else if (!exception_pending && aes_done)
+	    begin
+	       AES_Res0     <= AES_Res0_i;
+	       AES_Res1     <= AES_Res1_i;
+	       AES_Res2     <= AES_Res2_i;
+	       AES_Res3     <= AES_Res3_i;
+	    end 
 
 	 //Exception logic
 	else if (exception_pending && next_mode==`M && !m_ret)

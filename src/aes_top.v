@@ -51,12 +51,12 @@ module top_aes
   aes_core aes(
     .clk(clk),
     .reset_n(nrst),
-    .encdec(0), // 0 to enc
+    .encdec(1'b0), // 0 to enc
     .init(init),
     .next(next),
     .ready(ready),
     .key({key,128'b0}),
-    .keylen(0),  // 0 to 128 bits
+    .keylen(1'b0),  // 0 to 128 bits
     .block(plaintext_piped),
     .result(result),
     .result_valid(result_valid)

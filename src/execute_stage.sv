@@ -581,7 +581,7 @@ end
 	logic [31:0] cause            ;
 	logic m_timer_conditioned     ;
 	logic s_timer_conditioned     ;
-  	logic u_timer_conditioned     ;
+  	logic u_timer_conditioned    ;
 	logic m_interrupt_conditioned ;
 	logic s_interrupt_conditioned ;
   	logic u_interrupt_conditioned ;

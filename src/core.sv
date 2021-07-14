@@ -109,7 +109,10 @@ logic csr_we3, csr_we4, csr_we5, csr_we6,csr_we6Issue;
 logic external_interrupt_w;
 logic TSR;
 logic illegal_flag;
+// AES IP wire
 logic [31:0] AES_D0, AES_D1, AES_D2, AES_D3, AES_key_addr;
+logic [31:0] AES_Res0, AES_Res1, AES_Res2, AES_Res3;
+logic aes_done;
 
 // additional wires
 logic jr3;
@@ -600,11 +603,18 @@ end
 	.u_tie(u_tie),
 	.u_sie(u_sie),
 	.TSR(TSR),
+	
 	.AES_D0_O(AES_D0),
-	.AES_D1_O(AES_D0),
-	.AES_D2_O(AES_D0),
-	.AES_D3_O(AES_D0),
-	.AES_key_addr_O(AES_key_addr)
+	.AES_D1_O(AES_D1),
+	.AES_D2_O(AES_D2),
+	.AES_D3_O(AES_D3),
+	.AES_key_addr_O(AES_key_addr),
+	
+	.AES_Res0_i(AES_Res0),
+	.AES_Res1_i(AES_Res1),
+	.AES_Res2_i(AES_Res2),
+	.AES_Res3_i(AES_Res3),
+	.aes_done(aes_done)
 
     );
 
@@ -777,10 +787,10 @@ end
 	 .clk         (clk),
 	 .nrst        (nrst),
 	 .start       (),
-	 .key_addr    (AES_key_addr),
-	 .plaintext   ({AES_D3,AES_D2,AES_D1,AES_D0}),
-	 .result      (),
-	 .done        ()
+	 .key_addr    (AES_key_addr[4:0]),
+	 .plaintext   ({AES_D3, AES_D2, AES_D1, AES_D0}),
+	 .result      ({AES_Res3, AES_Res2, AES_Res1, AES_Res0}),
+	 .done        (aes_done)
 	);
 
 logic[31:0] pc6Tmp;

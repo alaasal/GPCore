@@ -9,8 +9,8 @@
 `define TEST_RET        4'b0101
 `define FP_RET          4'b1000
 `define IFILL_RET       4'b0001
-`define	EVICT_REQ	4'b0011
-`define	ERR_RET		4'b1100
+`define	EVICT_REQ	      4'b0011
+`define	ERR_RET		       4'b1100
 `define STRLOAD_RET     4'b0010
 `define STRST_ACK       4'b0110
 `define FWD_RQ_RET      4'b1010
