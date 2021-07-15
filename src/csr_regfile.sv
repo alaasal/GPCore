@@ -292,9 +292,9 @@ module csr_regfile(
         		26'b00000101000011000100000000
     			};
 		`CSR_MVENDORID:		csr_data = '0;
-		`CSR_MARCHID:		csr_data = '0;
-		`CSR_MIMPID:		csr_data = '0;
-		`CSR_MHARTID:		csr_data = '0;
+		`CSR_MARCHID:    csr_data = '0;
+		`CSR_MIMPID:     csr_data = '0;
+		`CSR_MHARTID:    csr_data = '0;
 
 		`CSR_MSTATUS:		csr_data = mstatus;		// mstatus = sstatus
 		`CSR_MIP:		csr_data = mip;
@@ -376,7 +376,7 @@ module csr_regfile(
     status_mie,			// Global interrupt-enable (Machine mode) -- interrupts disabled upon entry
     1'b0,
     status_sie,			// Global interrupt-enable (Supervisor mode) -- interrupts disabled upon entry
-    status_uie
+    status_uie    // Global interrupt-enable (User mode) -- interrupts disabled upon entry
 	};
 
 	// For user mode we need to add to mstatus (MPRV ),
