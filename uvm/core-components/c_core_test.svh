@@ -5,23 +5,20 @@ class core_test extends uvm_test;
    
     
     function new(string name, uvm_component parent);
-      super.new(name, parent);
+        super.new(name, parent);
     endfunction
     
     function void build_phase(uvm_phase phase);
-      core_env_h = core_env::type_id::create("core_env_h", this);
-     
+        core_env_h = core_env::type_id::create("core_env_h", this);
     endfunction
     
     task run_phase(uvm_phase phase);
-      phase.raise_objection(this);
+        phase.raise_objection(this);
 
-     //what TODO??
+        //what TODO??
 
 
-      phase.drop_objection(this);
-      
+        phase.drop_objection(this);
     endtask
       
   endclass: core_test
-

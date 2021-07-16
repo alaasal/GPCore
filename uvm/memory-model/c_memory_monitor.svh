@@ -2,7 +2,6 @@ class memory_monitor extends uvm_monitor;
     `uvm_component_utils(memory_monitor)
 
     uvm_analysis_port #(memory_transaction) monitor_analysis_port;
-    uvm_analysis_imp #(memory_transaction , memory_monitor) monitor_import_port;
 
     uvm_get_port #(memory_transaction) monitor_port;
     uvm_get_port #(memory_transaction) monitor_read_respopnse_port;

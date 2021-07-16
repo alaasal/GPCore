@@ -3,7 +3,7 @@ class memory_write extends uvm_driver #(memory_transaction);
 
     protected t_memory_op_type memory_write_op = WRITE;
     memory memory_h;
-    uvm_get_port #(memory_transaction)memory_write_request_port;//////////////////////////////
+    uvm_get_port #(memory_transaction)memory_write_port;
 
     function new(string name, uvm_component parent);
         super.new(name, parent);

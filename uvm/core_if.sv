@@ -43,6 +43,7 @@ interface core_if;
     );
 
     assign l15_transducer_ack = transducer_l15_val;
+    assign external_interrupt = 0;
     
     always #10 clk = ~clk;
 

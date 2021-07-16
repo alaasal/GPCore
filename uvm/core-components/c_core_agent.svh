@@ -32,7 +32,6 @@ class core_agent extends uvm_agent;
 
         core_request_h.memory_read_request_port.connect(core_to_memory_read_port);
         core_request_h.memory_write_request_port.connect(core_to_memory_write_port);
-        //core_agent_h.core_monitor_h.monitor_analysis_port.connect(memory_agent.memory_agent_h.monitor_import_port);
     endfunction : connect_phase
 
 endclass : core_agent 
