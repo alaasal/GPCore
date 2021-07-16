@@ -105,6 +105,8 @@ module exe_stage(
 	input logic ecall4, ebreak4,
 	input logic illegal_instr4,
 	input logic mret4, sret4, uret4,
+  // aes inst.
+  input logic aes_inst4,
 
 	input logic m_timer,s_timer, u_timer,
 
@@ -167,7 +169,9 @@ module exe_stage(
 	output logic exception_pending,
 	output logic mret6, sret6, uret6,
 
-	output logic m_interrupt, s_interrupt, u_interrupt
+	output logic m_interrupt, s_interrupt, u_interrupt,
+	// aes start signal
+	output logic start_aes
     );
 
 
@@ -229,6 +233,8 @@ module exe_stage(
 	logic illegal_instrReg5;
 	logic mretReg5, sretReg5, uretReg5;
 	logic illegal_csr;
+	// aes inst.
+	logic aes_instReg5;
 
 	always_ff @(posedge clk, negedge nrst)
 	begin
@@ -275,7 +281,7 @@ module exe_stage(
 		        mretReg5	<= 0;
 		        sretReg5	<= 0;
 		        uretReg5	<= 0;
-
+            aes_instReg5 <= 0;
           end
           
         else if (exception)
@@ -321,6 +327,7 @@ module exe_stage(
 		        mretReg5	<= 0;
 		        sretReg5	<= 0;
 		        uretReg5	<= 0;
+		        aes_instReg5 <= 0;
           end
           
         else
@@ -371,6 +378,7 @@ module exe_stage(
 		mretReg5	<= mret4;
 		sretReg5	<= sret4;
 		uretReg5	<= uret4;
+		aes_instReg5 <= aes_inst4;
 end
 end
 
@@ -422,6 +430,8 @@ end
 	logic illegal_csrReg6;
 	//logic exception;
 	logic mretReg6, sretReg6, uretReg6;
+	// aes inst.
+	logic aes_instReg6;
 
 	always @(posedge clk, negedge nrst)
 	begin
@@ -447,6 +457,7 @@ end
 		mretReg6		<= 0;
 		sretReg6		<= 0;
 		uretReg6		<= 0;
+		aes_instReg6 <= 0;
 	  end
 	else
 	  begin
@@ -476,7 +487,7 @@ end
 		mretReg6	<= 0;
 		sretReg6	<= 0;
 		uretReg6	<= 0;
-
+    aes_instReg6 <= 0;
 	   end
 		else begin
 
@@ -504,7 +515,7 @@ end
 		    mretReg6	<= mretReg5;
 		    sretReg6	<= sretReg5;
 		    uretReg6	<= uretReg5;
-		    
+		    aes_instReg6 <= aes_instReg5;
 		    end
 	  end
 	end
@@ -573,9 +584,16 @@ end
 	.res		(mul_div5)
 	);
 	
-	
 	// =============================================== //
-	//		  Exception Logic		   //
+	//                AES START SIGNAL                 //
+	// =============================================== //
+	
+	// this signal should start the aes ip enc.
+	// and stall the processor untill the aes operation is done
+	assign start_aes = aes_instReg6;
+	 
+	// =============================================== //
+	//		              Exception Logic		                //
 	// =============================================== //
 
 	logic [31:0] cause            ;

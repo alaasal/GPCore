@@ -543,9 +543,9 @@ always_ff @(posedge clk, negedge nrst) begin
 		uscratch		<= 0;
 		uepc			<= 0;
 		utval			<= 0;
-        	mtimecmp                <= 0;
-        	stimecmp                <= 0;
-       		utimecmp                <= 0;
+   	mtimecmp                <= 0;
+    stimecmp                <= 0;
+    utimecmp                <= 0;
 
   // Custom CSRs for the Crypto-IP (reset)
   AES_D0       <= '0;

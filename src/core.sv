@@ -112,7 +112,8 @@ logic illegal_flag;
 // AES IP wire
 logic [31:0] AES_D0, AES_D1, AES_D2, AES_D3, AES_key_addr;
 logic [31:0] AES_Res0, AES_Res1, AES_Res2, AES_Res3;
-logic aes_done;
+logic aes_inst3, aes_inst4;
+logic start_aes, aes_done;
 
 // additional wires
 logic jr3;
@@ -455,7 +456,9 @@ end
 	.mret3		(mret3),
 	.sret3		(sret3),
 	.uret3		(uret3),
-	.csr_we3  	(csr_we3)
+	.csr_we3  	(csr_we3),
+	// aes inst.
+	.aes_inst3 (aes_inst3)
 	);
 
 	// =============================================== //
@@ -529,6 +532,8 @@ end
 	.mret3		(mret3),
 	.sret3		(sret3),
 	.uret3		(uret3),
+	
+	.aes_inst3 (aes_inst3),
 
 	// Outputs
 	.op_a         (opa),
@@ -614,7 +619,9 @@ end
 	.AES_Res1_i(AES_Res1),
 	.AES_Res2_i(AES_Res2),
 	.AES_Res3_i(AES_Res3),
-	.aes_done(aes_done)
+	.aes_done(aes_done),
+	
+	.aes_inst4(aes_inst4)
 
     );
 
@@ -673,6 +680,8 @@ end
 	.uret4		(uret4),
 	.external_interrupt(external_interrupt),
 	//.excep6(exception_pending),
+	
+	.aes_inst4(aes_inst4),
 
 	// Outputs
 	.rd6          		(rd6),
@@ -738,7 +747,8 @@ end
   	.u_timer(u_timer),
   	.u_eie(u_eie),
 	.u_tie(u_tie),
-	.u_sie(u_sie)
+	.u_sie(u_sie),
+	.start_aes(start_aes)
 	);
 
 	// =============================================== //
@@ -786,7 +796,7 @@ end
 	top_aes aes(
 	 .clk         (clk),
 	 .nrst        (nrst),
-	 .start       (),
+	 .start       (start_aes),
 	 .key_addr    (AES_key_addr[4:0]),
 	 .plaintext   ({AES_D3, AES_D2, AES_D1, AES_D0}),
 	 .result      ({AES_Res3, AES_Res2, AES_Res1, AES_Res0}),

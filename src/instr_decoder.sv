@@ -48,6 +48,9 @@ module instr_decoder(
 	output logic [1:0] pcselect,
 
 	output logic ecall, ebreak, uret, sret, mret, illegal_instr,
+	
+	// aes custom instruction
+	output logic aes_inst,
 
 	// Write back csr_regfile Enable
 	output logic csr_we
@@ -137,8 +140,11 @@ module instr_decoder(
 	
 	assign illegal_instruction = !(rtype || itype || btype || jtype || jrtype || ltype || stype || utype || autype || system) & illegal_flag;
 
-    assign illegal_sret = system & (~|funct3) &  (~funct7[4]) & funct7[3] & funct12[1] & TSR;
-    assign illegal_instr = illegal_instruction || illegal_sret || illegal_ret;
+  assign illegal_sret = system & (~|funct3) &  (~funct7[4]) & funct7[3] & funct12[1] & TSR;
+  assign illegal_instr = illegal_instruction || illegal_sret || illegal_ret;
+  
+  // aes custom inst. decodeing
+  assign aes_inst = ~op[6] & ~op[5] & ~op[4] & op[3] & ~op[2] & op[1] & op[0];  //0001011 SYSTEM
   
 	// rtype op								  // instr[30] funct3
 	assign i_add  = rtype & ~instr_30 & ~(|funct3);				  //   	0	000

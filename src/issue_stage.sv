@@ -45,6 +45,8 @@ module issue_stage (
 	input logic [31:0] csr_imm3,
 	// write back csr_regfile enable
 	input logic csr_we3,
+	// aes inst.
+	input logic aes_inst3,
 
 	// exceptions
 	input logic instruction_addr_misaligned3,
@@ -114,6 +116,8 @@ module issue_stage (
 	output logic [31:0] csr_imm4,
 	// write back csr_regfile enable
 	output logic csr_we4,
+	// aes inst.
+	output logic aes_inst4,
 	
   // from csr_regfile to decode stage
   output logic TSR,
@@ -179,6 +183,8 @@ module issue_stage (
 	logic [31:0]csr_immReg4;
 	logic [11:0] csr_addrReg4;
 	logic csr_weReg4;
+	// aes inst.
+	logic aes_instReg4;
 
 	// Scoreboard Regs
 
@@ -266,6 +272,7 @@ logic mretReg4, sretReg4, uretReg4;
 		mretReg4	<= 0;
 		sretReg4	<= 0;
 		uretReg4	<= 0;
+		aes_instReg4 <= 0;
           end
         else
           begin
@@ -300,6 +307,7 @@ logic mretReg4, sretReg4, uretReg4;
 		mretReg4	<= mret3;
 		sretReg4	<= sret3;
 		uretReg4	<= uret3;
+		aes_instReg4 <= aes_inst3;
 
 		pcReg4		<= pc3;
 
@@ -340,6 +348,7 @@ logic mretReg4, sretReg4, uretReg4;
 		mretReg4	<= 0;
 		sretReg4	<= 0;
 		uretReg4	<= 0;
+		aes_instReg4 <= 0;
 		end
 		else if(kill) begin
 		  shamtReg4 	<= 0;
@@ -375,6 +384,7 @@ logic mretReg4, sretReg4, uretReg4;
 		mretReg4	<= 0;
 		sretReg4	<= 0;
 		uretReg4	<= 0;
+		aes_instReg4 <= 0;
 		end
 		else if ( killnum[1] && !killnum[0])begin
 		killnum		<=killnum+1;
@@ -412,6 +422,7 @@ logic mretReg4, sretReg4, uretReg4;
 		sretReg4	<= 0;
 		uretReg4	<= 0;
 		///////////////
+		aes_instReg4 <= 0;
 		end
 
 		else if (stall_mem ||  ( arb_eqmem && ~memOp_done ) )
@@ -461,6 +472,7 @@ logic mretReg4, sretReg4, uretReg4;
 		sretReg4	<= sretReg4;
 		uretReg4	<= uretReg4;
 		//////////////////////////////
+		aes_instReg4 <= aes_instReg4;
 
 		end
 		else
@@ -485,6 +497,7 @@ logic mretReg4, sretReg4, uretReg4;
 		mretReg4	<= mret3;
 		sretReg4	<= sret3;
 		uretReg4	<= uret3;
+		aes_instReg4 <= aes_inst3;
 		end
 
         end
@@ -630,6 +643,7 @@ logic mretReg4, sretReg4, uretReg4;
 	assign mret4		= mretReg4;
 	assign sret4		= sretReg4;
 	assign uret4		= uretReg4;
+	assign aes_inst4 = aes_instReg4;
 	// Piped Signals ended
 
 endmodule

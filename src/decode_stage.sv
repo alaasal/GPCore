@@ -71,7 +71,9 @@ module instdec_stage(
 	// return instructions
 	output logic mret3, sret3, uret3,
 	// Write back csr_regfile Enable
-	output logic csr_we3
+	output logic csr_we3,
+	// aes inst.
+	output logic aes_inst3
     );
 
 	// Wires
@@ -186,6 +188,7 @@ module instdec_stage(
 	.sret        (sret3),
 	.mret        (mret3),
 	.illegal_instr(illegal_instr3),
+	.aes_inst   (aes_inst3),
 	.csr_we(csr_we3)
     );
 
