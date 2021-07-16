@@ -2,6 +2,7 @@ class memory_agent_config;
     //protected uvm_active_passive_enum is_active;
     protected memory memory_h;    //should this be passed to agent?
                         //should it be created in the agent? Nada: yes, Fri 5/8/2021,12:01 am
+    string test_name; //something like "arithmetic_test.hex"
 
     /*function new ( uvm_active_passive_enum is_active);
         this.is_active = is_active; 

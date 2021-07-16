@@ -32,6 +32,8 @@ class memory_agent extends uvm_agent;
         //is_active = memory_agent_config_h.get_is_active();
         
         memory_h = memory::type_id::create("memory_h", this);
+        memory_h.initialize(memory_agent_config_h.test_name);
+
         memory_agent_config_h.set_mem_handle(memory_h);
         
         memory_read_h    = memory_read::type_id::create("memory_read_h", this);

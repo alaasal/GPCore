@@ -18,7 +18,7 @@ interface core_if;
 	bit   [31:0] l15_transducer_returntype;
 	bit          transducer_l15_req_ack;
 
-    bit          external_interrupt
+    bit          external_interrupt;
 
     modport c_if(
         input  clk, nrst,
