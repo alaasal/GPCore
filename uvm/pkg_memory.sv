@@ -1,6 +1,6 @@
 package pkg_memory;
-    //import uvm_pkg::*;
-    //`include"uvm_macros.svh"
+    import uvm_pkg::*;
+    `include"uvm_macros.svh"
   
     parameter XLEN       = 32;
     parameter BYTE_COUNT = XLEN / 8; //byte count

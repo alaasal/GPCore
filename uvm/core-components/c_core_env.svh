@@ -4,9 +4,9 @@ class core_env extends uvm_env;
     core_agent    core_agent_h;
     memory_agent  memory_agent_h;
 
-    uvm_tlm_fifo #(transaction) read_response_fifo;
-    uvm_tlm_fifo #(transaction) read_request_fifo;
-    uvm_tlm_fifo #(transaction) write_request_fifo;
+    uvm_tlm_fifo #(memory_transaction) read_response_fifo;
+    uvm_tlm_fifo #(memory_transaction) read_request_fifo;
+    uvm_tlm_fifo #(memory_transaction) write_request_fifo;
 
 
     function new (string name, uvm_component parent);
@@ -30,10 +30,10 @@ class core_env extends uvm_env;
 		memory_agent_h.memory_read_response_port.connect(read_response_fifo.put_export());
 		core_agent_h.memory_to_core_response_port.connect(read_response_fifo.get_export());
 
-		core_agent_h.core_to_memory_read_port.connect(read_response_fifo.put_export());
+		core_agent_h.core_to_memory_read_port.connect(read_request_fifo.put_export());
 		memory_agent_h.memory_request_to_read_port.connect(read_request_fifo.get_export());
 
-		core_agent_h.core_to_memory_write_port.connect(write_response_fifo.put_export());
+		core_agent_h.core_to_memory_write_port.connect(write_request_fifo.put_export());
 		memory_agent_h.memory_request_to_write_port.connect(write_request_fifo.get_export());
     endfunction: connect_phase
 endclass : core_env

@@ -15,12 +15,12 @@ class memory extends uvm_object;
     endfunction
 
     function void dump(string path);
-        int file, size;
+        int file, size, status;
         pkg_memory::t_mem_addr index;
 
         file  = $fopen(path, "w");
         size  = mem.size();
-        mem.first(index);
+        status = mem.first(index);
 
         $fdisplay(file, "address, data");
         for (int i = 0; i < size; i++) begin
@@ -65,7 +65,7 @@ class memory extends uvm_object;
 
     function pkg_memory::t_mem_data read(pkg_memory::t_mem_addr addr);
         pkg_memory::t_mem_data data;
-        data = mem[data];
+        data = mem[addr];
 
         `uvm_info("memroy",$sformatf("Read word  : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_LOW)
         return data;

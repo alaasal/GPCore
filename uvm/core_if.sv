@@ -1,3 +1,20 @@
+import pkg_memory::*;
+// Requests
+`define	LOAD_RQ		4'b0000
+`define	STORE_RQ	4'b0001
+
+// Responds
+`define LOAD_RET    4'b0000
+`define ST_ACK      4'b0100
+`define INT_RET     4'b0111
+
+//Message size
+`define MSG_DATA_SIZE_WIDTH     3
+`define MSG_DATA_SIZE_0B        3'b000
+`define MSG_DATA_SIZE_1B        3'b001
+`define MSG_DATA_SIZE_2B        3'b010
+`define MSG_DATA_SIZE_4B        3'b011
+
 interface core_if;
     bit clk;
     bit nrst;
@@ -48,12 +65,12 @@ interface core_if;
     always #10 clk = ~clk;
 
     initial begin
-        rst = 0;
+        nrst = 0;
         l15_transducer_val			<= 0;
 		l15_transducer_header_ack 	<= 0;
         @(posedge clk);
         @(posedge clk);
-        rst = 1;
+        nrst = 1;
         l15_transducer_val			<= 1;
 		l15_transducer_header_ack 	<= 0;
 		l15_transducer_returntype	<= 4'b0111;
@@ -71,19 +88,26 @@ interface core_if;
     task put(t_transaction memory_struct);
         @(negedge clk)
         if(memory_struct.op_type == READ) begin
-            l15_transducer_ack        = 1;  // response from openpiton to the core
+          //  l15_transducer_ack        = 1;  // response from openpiton to the core
 	        l15_transducer_header_ack = 1; // acknowledge that a request is sent
 
             l15_transducer_val    = 1;
-	        {l15_transducer_data_1, l15_transducer_data_0} = memory_struct.data;
+        
+        case(memory_struct.address[3:2])
+            2'b00: l15_transducer_data_0[63:32] = memory_struct.data;
+            2'b01: l15_transducer_data_0[31:0]  = memory_struct.data;
+            2'b10: l15_transducer_data_1[63:32] = memory_struct.data;
+            2'b11: l15_transducer_data_1[31:0]  = memory_struct.data;
+        endcase
+	       // {l15_transducer_data_1, l15_transducer_data_0} = memory_struct.data;
 	        l15_transducer_returntype = `LOAD_RET;
         end
         @(posedge clk);
     endtask : put
 
-    function memory_transaction get();
-        memory_transaction memory_transaction_h;
-        memory_transaction_h = memory_transaction::type_id::create("memory_transaction_h", this);
+    function void get ( memory_transaction memory_transaction_h);
+       t_transaction transaction;
+        
         case(vif.transducer_l15_rqtype)
             `STORE_RQ: tansaction.op_type = WRITE;
             `LOAD_RQ: transaction.op_type = READ;
@@ -102,7 +126,7 @@ interface core_if;
         end
 
         memory_transaction_h.set_transaction(transaction);
-        return memory_transaction_h;
-    endfunction : get
+
+    endfunction 
 
 endinterface : core_if

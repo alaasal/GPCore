@@ -49,6 +49,8 @@ interface reg_if;
     logic [63:0] utimecmp;
 
     logic [31:0] reg_file [31:0];
+
+    logic [31:0] pc;
     
     function string convert2string();
         string s;
@@ -74,4 +76,4 @@ interface reg_if;
         return {s4, s, s2, s3, s4};
     endfunction : convert2string
  
-endinterface : csr_if
+endinterface : reg_if

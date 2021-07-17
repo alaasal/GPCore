@@ -1,4 +1,4 @@
-class memory_agent_config;
+class core_agent_config;
     virtual core_if vif;
     virtual reg_if reg_vif;
 
@@ -7,8 +7,8 @@ class memory_agent_config;
         this.reg_vif = reg_vif; 
     endfunction : set_interface
 
-    function new(virtual core_if vif, , virtual reg_if reg_vif);
+    function new(virtual core_if vif,  virtual reg_if reg_vif);
         set_interface(vif, reg_vif);
     endfunction : new
     
-endclass : memory_agent_config
+endclass : core_agent_config

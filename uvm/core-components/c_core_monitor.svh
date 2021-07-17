@@ -1,5 +1,5 @@
 class core_monitor extends uvm_monitor;
-    `uvm_components_utils(core_monitor)
+    `uvm_component_utils(core_monitor)
 
     uvm_analysis_port #(memory_transaction) monitor_analysis_port;
 
@@ -24,23 +24,23 @@ class core_monitor extends uvm_monitor;
         monitor_analysis_port = new("monitor_analysis_port", this);
 
         vif     = core_agent_config_h.vif;
-        reg_vif = core_agent_config_h.reg_vif
+        reg_vif = core_agent_config_h.reg_vif;
     endfunction : build_phase 
-
+    
+        string s1 = "r0, r1, r1, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15,16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31";
+        string s2 = "mstatus, mip, mie, mtvec, mepc, mcause, mtval, mscratch, medeleg, midleg, mtimecmp, mtime";
+        string s3 = "sstatus, sip, sie, stvec, sepc, scause, stval, sscratch, sedeleg, sidleg, stimecmp";
+        string s4 = "ustatus, uip, uie, utvec, uepc, ucause, utval, uscratch, utimecmp";
     task run_phase(uvm_phase phase);
         memory_transaction_h = memory_transaction::type_id::create("memory_transaction_h", this);
         
         file = $fopen("reg_dump.log", "w");
         
-        string s1 = "r0, r1, r1, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15,
-                16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31";
-        string s2 = "mstatus, mip, mie, mtvec, mepc, mcause, mtval, mscratch, medeleg, midleg, mtimecmp, mtime";
-        string s3 = "sstatus, sip, sie, stvec, sepc, scause, stval, sscratch, sedeleg, sidleg, stimecmp";
-        string s4 = "ustatus, uip, uie, utvec, uepc, ucause, utval, uscratch, utimecmp";
+        
         $fdisplay(file, {s1, s2, s3, s4, "\n"});
         
         forever begin
-            @posedge(vif.clk);
+            @(posedge vif.clk);
             
             #1;
             wrap_transaction();
@@ -51,14 +51,17 @@ class core_monitor extends uvm_monitor;
             end
 
             //ADD logic to check instruction execution
+            @(reg_vif.pc);
+            if (reg_vif.pc != 0)
             $fdisplay(file, reg_vif.convert2string());
+
         end
 
     endtask : run_phase
 
-    function wrap_transaction();
+    function void wrap_transaction();
         case(vif.transducer_l15_rqtype)
-            `STORE_RQ: tansaction.op_type = WRITE;
+            `STORE_RQ: transaction.op_type = WRITE;
             `LOAD_RQ: transaction.op_type = READ;
             default: transaction.op_type = NOOP;
         endcase
