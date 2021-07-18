@@ -108,21 +108,21 @@ interface core_if;
     function void get ( memory_transaction memory_transaction_h);
        t_transaction transaction;
         
-        case(vif.transducer_l15_rqtype)
-            `STORE_RQ: tansaction.op_type = WRITE;
+        case(transducer_l15_rqtype)
+            `STORE_RQ: transaction.op_type = WRITE;
             `LOAD_RQ: transaction.op_type = READ;
             default: transaction.op_type  = NOOP;
         endcase
 
         if(transaction.op_type != NOOP) begin
-            case(vif.transducer_l15_size)
+            case(transducer_l15_size)
                 `MSG_DATA_SIZE_1B: transaction.op_size = BYTE;
                 `MSG_DATA_SIZE_2B: transaction.op_size = HALF;
                 `MSG_DATA_SIZE_4B: transaction.op_size = FULL;
             endcase
 
-            transaction.address = vif.transducer_l15_address;
-            transaction.data = vif.transducer_l15_data;
+            transaction.address = transducer_l15_address;
+            transaction.data    = transducer_l15_data;
         end
 
         memory_transaction_h.set_transaction(transaction);

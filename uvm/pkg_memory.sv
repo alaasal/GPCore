@@ -33,6 +33,6 @@ package pkg_memory;
     //`include"memory-model/c_memory_write_monitor.svh"
     //`include"memory-model/c_memory_read_monitor.svh"
     `include"memory-model/c_memory_agent.svh"
-    `include"memory-model/c_memory_test.svh"
+    //`include"memory-model/c_memory_test.svh"
     
 endpackage : pkg_memory

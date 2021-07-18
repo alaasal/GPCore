@@ -1,5 +1,3 @@
-`timescale 1ns/1ns
-
 module core(
 	input logic clk, nrst,
 

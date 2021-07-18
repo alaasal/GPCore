@@ -26,7 +26,7 @@ class core_driver extends uvm_driver #(memory_transaction);
         t_transaction memory_read_struct;
 
         forever begin
-            core_read_response_port.get(memory_read_transaction_h);
+            memory_read_response_port.get(memory_read_transaction_h);
             memory_read_struct = memory_read_transaction_h.get_transaction(memory_read_op);
             vif.put(memory_read_struct); //TODO: Implement put task        
         end

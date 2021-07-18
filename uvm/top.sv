@@ -6,6 +6,7 @@ import uvm_pkg::*;
 `define END 32'h400001A0
 
 module top ();
+    timeunit 1ns;
 
     core_if core_vif();
     reg_if  reg_vif();
@@ -31,13 +32,17 @@ module top ();
     );
 	
     initial begin
-        memory_agent_config memory_agent_config_h = new();
-        core_agent_config   core_agent_config_h   = new(core_vif,reg_vif);
+        memory_agent_config memory_agent_config_h;
+        core_agent_config   core_agent_config_h;
+
+        memory_agent_config_h = new();
+        core_agent_config_h   = new(core_vif,reg_vif);
+
         uvm_config_db #(memory_agent_config)::set(uvm_top,"", "memory_config", memory_agent_config_h);
         uvm_config_db #(core_agent_config)::set(uvm_top ,"", "core_config",core_agent_config_h);
 
 
-        run_test("memory_test");
+        run_test("core_test");
     end
     
     initial begin
@@ -51,8 +56,8 @@ module top ();
             reg_vif.mcause     =   dut.issue.csr_registers.mcause;
             reg_vif.mtval      =   dut.issue.csr_registers.mtval;
             reg_vif.mscratch   =   dut.issue.csr_registers.mscratch;
-            reg_vif.medeleg    =   dut.issue.csr_registers.medeleg;
-            reg_vif.midleg     =   dut.issue.csr_registers.midleg;
+            reg_vif.medeleg    =   dut.issue.csr_registers.medeleg_w;
+            reg_vif.mideleg    =   dut.issue.csr_registers.mideleg_w;
             reg_vif.mtimecmp   =   dut.issue.csr_registers.mtimecmp;
             reg_vif.mtime      =   dut.issue.csr_registers.mtime;
             //Supervisor mode
@@ -64,8 +69,8 @@ module top ();
             reg_vif.scause     =   dut.issue.csr_registers.scause;
             reg_vif.stval      =   dut.issue.csr_registers.stval;
             reg_vif.sscratch   =   dut.issue.csr_registers.sscratch;
-            reg_vif.sedeleg    =   dut.issue.csr_registers.sedeleg;
-            reg_vif.sidleg     =   dut.issue.csr_registers.sidleg;
+            reg_vif.sedeleg    =   dut.issue.csr_registers.sedeleg_w;
+            reg_vif.sideleg    =   dut.issue.csr_registers.sideleg_w;
             reg_vif.stimecmp   =   dut.issue.csr_registers.stimecmp;
             //User mod
             reg_vif.ustatus    =   dut.issue.csr_registers.ustatus;
@@ -81,7 +86,7 @@ module top ();
             foreach(reg_vif.reg_file[i]) begin
                 reg_vif.reg_file[i] = dut.issue.reg1.register[i];
             end
-            reg_vif.pc = dut.exe_stage.pcReg5;
+            reg_vif.pc = dut.execute.pcReg5;
 
         end
     end

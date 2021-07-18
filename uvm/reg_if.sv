@@ -12,7 +12,7 @@ interface reg_if;
     logic [31:0] mscratch;
 
     logic [31:0] medeleg;
-    logic [31:0] midleg;
+    logic [31:0] mideleg;
 
     logic [63:0] mtimecmp;
     logic [63:0] mtime;
@@ -58,17 +58,17 @@ interface reg_if;
         string s3;
         string s4;
         s4 = "";
-        s = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h\n",
-            mstatus, mip, mie, mtvec, mepc, mcause, mtval, mscratch, medeleg, midleg, mtimecmp, mtime);
+        s = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h \n",
+            mstatus, mip, mie, mtvec, mepc, mcause, mtval, mscratch, medeleg, mideleg, mtimecmp, mtime);
     
-        s2 = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h\n",
-            sstatus, sip, sie, stvec, sepc, scause, stval, sscratch, sedeleg, sidleg, stimecmp);
+        s2 = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h \n",
+            sstatus, sip, sie, stvec, sepc, scause, stval, sscratch, sedeleg, sideleg, stimecmp);
 
-        s3 = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h \n",
+        s3 = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h \n",
             ustatus, uip, uie, utvec, uepc, ucause, utval, uscratch, utimecmp);
 
         foreach(reg_file[i]) begin
-            s4 = {s4, $sformat("%h", reg_file[i])};
+            s4 = {s4, $sformatf("%h", reg_file[i])};
         end
 
         s4 = {s4, "\n"};
