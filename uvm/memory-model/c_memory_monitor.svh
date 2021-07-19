@@ -16,6 +16,7 @@ class memory_monitor extends uvm_monitor;
     endfunction : new
 
     function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
         if(!uvm_config_db #(memory_agent_config)::get(this, "", "memory_config", memory_agent_config_h))
             `uvm_fatal("MEMORY_MONITOR", "Failed to get configuration object");
 
@@ -32,12 +33,12 @@ class memory_monitor extends uvm_monitor;
         memory_transaction memory_transaction_h;
 
         forever begin
-            //$display("Monitor");
+            $display("Monitor");
             monitor_port.get(memory_transaction_h);
-            //$display("Monitor1");
+            $display("Monitor1");
             if(memory_transaction_h.get_op_type() == READ)
                 monitor_read_respopnse_port.get(memory_transaction_h);
-            //$display("Monitor2");
+            $display("Monitor2");
             //$display(memory_transaction_h.convert2string());
             `uvm_info("MEMORY_MONITOR",memory_transaction_h.convert2string(), UVM_LOW)
             $fdisplay(file, memory_transaction_h.convert2string());
@@ -49,7 +50,7 @@ class memory_monitor extends uvm_monitor;
     function void extract_phase(uvm_phase phase);
         super.extract_phase(phase);
         $fclose(file);
-        memory_h.dump("memory_contents.dump");
+        memory_h.dump("memory_contents.csv");
     endfunction: extract_phase
     
 endclass : memory_monitor

@@ -27,6 +27,7 @@ class memory_agent extends uvm_agent;
     endfunction : new
 
     function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
         if(!uvm_config_db #(memory_agent_config)::get(this, "", "memory_config", memory_agent_config_h))
             `uvm_fatal("MEMORY_AGENT", "Failed to get configuration object");
         
@@ -54,6 +55,7 @@ class memory_agent extends uvm_agent;
     endfunction : build_phase
 
     function void connect_phase(uvm_phase phase);
+        super.connect_phase(phase);
         /*
         memory_read_h.memory_read_request_port.connect(memory_request_to_read_port); // recieves request from core
         memory_read_h.memory_read_response_port.connect(memory_read_response_port); // retirns data to core 

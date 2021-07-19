@@ -32,8 +32,7 @@ class core_test extends uvm_test;
     
     task run_phase(uvm_phase phase);
         phase.raise_objection(this);
-
-        while(reg_vif.pc != `END);
+        #1000;
         phase.drop_objection(this);
 
     endtask

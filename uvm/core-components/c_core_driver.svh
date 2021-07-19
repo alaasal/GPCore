@@ -6,16 +6,17 @@ class core_driver extends uvm_driver #(memory_transaction);
     uvm_get_port #(memory_transaction) memory_read_response_port;
     
     virtual interface core_if vif;
-
+    core_agent_config core_agent_config_h;
+    
     function new(string name, uvm_component parent);
         super.new(name, parent);
     endfunction : new
 
     function void build_phase(uvm_phase phase);
-        core_agent_config core_agent_config_h;
+        super.build_phase(phase);
 
         if(!uvm_config_db #(core_agent_config)::get(this, "", "core_config", core_agent_config_h))
-            `uvm_fatal("CORE_DRIVER", "Failed to get configuration object");
+            `uvm_fatal("CORE_DRIVER", "Failed to get configuration object")
 
         memory_read_response_port = new("memory_read_response_port", this);
         vif = core_agent_config_h.vif;

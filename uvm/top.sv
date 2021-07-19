@@ -11,6 +11,8 @@ module top ();
     core_if core_vif();
     reg_if  reg_vif();
 
+    memory_agent_config memory_agent_config_h;
+    core_agent_config   core_agent_config_h;
    
     core dut(
         .clk                        (core_vif.clk),
@@ -32,19 +34,21 @@ module top ();
     );
 	
     initial begin
-        memory_agent_config memory_agent_config_h;
-        core_agent_config   core_agent_config_h;
+        $display("creating config objects");
 
         memory_agent_config_h = new();
         core_agent_config_h   = new(core_vif,reg_vif);
 
         uvm_config_db #(memory_agent_config)::set(uvm_top,"", "memory_config", memory_agent_config_h);
         uvm_config_db #(core_agent_config)::set(uvm_top ,"", "core_config",core_agent_config_h);
+        $display("Starting test");
 
 
         run_test("core_test");
     end
-    
+    //TODO: Top Priority
+    //find a place for these assignments 
+    /*
     initial begin
         forever begin
             //Machine mode
@@ -90,5 +94,6 @@ module top ();
 
         end
     end
+    */
   
 endmodule

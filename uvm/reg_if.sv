@@ -53,27 +53,27 @@ interface reg_if;
     logic [31:0] pc;
     
     function string convert2string();
+        string s0;
         string s;
         string s2;
         string s3;
         string s4;
         s4 = "";
-        s = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h \n",
+        s0 = $sformatf("%h", pc);
+        s = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h",
             mstatus, mip, mie, mtvec, mepc, mcause, mtval, mscratch, medeleg, mideleg, mtimecmp, mtime);
     
-        s2 = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h \n",
+        s2 = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h",
             sstatus, sip, sie, stvec, sepc, scause, stval, sscratch, sedeleg, sideleg, stimecmp);
 
-        s3 = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h \n",
+        s3 = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h",
             ustatus, uip, uie, utvec, uepc, ucause, utval, uscratch, utimecmp);
 
         foreach(reg_file[i]) begin
             s4 = {s4, $sformatf("%h", reg_file[i])};
         end
 
-        s4 = {s4, "\n"};
-
-        return {s4, s, s2, s3, s4};
+        return {s0, s4, s, s2, s3, s4};
     endfunction : convert2string
  
 endinterface : reg_if

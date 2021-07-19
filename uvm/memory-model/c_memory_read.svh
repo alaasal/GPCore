@@ -7,12 +7,15 @@ class memory_read extends uvm_driver #(memory_transaction);
     uvm_put_port #(memory_transaction) memory_read_response_port;
     uvm_put_port #(memory_transaction) monitor_read_respopnse_port;
 
+    memory_agent_config memory_agent_config_h;
+    
     function new(string name, uvm_component parent);
         super.new(name, parent);
     endfunction : new
 
     function void build_phase(uvm_phase phase);
-        memory_agent_config memory_agent_config_h;
+        super.build_phase(phase);
+        
 
         if(!uvm_config_db #(memory_agent_config)::get(this, "", "memory_config", memory_agent_config_h))
             `uvm_fatal("MEMORY_READ_DRIVER", "Failed to get configuration object");

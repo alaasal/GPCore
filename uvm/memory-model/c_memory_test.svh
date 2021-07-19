@@ -26,6 +26,7 @@ class memory_test extends uvm_test;
     endfunction : new
     
     function void build_phase (uvm_phase phase);
+        super.build_phase(phase);
         memory_tst_read_response_port = new("memory_tst_read_response_port", this);
         memory_tst_read_request_port  = new("memory_tst_read_request_port", this);
         memory_tst_write_port         = new("memory_tst_write_port", this); 
@@ -46,6 +47,7 @@ class memory_test extends uvm_test;
     endfunction : build_phase
   
     function void connect_phase (uvm_phase phase);
+        super.connect_phase(phase);
         memory_agent_h.memory_request_to_read_port.connect(read_request_fifo.get_export); 
         memory_agent_h.memory_read_response_port.connect(read_response_fifo.put_export); 
         memory_agent_h.memory_request_to_write_port.connect(write_request_fifo.get_export);

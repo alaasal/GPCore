@@ -3,6 +3,7 @@ class core_request extends uvm_driver #(memory_transaction);
 
     uvm_put_port #(memory_transaction) memory_read_request_port;
     uvm_put_port #(memory_transaction) memory_write_request_port;
+    core_agent_config core_agent_config_h;
     
     virtual interface core_if vif;
     
@@ -11,7 +12,7 @@ class core_request extends uvm_driver #(memory_transaction);
     endfunction : new
 
     function void build_phase(uvm_phase phase);
-        core_agent_config core_agent_config_h;
+        super.build_phase(phase);
 
         if(!uvm_config_db #(core_agent_config)::get(this, "", "core_config", core_agent_config_h))
             `uvm_fatal("CORE_Request", "Failed to get configuration object");
