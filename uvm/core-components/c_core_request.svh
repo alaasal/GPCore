@@ -26,10 +26,13 @@ class core_request extends uvm_driver #(memory_transaction);
     task run_phase(uvm_phase phase);
         memory_transaction memory_transaction_h;
         t_transaction memory_read_struct;
-         memory_transaction_h = memory_transaction::type_id::create("memory_transaction_h", this);
+        memory_transaction_h = memory_transaction::type_id::create("memory_transaction_h", this);
+        
         forever begin
-            @(posedge vif.clk);
+            @(negedge vif.clk);
             vif.get(memory_transaction_h); //TODO: Implement get task
+
+            `uvm_info("CORE_REQUEST",memory_transaction_h.convert2string(), UVM_LOW)
             if(memory_transaction_h.get_op_type() == WRITE) begin
                 memory_write_request_port.put(memory_transaction_h);
             end else if(memory_transaction_h.get_op_type() == READ) begin

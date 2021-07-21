@@ -59,57 +59,78 @@ interface core_if;
         input external_interrupt
     );
 
+    bit set_returntype;
+
     assign l15_transducer_ack = transducer_l15_val;
+    assign l15_transducer_header_ack = transducer_l15_val;
+
+    assign l15_transducer_returntype = (set_returntype)? 4'b0111 : (transducer_l15_rqtype == `STORE_RQ) ? `ST_ACK :
+                                        (transducer_l15_rqtype == `LOAD_RQ) ? `LOAD_RET : 0;
+
     assign external_interrupt = 0;
     
     always #10 clk = ~clk;
-
+    
     initial begin
         nrst = 0;
-        l15_transducer_val			<= 0;
-		l15_transducer_header_ack 	<= 0;
+        l15_transducer_val = 0;
         @(posedge clk);
-        @(posedge clk);
+        @(negedge clk);
         nrst = 1;
-        l15_transducer_val			<= 1;
-		l15_transducer_header_ack 	<= 0;
-		l15_transducer_returntype	<= 4'b0111;
-        @(negedge clk);
-        l15_transducer_val			<= 0;
-		l15_transducer_header_ack 	<= 0;
-        @(negedge clk);
-        l15_transducer_header_ack 	<= 1;
+        l15_transducer_val = 1;
+        set_returntype     = 1;
+        @(posedge clk);
+        //l15_transducer_val = 0;
+        set_returntype = 0;
+        
+        /*
+        forever begin 
+            l15_transducer_ack        <= transducer_l15_val;
+            l15_transducer_header_ack <= transducer_l15_val;
 
-        forever begin
-            @(posedge clk);   
+            if (transducer_l15_rqtype == `STORE_RQ) l15_transducer_returntype = `ST_ACK;
+            else if (transducer_l15_rqtype == `LOAD_RQ) l15_transducer_returntype = `LOAD_RET;
+            else l15_transducer_returntype = 0;
         end
+        */
     end
 
     task put(t_transaction memory_struct);
-        @(negedge clk)
-        if(memory_struct.op_type == READ) begin
-          //  l15_transducer_ack        = 1;  // response from openpiton to the core
-	        l15_transducer_header_ack = 1; // acknowledge that a request is sent
+        logic [31:0] data;
 
-            l15_transducer_val    = 1;
-        
+        @(negedge clk);
+        if(memory_struct.op_type == READ) begin
+            //l15_transducer_ack        = 1;  // response from openpiton to the core
+	        //l15_transducer_header_ack = 1; // acknowledge that a request is sent
+        data = memory_struct.data;
+        data = {data[7:0], data[15:8], data[23:16], data[31:24]};
+
         case(memory_struct.address[3:2])
-            2'b00: l15_transducer_data_0[63:32] = memory_struct.data;
-            2'b01: l15_transducer_data_0[31:0]  = memory_struct.data;
-            2'b10: l15_transducer_data_1[63:32] = memory_struct.data;
-            2'b11: l15_transducer_data_1[31:0]  = memory_struct.data;
+            2'b00: l15_transducer_data_0[63:32] = data;
+            2'b01: l15_transducer_data_0[31:0]  = data;
+            2'b10: l15_transducer_data_1[63:32] = data;
+            2'b11: l15_transducer_data_1[31:0]  = data;
         endcase
 	       // {l15_transducer_data_1, l15_transducer_data_0} = memory_struct.data;
-	        l15_transducer_returntype = `LOAD_RET;
+            
+            l15_transducer_val        = 1;
         end
+
         @(posedge clk);
+        #1;
+        if(!transducer_l15_req_ack) $display("Core did not acknowledge");
+        else l15_transducer_val = 0;
     endtask : put
 
-    function void get ( memory_transaction memory_transaction_h);
+    task get( memory_transaction memory_transaction_h);
        t_transaction transaction;
-        
+
+        @(transducer_l15_val);
         case(transducer_l15_rqtype)
-            `STORE_RQ: transaction.op_type = WRITE;
+            `STORE_RQ: begin 
+                transaction.op_type = WRITE;
+                l15_transducer_val  = 1;
+            end
             `LOAD_RQ: transaction.op_type = READ;
             default: transaction.op_type  = NOOP;
         endcase
@@ -118,7 +139,7 @@ interface core_if;
             case(transducer_l15_size)
                 `MSG_DATA_SIZE_1B: transaction.op_size = BYTE;
                 `MSG_DATA_SIZE_2B: transaction.op_size = HALF;
-                `MSG_DATA_SIZE_4B: transaction.op_size = FULL;
+                `MSG_DATA_SIZE_4B, `MSG_DATA_SIZE_0B: transaction.op_size = FULL;
             endcase
 
             transaction.address = transducer_l15_address;
@@ -126,7 +147,6 @@ interface core_if;
         end
 
         memory_transaction_h.set_transaction(transaction);
-
-    endfunction 
+    endtask
 
 endinterface : core_if

@@ -33,7 +33,8 @@ class memory_read extends uvm_driver #(memory_transaction);
         forever begin
             memory_read_request_port.get(memory_read_transaction_h);
             memory_read_struct = memory_read_transaction_h.get_transaction(memory_read_op);
-
+            
+            /*
             case(memory_read_struct.op_size)
                 BYTE: memory_read_struct.data = memory_h.read_byte(memory_read_struct.address);
                 HALF: begin
@@ -41,7 +42,9 @@ class memory_read extends uvm_driver #(memory_transaction);
                     memory_read_struct.data[15:8] = memory_h.read_byte(memory_read_struct.address + 1);
                 end FULL: memory_read_struct.data = memory_h.read(memory_read_struct.address);
             endcase
-            
+            */
+            memory_read_struct.data = memory_h.read(memory_read_struct.address);
+
             memory_read_transaction_h.set_transaction(memory_read_struct);
             monitor_read_respopnse_port.put(memory_read_transaction_h);
             memory_read_response_port.put(memory_read_transaction_h);
