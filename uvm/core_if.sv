@@ -80,7 +80,7 @@ interface core_if;
         l15_transducer_val = 1;
         set_returntype     = 1;
         @(posedge clk);
-        //l15_transducer_val = 0;
+        l15_transducer_val = 0;
         set_returntype = 0;
         
         /*
@@ -112,20 +112,19 @@ interface core_if;
             2'b11: l15_transducer_data_1[31:0]  = data;
         endcase
 	       // {l15_transducer_data_1, l15_transducer_data_0} = memory_struct.data;
-            
+            @(posedge clk);
+            @(posedge clk);
             l15_transducer_val        = 1;
+            if(!transducer_l15_req_ack) $display("Core did not acknowledge");
+            @(posedge clk);
         end
-
-        @(posedge clk);
-        #1;
-        if(!transducer_l15_req_ack) $display("Core did not acknowledge");
-        else l15_transducer_val = 0;
+            l15_transducer_val = 0;
     endtask : put
 
     task get( memory_transaction memory_transaction_h);
        t_transaction transaction;
 
-        @(transducer_l15_val);
+        @(posedge transducer_l15_val);
         case(transducer_l15_rqtype)
             `STORE_RQ: begin 
                 transaction.op_type = WRITE;

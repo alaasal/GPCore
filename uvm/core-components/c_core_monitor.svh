@@ -58,7 +58,7 @@ class core_monitor extends uvm_monitor;
                     //The if statement in line 51 is not true and is the cause 
                     //of the error  
                     monitor_analysis_port.write(memory_transaction_h);
-                    monitor_port.put(memory_transaction_h);
+                    monitor_port.try_put(memory_transaction_h);
                 end 
             end
             //ADD logic to check instruction execution

@@ -29,7 +29,7 @@ class core_request extends uvm_driver #(memory_transaction);
         memory_transaction_h = memory_transaction::type_id::create("memory_transaction_h", this);
         
         forever begin
-            @(negedge vif.clk);
+            @(posedge vif.clk);
             vif.get(memory_transaction_h); //TODO: Implement get task
 
             `uvm_info("CORE_REQUEST",memory_transaction_h.convert2string(), UVM_LOW)

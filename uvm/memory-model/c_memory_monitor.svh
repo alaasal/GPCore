@@ -34,7 +34,7 @@ class memory_monitor extends uvm_monitor;
 
         forever begin
             $display("Monitor");
-            monitor_port.get(memory_transaction_h);
+            monitor_port.try_get(memory_transaction_h);
             $display("Monitor1");
             if(memory_transaction_h.get_op_type() == READ)
                 monitor_read_respopnse_port.get(memory_transaction_h);
