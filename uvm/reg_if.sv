@@ -59,18 +59,18 @@ interface reg_if;
         string s3;
         string s4;
         s4 = "";
-        s0 = $sformatf("%h", pc);
-        s = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h",
+        s0 = $sformatf("%h,", pc);
+        s = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h,",
             mstatus, mip, mie, mtvec, mepc, mcause, mtval, mscratch, medeleg, mideleg, mtimecmp, mtime);
     
-        s2 = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h",
+        s2 = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h,",
             sstatus, sip, sie, stvec, sepc, scause, stval, sscratch, sedeleg, sideleg, stimecmp);
 
-        s3 = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h",
+        s3 = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h,",
             ustatus, uip, uie, utvec, uepc, ucause, utval, uscratch, utimecmp);
 
         foreach(reg_file[i]) begin
-            s4 = {s4, $sformatf("%h", reg_file[i])};
+            s4 = {s4, $sformatf("%h,", reg_file[i])};
         end
 
         return {s0, s4, s, s2, s3, s4};

@@ -3,6 +3,13 @@ import pkg_memory::*;
 import uvm_pkg::*;
 `include"uvm_macros.svh"
 
+//TODO:
+/*
+    - Simulation Time and Simulation End : DONE
+    - Register Connections for log file  : DONE
+    - Port Connectionts between monitors
+    - Memory Operaions log
+*/
 `define END 32'h400001A0
 
 module top ();
@@ -32,6 +39,51 @@ module top ();
 	    .transducer_l15_req_ack     (core_vif.transducer_l15_req_ack),
         .external_interrupt         (core_vif.external_interrupt)
     );
+
+    //Machine mode
+    assign reg_vif.mstatus    =   dut.issue.csr_registers.mstatus;
+    assign reg_vif.mip        =   dut.issue.csr_registers.mip;
+    assign reg_vif.mie        =   dut.issue.csr_registers.mie;
+    assign reg_vif.mtvec      =   {dut.issue.csr_registers.mtvec,2'b0};
+    assign reg_vif.mepc       =   dut.issue.csr_registers.mepc;
+    assign reg_vif.mcause     =   dut.issue.csr_registers.mcause;
+    assign reg_vif.mtval      =   dut.issue.csr_registers.mtval;
+    assign reg_vif.mscratch   =   dut.issue.csr_registers.mscratch;
+    assign reg_vif.medeleg    =   dut.issue.csr_registers.medeleg_w;
+    assign reg_vif.mideleg    =   dut.issue.csr_registers.mideleg_w;
+    assign reg_vif.mtimecmp   =   dut.issue.csr_registers.mtimecmp;
+    assign reg_vif.mtime      =   dut.issue.csr_registers.mtime;
+    //Supervisor mode
+    assign reg_vif.sstatus    =   dut.issue.csr_registers.sstatus;
+    assign reg_vif.sip        =   dut.issue.csr_registers.sip;
+    assign reg_vif.sie        =   dut.issue.csr_registers.sie;
+    assign reg_vif.stvec      =   {dut.issue.csr_registers.stvec,2'b0};
+    assign reg_vif.sepc       =   dut.issue.csr_registers.sepc;
+    assign reg_vif.scause     =   dut.issue.csr_registers.scause;
+    assign reg_vif.stval      =   dut.issue.csr_registers.stval;
+    assign reg_vif.sscratch   =   dut.issue.csr_registers.sscratch;
+    assign reg_vif.sedeleg    =   dut.issue.csr_registers.sedeleg_w;
+    assign reg_vif.sideleg    =   dut.issue.csr_registers.sideleg_w;
+    assign reg_vif.stimecmp   =   dut.issue.csr_registers.stimecmp;
+    //User mod
+    assign reg_vif.ustatus    =   dut.issue.csr_registers.ustatus;
+    assign reg_vif.uip        =   dut.issue.csr_registers.uip;
+    assign reg_vif.uie        =   dut.issue.csr_registers.uie;
+    assign reg_vif.utvec      =   {dut.issue.csr_registers.utvec,2'b0};
+    assign reg_vif.uepc       =   dut.issue.csr_registers.uepc;
+    assign reg_vif.ucause     =   dut.issue.csr_registers.ucause;
+    assign reg_vif.utval      =   dut.issue.csr_registers.utval;
+    assign reg_vif.uscratch   =   dut.issue.csr_registers.uscratch;
+    assign reg_vif.utimecmp   =   dut.issue.csr_registers.utimecmp;
+    //Unprivileged register file
+    genvar i;
+    generate
+        for (i=0; i < 32; i++) begin
+            assign reg_vif.reg_file[i] = dut.issue.reg1.register[i];
+        end
+    endgenerate
+
+    assign reg_vif.pc = dut.execute.pcReg5;
 	
     initial begin
         $display("creating config objects");
@@ -46,54 +98,4 @@ module top ();
 
         run_test("core_test");
     end
-    //TODO: Top Priority
-    //find a place for these assignments 
-    /*
-    initial begin
-        forever begin
-            //Machine mode
-            reg_vif.mstatus    =   dut.issue.csr_registers.mstatus;
-            reg_vif.mip        =   dut.issue.csr_registers.mip;
-            reg_vif.mie        =   dut.issue.csr_registers.mie;
-            reg_vif.mtvec      =   {dut.issue.csr_registers.mtvec,2'b0};
-            reg_vif.mepc       =   dut.issue.csr_registers.mepc;
-            reg_vif.mcause     =   dut.issue.csr_registers.mcause;
-            reg_vif.mtval      =   dut.issue.csr_registers.mtval;
-            reg_vif.mscratch   =   dut.issue.csr_registers.mscratch;
-            reg_vif.medeleg    =   dut.issue.csr_registers.medeleg_w;
-            reg_vif.mideleg    =   dut.issue.csr_registers.mideleg_w;
-            reg_vif.mtimecmp   =   dut.issue.csr_registers.mtimecmp;
-            reg_vif.mtime      =   dut.issue.csr_registers.mtime;
-            //Supervisor mode
-            reg_vif.sstatus    =   dut.issue.csr_registers.sstatus;
-            reg_vif.sip        =   dut.issue.csr_registers.sip;
-            reg_vif.sie        =   dut.issue.csr_registers.sie;
-            reg_vif.stvec      =   {dut.issue.csr_registers.stvec,2'b0};
-            reg_vif.sepc       =   dut.issue.csr_registers.sepc;
-            reg_vif.scause     =   dut.issue.csr_registers.scause;
-            reg_vif.stval      =   dut.issue.csr_registers.stval;
-            reg_vif.sscratch   =   dut.issue.csr_registers.sscratch;
-            reg_vif.sedeleg    =   dut.issue.csr_registers.sedeleg_w;
-            reg_vif.sideleg    =   dut.issue.csr_registers.sideleg_w;
-            reg_vif.stimecmp   =   dut.issue.csr_registers.stimecmp;
-            //User mod
-            reg_vif.ustatus    =   dut.issue.csr_registers.ustatus;
-            reg_vif.uip        =   dut.issue.csr_registers.uip;
-            reg_vif.uie        =   dut.issue.csr_registers.uie;
-            reg_vif.utvec      =   {dut.issue.csr_registers.utvec,2'b0};
-            reg_vif.uepc       =   dut.issue.csr_registers.uepc;
-            reg_vif.ucause     =   dut.issue.csr_registers.ucause;
-            reg_vif.utval      =   dut.issue.csr_registers.utval;
-            reg_vif.uscratch   =   dut.issue.csr_registers.uscratch;
-            reg_vif.utimecmp   =   dut.issue.csr_registers.utimecmp;
-            //Unprivileged register file
-            foreach(reg_vif.reg_file[i]) begin
-                reg_vif.reg_file[i] = dut.issue.reg1.register[i];
-            end
-            reg_vif.pc = dut.execute.pcReg5;
-
-        end
-    end
-    */
-  
 endmodule

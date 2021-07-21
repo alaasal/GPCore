@@ -47,7 +47,9 @@ class memory_read extends uvm_driver #(memory_transaction);
 
             memory_read_transaction_h.set_transaction(memory_read_struct);
             $display("1");
+            /*
             monitor_read_respopnse_port.put(memory_read_transaction_h);
+            */
             $display("2");
             memory_read_response_port.put(memory_read_transaction_h);
             $display("3");
