@@ -40,7 +40,6 @@ class memory_test extends uvm_test;
 
         memory_transaction_h  = memory_transaction::type_id::create("memory_transaction_h", this);  
     
-        // agent
         memory_agent_config_h = new();
         uvm_config_db #(memory_agent_config)::set(this, "memory_agent_h*", "memory_config", memory_agent_config_h);
         memory_agent_h = new("memory_agent_h", this);      

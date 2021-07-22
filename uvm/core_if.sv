@@ -72,6 +72,7 @@ interface core_if;
     always #10 clk = ~clk;
     
     initial begin
+        //Reset core and set wake_up signal
         nrst = 0;
         l15_transducer_val = 0;
         @(posedge clk);
@@ -82,17 +83,6 @@ interface core_if;
         @(posedge clk);
         l15_transducer_val = 0;
         set_returntype = 0;
-        
-        /*
-        forever begin 
-            l15_transducer_ack        <= transducer_l15_val;
-            l15_transducer_header_ack <= transducer_l15_val;
-
-            if (transducer_l15_rqtype == `STORE_RQ) l15_transducer_returntype = `ST_ACK;
-            else if (transducer_l15_rqtype == `LOAD_RQ) l15_transducer_returntype = `LOAD_RET;
-            else l15_transducer_returntype = 0;
-        end
-        */
     end
 
     task put(t_transaction memory_struct);
@@ -100,8 +90,6 @@ interface core_if;
 
         @(negedge clk);
         if(memory_struct.op_type == READ) begin
-            //l15_transducer_ack        = 1;  // response from openpiton to the core
-	        //l15_transducer_header_ack = 1; // acknowledge that a request is sent
         data = memory_struct.data;
         data = {data[7:0], data[15:8], data[23:16], data[31:24]};
 
@@ -111,7 +99,6 @@ interface core_if;
             2'b10: l15_transducer_data_1[63:32] = data;
             2'b11: l15_transducer_data_1[31:0]  = data;
         endcase
-	       // {l15_transducer_data_1, l15_transducer_data_0} = memory_struct.data;
             @(posedge clk);
             @(posedge clk);
             l15_transducer_val        = 1;

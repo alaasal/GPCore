@@ -24,15 +24,10 @@ package pkg_memory;
     
     `include"memory-model/c_memory.svh"
     `include"memory-model/c_memory_transaction.svh"
-    //`includmemory-model/e"c_memory_read_transaction.svh"
-    //`includmemory-model/e"c_memory_write_transaction.svh"
     `include"memory-model/c_memory_agent_config.svh"
     `include"memory-model/c_memory_read.svh"
     `include"memory-model/c_memory_write.svh"
     `include"memory-model/c_memory_monitor.svh"
-    //`include"memory-model/c_memory_write_monitor.svh"
-    //`include"memory-model/c_memory_read_monitor.svh"
     `include"memory-model/c_memory_agent.svh"
-    //`include"memory-model/c_memory_test.svh"
     
 endpackage : pkg_memory

@@ -4,8 +4,8 @@ interface reg_if;
     logic [31:0] mip;
     logic [31:0] mie;
 
-    logic [31:0] mtvec; //30
-    logic [31:0] mepc; // 32
+    logic [31:0] mtvec; 
+    logic [31:0] mepc; 
 
     logic [31:0] mcause;
     logic [31:0] mtval;
@@ -22,8 +22,8 @@ interface reg_if;
     logic [31:0] sip;
     logic [31:0] sie;
 
-    logic [31:0] stvec; //30
-    logic [31:0] sepc; //32
+    logic [31:0] stvec;
+    logic [31:0] sepc; 
 
     logic [31:0] scause;
     logic [31:0] stval;
@@ -73,7 +73,7 @@ interface reg_if;
             s4 = {s4, $sformatf("%h,", reg_file[i])};
         end
 
-        return {s0, s4, s, s2, s3, s4};
+        return {s0, s4, s, s2, s3};
     endfunction : convert2string
  
 endinterface : reg_if

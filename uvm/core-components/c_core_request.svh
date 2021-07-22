@@ -30,7 +30,7 @@ class core_request extends uvm_driver #(memory_transaction);
         
         forever begin
             @(posedge vif.clk);
-            vif.get(memory_transaction_h); //TODO: Implement get task
+            vif.get(memory_transaction_h);
 
             `uvm_info("CORE_REQUEST",memory_transaction_h.convert2string(), UVM_LOW)
             if(memory_transaction_h.get_op_type() == WRITE) begin

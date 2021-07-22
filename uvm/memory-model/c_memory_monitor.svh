@@ -31,20 +31,17 @@ class memory_monitor extends uvm_monitor;
 
     task run_phase(uvm_phase phase);
         memory_transaction memory_transaction_h;
+        $fdisplay(file, "OP TYPE, OP SIZE, ADDRESS, DATA");
 
         forever begin
-            $display("Monitor");
             monitor_port.get(memory_transaction_h);
-            $display("Monitor1");
-            /*
+
             if(memory_transaction_h.get_op_type() == READ)
                 monitor_read_respopnse_port.get(memory_transaction_h);
-            */
-            $display("Monitor2");
-            //$display(memory_transaction_h.convert2string());
+
             `uvm_info("MEMORY_MONITOR",memory_transaction_h.convert2string(), UVM_LOW)
             $fdisplay(file, memory_transaction_h.convert2string());
-            //`uvm_info("MEMORY_MONITOR","NADA MOHMAED YOUNIS", UVM_LOW)
+            
             monitor_analysis_port.write(memory_transaction_h);
         end
     endtask : run_phase

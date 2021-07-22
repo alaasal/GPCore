@@ -1,5 +1,4 @@
 class memory extends uvm_object;
-    //TODO: REVIEW MEMORY OPS ARE PERFORMED CORRECTLY
     `uvm_object_utils(memory)
     t_mem_data mem [t_mem_addr];
     
@@ -25,11 +24,6 @@ class memory extends uvm_object;
         $fdisplay(file, "address, data");
         for (int i = 0; i < size; i++) begin
             $fdisplay(file, $sformatf("%h, %h", index, mem[index]));
-            if(!mem.next(index)) begin
-                //s = $sformatf("%h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h, %h \n"
-                //`uvm_error("memory","Next entry in memory cannot be found")
-                //break;
-            end
         end
         $fclose(file);
     endfunction

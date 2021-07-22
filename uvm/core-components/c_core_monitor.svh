@@ -30,44 +30,21 @@ class core_monitor extends uvm_monitor;
         reg_vif = core_agent_config_h.reg_vif;
     endfunction : build_phase 
     
-        string s1 = "pc, r0, r1, r1, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15,16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31";
-        string s2 = "mstatus, mip, mie, mtvec, mepc, mcause, mtval, mscratch, medeleg, midleg, mtimecmp, mtime";
-        string s3 = "sstatus, sip, sie, stvec, sepc, scause, stval, sscratch, sedeleg, sidleg, stimecmp";
+        string s1 = "pc, r0, r1, r1, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15,16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,";
+        string s2 = "mstatus, mip, mie, mtvec, mepc, mcause, mtval, mscratch, medeleg, midleg, mtimecmp, mtime,";
+        string s3 = "sstatus, sip, sie, stvec, sepc, scause, stval, sscratch, sedeleg, sidleg, stimecmp,";
         string s4 = "ustatus, uip, uie, utvec, uepc, ucause, utval, uscratch, utimecmp";
         
     task run_phase(uvm_phase phase);
-        memory_transaction_h = memory_transaction::type_id::create("memory_transaction_h", this);
-        
-        file = $fopen("reg_dump.csv", "w");
-        
-        
-        $fdisplay(file, {s1, s2, s3, s4});
-        
-        forever begin
-            @(posedge vif.clk);
-            
-            #1;
-            wrap_transaction();
-            if(vif.transducer_l15_val == 1) begin
-                if((memory_transaction_h.get_op_type() == WRITE) || (memory_transaction_h.get_op_type() == READ)) begin
-                    //TODO: TOP PRIORITY:
-                    //This if statement is not entered,
-                    //as a result, no transaction is put to the port.
-                    //The memory monitor is blocked because no transaction 
-                    //is sent to the port.
-                    //The if statement in line 51 is not true and is the cause 
-                    //of the error  
-                    monitor_analysis_port.write(memory_transaction_h);
-                    monitor_port.try_put(memory_transaction_h);
-                end 
+        fork 
+            begin
+                monitor_operations();
             end
-            //ADD logic to check instruction execution
-            @(reg_vif.pc);
-            if (reg_vif.pc != 0)
-            $fdisplay(file, reg_vif.convert2string());
 
-        end
-
+            begin
+                log_regfile();
+            end
+        join
     endtask : run_phase
 
     function void wrap_transaction();
@@ -90,4 +67,31 @@ class core_monitor extends uvm_monitor;
 
         memory_transaction_h.set_transaction(transaction);
     endfunction : wrap_transaction
+
+    task log_regfile();
+        file = $fopen("reg_dump.csv", "w");
+        $fdisplay(file, {s1, s2, s3, s4});
+
+        forever begin
+            @(reg_vif.pc);
+            if (reg_vif.pc != 0)
+            $fdisplay(file, reg_vif.convert2string());
+        end
+    endtask : log_regfile
+
+    task monitor_operations();
+        memory_transaction_h = memory_transaction::type_id::create("memory_transaction_h", this);
+        forever begin
+            @(posedge vif.clk); #1;
+            wrap_transaction();
+            if(vif.transducer_l15_val == 1) begin
+                if((memory_transaction_h.get_op_type() == WRITE) 
+                    || (memory_transaction_h.get_op_type() == READ)) begin
+                    monitor_analysis_port.write(memory_transaction_h);
+                    monitor_port.put(memory_transaction_h);
+                end 
+            end
+        end
+    endtask : monitor_operations
+
 endclass : core_monitor

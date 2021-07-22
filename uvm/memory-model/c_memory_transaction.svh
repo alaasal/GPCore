@@ -36,7 +36,7 @@ class memory_transaction extends uvm_transaction;
         op_size_s = (transaction.op_size == FULL)? "FULL" : 
                     (transaction.op_size == HALF)? "HALF" : "BYTE";
 
-        s = $sformatf("OP TYPE:\t %s,\n OP SIZE:\t %s,\n ADDRESS:\t %h,\n DATA:\t %h,\n",
+        s = $sformatf("%s, %s, %h, %h",
                         op_type_s, op_size_s, transaction.address, transaction.data);
         return s;
     endfunction: convert2string
