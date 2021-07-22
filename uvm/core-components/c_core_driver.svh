@@ -27,9 +27,7 @@ class core_driver extends uvm_driver #(memory_transaction);
         t_transaction memory_read_struct;
 
         forever begin
-            $display("before get");
             memory_read_response_port.get(memory_read_transaction_h);
-            $display("after get");
             memory_read_struct = memory_read_transaction_h.get_transaction(memory_read_op);
              `uvm_info("CORE_driver",memory_read_transaction_h.convert2string(), UVM_LOW)
             vif.put(memory_read_struct);

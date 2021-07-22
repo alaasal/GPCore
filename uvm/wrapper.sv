@@ -88,7 +88,7 @@ module wrapper(
     assign medeleg    =   dut.issue.csr_registers.medeleg_w;
     assign mideleg    =   dut.issue.csr_registers.mideleg_w;
     assign mtimecmp   =   dut.issue.csr_registers.mtimecmp;
-    assign mtime      =   dut.issue.csr_registers.mtime;
+    assign mtime      =   dut.issue.csr_registers.timer;
     //Supervisor mode
     assign sstatus    =   dut.issue.csr_registers.sstatus;
     assign sip        =   dut.issue.csr_registers.sip;
