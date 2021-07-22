@@ -1,5 +1,3 @@
-`timescale 1ns/1ns
-
 // Request Types
 `define LOAD_RET        4'b0000
 `define INV_RET         4'b0011

@@ -1,2 +1,7 @@
 *.bak
+*.mpf
+*.wlf
+*.mti
+transcript
+work/
 uvm/imperas-riscv-tests/
