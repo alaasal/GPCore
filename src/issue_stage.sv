@@ -531,7 +531,8 @@ logic mretReg4, sretReg4, uretReg4;
 	.kill(kill),
 
 	.nostall(nostall),
-	.discard(discard)
+	.discard(discard),
+	.aes_done(aes_done)
 	);
 
 	// csr register file

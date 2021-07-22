@@ -8,6 +8,7 @@ input logic [4:0] rd,
 input logic jr4,
 
 input logic [6:0] op_code,
+input logic aes_done,
 
 output logic stall,kill,nostall
 
@@ -171,8 +172,12 @@ logic stall_wire;
             function_unit =3'b100;
             stall_wire = (scoreboard[rs1][3]); 
             nostall = (scoreboard[rs1][3]);
-        end	//loads
-
+        end	
+		7'0001011:begin //AES instruction
+            function_unit =3'b000;
+            stall_wire =  aes_done ? 1'b0: 1'b1; 
+            nostall = aes_done ? 1'b0: 1'b1;
+        end	
 		default: begin 
 		function_unit = 0;
 		nostall =0 ;
