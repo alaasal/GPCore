@@ -29,15 +29,17 @@ class core_request extends uvm_driver #(memory_transaction);
         memory_transaction_h = memory_transaction::type_id::create("memory_transaction_h", this);
         
         forever begin
-            @(posedge vif.clk);
+            //@(posedge vif.clk);
             vif.get(memory_transaction_h);
-
+            `uvm_info("CORE_REQUEST",$sformatf("busy: %h, val: %h", vif.busy, vif.transducer_l15_val), UVM_LOW)
             `uvm_info("CORE_REQUEST",memory_transaction_h.convert2string(), UVM_LOW)
+        
             if(memory_transaction_h.get_op_type() == WRITE) begin
+                `uvm_info("CORE_REQUEST","Sending to write", UVM_LOW)
                 memory_write_request_port.put(memory_transaction_h);
             end else if(memory_transaction_h.get_op_type() == READ) begin
+                `uvm_info("CORE_REQUEST","Sending to read", UVM_LOW)
                 memory_read_request_port.put(memory_transaction_h);
-            end else begin
             end
         end
     endtask : run_phase

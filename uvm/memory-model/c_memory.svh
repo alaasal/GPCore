@@ -24,6 +24,7 @@ class memory extends uvm_object;
         $fdisplay(file, "address, data");
         for (int i = 0; i < size; i++) begin
             $fdisplay(file, $sformatf("%h, %h", index, mem[index]));
+            if(!mem.next(index)) break;
         end
         $fclose(file);
     endfunction

@@ -1,4 +1,4 @@
-`timescale 1ns/1ns
+//`timescale 1ns/1ns
 
 /*`include "frontend_stage.sv"
 `include "decode_stage.sv"

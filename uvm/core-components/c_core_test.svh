@@ -1,4 +1,4 @@
-`define END 32'h400001A0
+`define END 32'h4400005ec
 
 class core_test extends uvm_test;
     `uvm_component_utils(core_test)
@@ -21,7 +21,7 @@ class core_test extends uvm_test;
     
     task run_phase(uvm_phase phase);
         phase.raise_objection(this);
-        wait (reg_vif.pc === `END);
+        wait (reg_vif.pc == `END);
         phase.drop_objection(this);
 
     endtask

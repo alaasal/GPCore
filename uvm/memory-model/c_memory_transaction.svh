@@ -9,7 +9,12 @@ class memory_transaction extends uvm_transaction;
 
     function t_transaction get_transaction(t_memory_op_type source_op);
         if (source_op == transaction.op_type) return transaction;
-        else `uvm_fatal("MEMORY_TRANSACTION", "Illegal access to transaction");
+        else begin
+            string s;
+            s = $sformatf("Illegal access to transaction: transaction type: %h, access type: %h", transaction.op_type, source_op);
+            `uvm_fatal("MEMORY_TRANSACTION", s)
+        end
+        
     endfunction
 
     protected function t_transaction get_transaction_protected();
@@ -20,11 +25,11 @@ class memory_transaction extends uvm_transaction;
         transaction = source_transaction;
     endfunction
 
-    function transaction_to_monitor();
+    function t_transaction transaction_to_monitor();
         return transaction;
     endfunction
 
-    function get_op_type();
+    function t_memory_op_type get_op_type();
         return transaction.op_type;
     endfunction
 
@@ -32,7 +37,8 @@ class memory_transaction extends uvm_transaction;
         string s;
         string op_type_s, op_size_s;
 
-        op_type_s = (transaction.op_type == READ)? "READ" : "WRITE";
+        op_type_s = (transaction.op_type == READ)? "READ" : 
+                    (transaction.op_type == WRITE)? "WRITE" : "NOOP";
         op_size_s = (transaction.op_size == FULL)? "FULL" : 
                     (transaction.op_size == HALF)? "HALF" : "BYTE";
 
