@@ -1,8 +1,11 @@
-module top;
+module top(
+input logic clk, nrst,
+input logic external_interrupt
+);
 
-logic nrst;
+//logic nrst;
 logic nrst_core;
-logic clk;
+//logic clk;
 logic clk_core;
 logic clk_debug;
 
@@ -12,33 +15,33 @@ logic [31:0] DEBUG_instr;
 logic START;
 
 //OpenPiton Request
-	logic[4:0] transducer_l15_rqtype;
-	logic[2:0] transducer_l15_size;
-	logic[31:0] transducer_l15_address;
-	logic[63:0] transducer_l15_data;
-	logic transducer_l15_val;
-	logic l15_transducer_ack;
-	logic l15_transducer_header_ack;
+	logic[4:0] transducer_l15_rqtype = 0;
+	logic[2:0] transducer_l15_size = 0;
+	logic[31:0] transducer_l15_address = 0;
+	logic[63:0] transducer_l15_data = 0;
+	logic transducer_l15_val = 0;
+	logic l15_transducer_ack = 0;
+	logic l15_transducer_header_ack = 0;
 
 
 	//OpenPiton Response
-	logic l15_transducer_val;
-	logic[63:0] l15_transducer_data_0;
-	logic[63:0] l15_transducer_data_1;
-	logic[4:0] l15_transducer_returntype;
-	logic transducer_l15_req_ack;
+	logic l15_transducer_val = 0;
+	logic[63:0] l15_transducer_data_0 = 0;
+	logic[63:0] l15_transducer_data_1 = 0;
+	logic[4:0] l15_transducer_returntype = 0;
+	logic transducer_l15_req_ack = 0;
 
 	// Asynchronus interrupt
-	logic external_interrupt;
+	//logic external_interrupt = 0;
 	
-always 
+/*always 
 begin
     clk = 1'b0; 
     #20; // high for 20 * timescale = 20 ns
 
     clk = 1'b1;
     #20; // low for 20 * timescale = 20 ns
-end
+end*/
 
 assign clk_core = (START == 1'b1) ? clk : 0;
 assign clk_debug = (START == 1'b0) ? clk : 0;
@@ -46,14 +49,14 @@ assign clk_debug = (START == 1'b0) ? clk : 0;
 
 
 
-initial 
+/*initial 
 begin 
 nrst = 0;
 nrst_core = 0;
 #10
 nrst = 1;
 nrst_core = 1;
-end
+end*/
 
 core testCore(
 		.DEBUG_SIG(DEBUG_SIG),				//DEBUG Signals from debug module to load a program
@@ -61,7 +64,7 @@ core testCore(
 		.DEBUG_instr(DEBUG_instr),
 
 		.clk(clk_core),
-		.nrst(nrst_core),
+		.nrst(nrst),
 		.clk_debug(clk_debug),
 		
 		//OpenPiton Request
