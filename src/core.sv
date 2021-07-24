@@ -18,6 +18,11 @@
 
 module core(
 	input logic clk, nrst,
+	
+	input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
+  input logic [31:0] DEBUG_addr,
+  input logic [31:0] DEBUG_instr,
+  input logic clk_debug,
 
 
 	//OpenPiton Request
@@ -41,6 +46,7 @@ module core(
 	input logic external_interrupt
     );
 
+  //logic[63:0] l15_transducer_data_1;
 	// Wires
 	logic [31:0] pc, pc2, pc3, pc4, pc6;         // Program Counter Signals in each pipe
 	logic [31:0] instr2;   	   // output wire of IF stage
@@ -334,6 +340,12 @@ end
 	frontend_stage frontend(
 	.clk            (clk),
 	.nrst           (nrst),
+	
+	//Debug Module
+	.DEBUG_SIG      (DEBUG_SIG),//DEBUG Signals from debug module to load a program
+    .DEBUG_addr     (DEBUG_addr),
+    .DEBUG_instr    (DEBUG_instr),
+    .clk_debug      (clk_debug),
 
 	// Branch Select and Branch Target
 	.PCSEL          (pcselect5),

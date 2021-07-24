@@ -37,6 +37,12 @@ module frontend_stage(
     	output logic illegal_flag,
 
 	output logic discardwire,
+	
+	//Debug module
+	input logic DEBUG_SIG,				//DEBUG Signals from debug module to load a program
+  input logic [31:0] DEBUG_addr,
+  input logic [31:0] DEBUG_instr,
+  input logic clk_debug,
 
 
     //OpenPiton Request
@@ -285,7 +291,17 @@ assign discardwire =discardReg;
     	   end
 
       end
+      
       end
+       // dummy inst mem
+        instr_mem m1 (
+        .clk(clk),
+        .addr(pc),
+        .instr(instr2), 		
+        .DEBUG_SIG(DEBUG_SIG),				//DEBUG Signals from debug module to load a program
+        .DEBUG_addr(DEBUG_addr),
+        .DEBUG_instr(DEBUG_instr),
+        .clk_debug(clk_debug));
 
 
     // output
