@@ -173,7 +173,7 @@ logic stall_wire;
             stall_wire = (scoreboard[rs1][3]); 
             nostall = (scoreboard[rs1][3]);
         end	
-		7'0001011:begin //AES instruction
+		7'b0001011:begin //AES instruction
             function_unit =3'b000;
             stall_wire =  aes_done ? 1'b0: 1'b1; 
             nostall = aes_done ? 1'b0: 1'b1;
